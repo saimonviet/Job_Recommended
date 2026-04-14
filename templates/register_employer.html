@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tạo tài khoản Nhà tuyển dụng | Career Authority</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed-dim": "#ffb691",
+                    "primary-fixed-dim": "#a8c8ff",
+                    "on-tertiary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "on-error": "#ffffff",
+                    "inverse-primary": "#a8c8ff",
+                    "on-primary-fixed-variant": "#00468b",
+                    "on-secondary-fixed-variant": "#324769",
+                    "primary-fixed": "#d6e3ff",
+                    "primary": "#00488d",
+                    "on-tertiary-container": "#ffd1bc",
+                    "secondary-fixed-dim": "#b2c7f0",
+                    "on-surface-variant": "#424752",
+                    "on-secondary-fixed": "#011b3c",
+                    "inverse-surface": "#2e3036",
+                    "on-secondary-container": "#475c7f",
+                    "error": "#ba1a1a",
+                    "surface-variant": "#e1e2ea",
+                    "tertiary-container": "#a04401",
+                    "on-primary-fixed": "#001b3d",
+                    "outline": "#727783",
+                    "secondary-container": "#c0d5ff",
+                    "secondary": "#4a5f83",
+                    "error-container": "#ffdad6",
+                    "surface-container-highest": "#e1e2ea",
+                    "surface-container-high": "#e7e8f0",
+                    "on-tertiary-fixed": "#341100",
+                    "surface-container": "#ecedf6",
+                    "on-tertiary-fixed-variant": "#783100",
+                    "outline-variant": "#c2c6d4",
+                    "inverse-on-surface": "#eff0f8",
+                    "tertiary-fixed": "#ffdbcb",
+                    "on-primary": "#ffffff",
+                    "tertiary": "#7b3200",
+                    "secondary-fixed": "#d6e3ff",
+                    "on-surface": "#191c21",
+                    "on-background": "#191c21",
+                    "background": "#f9f9ff",
+                    "surface-dim": "#d8dae2",
+                    "surface": "#f9f9ff",
+                    "surface-tint": "#005db5",
+                    "surface-bright": "#f9f9ff",
+                    "on-primary-container": "#cadcff",
+                    "surface-container-low": "#f2f3fb",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "primary-container": "#005fb8"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+        select {
+          appearance: none;
+          background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+          background-repeat: no-repeat;
+          background-position: right 1rem center;
+          background-size: 1em;
+        }
+    </style>
+</head>
+<body class="bg-surface-container text-on-surface min-h-screen flex items-center justify-center p-4">
+<main class="w-full max-w-6xl bg-surface-container-lowest rounded-2xl shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] overflow-hidden">
+<div class="grid grid-cols-1 lg:grid-cols-12">
+<!-- Branding/Value Proposition Section (Blue side panel) -->
+<div class="lg:col-span-5 hidden lg:block bg-surface-container-low p-12 space-y-8">
+<div class="space-y-4">
+<span class="text-tertiary font-headline font-bold tracking-wider uppercase text-xs">AI-Powered Recruitment</span>
+<h1 class="text-5xl font-extrabold text-primary leading-tight tracking-tighter">Xây dựng đội ngũ tương lai.</h1>
+<p class="text-on-surface-variant text-lg leading-relaxed">Kết nối với những ứng viên xuất sắc nhất thông qua hệ thống dự đoán và phân tích dữ liệu chuyên sâu của chúng tôi.</p>
+</div>
+<!-- Bento-style feature cards -->
+<div class="grid grid-cols-1 gap-4">
+<div class="bg-surface-container-lowest p-6 rounded-xl space-y-3 shadow-sm border border-outline-variant/10">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="rocket_launch">rocket_launch</span>
+<span class="font-headline font-bold text-primary">Tuyển dụng nhanh hơn 60%</span>
+</div>
+<p class="text-sm text-on-surface-variant">Quy trình sàng lọc AI giúp bạn tiếp cận ứng viên phù hợp ngay lập tức.</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl space-y-3 shadow-sm border border-outline-variant/10">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="query_stats">query_stats</span>
+<span class="font-headline font-bold text-primary">Phân tích dự đoán</span>
+</div>
+<p class="text-sm text-on-surface-variant">Dự báo nhu cầu nhân sự và biến động thị trường trong ngành của bạn.</p>
+</div>
+</div>
+<div class="relative rounded-2xl overflow-hidden h-64 shadow-xl">
+<img alt="Modern office collaborative environment" class="w-full h-full object-cover" data-alt="Modern high-end office interior with glass walls and professional people collaborating around a large wooden table with warm lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDq9YHiTdb4LZtiVwl4NL1qvOepGGX1UXOWdctY5OHLXLzeqbv0IpERM_PVKiwv1vuFPtNEo_HGSRuNHe1MDNavWUuwTn_FqXTZNGrMN5ASGuRmBN6p07mGj5tdPrR1H8zEdFdaAExwIU7FPsZCx_T7d3GV8yTE4Uep7eABuuRb1Gi7V5aTyczi_v_QuLFVERmtGxgF2UcwrPz8hyxG_WTm94FC7lZseqfP9G3I-lkJ8rN7d9DPSucwoZHuvIPVbxGVXAyup_AN5q_E"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent"></div>
+</div>
+</div>
+<!-- Registration Form Card -->
+<div class="lg:col-span-7 p-8 md:p-12">
+<div class="max-w-2xl mx-auto space-y-8">
+<!-- Brand Identity inside the card -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+<div class="text-2xl font-extrabold text-blue-900 font-headline tracking-tight">Career Authority</div>
+<div class="flex items-center gap-2">
+<span class="text-slate-600 font-label text-xs">Đã có tài khoản?</span>
+<a class="text-primary font-bold font-headline text-sm hover:underline" href="#">Đăng nhập</a>
+</div>
+</div>
+<div class="text-center lg:text-left">
+<h2 class="text-3xl font-extrabold text-on-surface font-headline tracking-tight">Tạo tài khoản Nhà tuyển dụng</h2>
+<p class="text-on-surface-variant mt-2 font-body">Vui lòng cung cấp thông tin doanh nghiệp để bắt đầu.</p>
+</div>
+<form class="space-y-6">
+<!-- Tài khoản & Bảo mật -->
+<div class="space-y-5">
+<h3 class="text-sm font-bold text-primary uppercase tracking-widest border-b border-outline-variant/30 pb-2">1. Thông tin đăng nhập</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+<div class="space-y-1.5">
+<label class="text-xs font-bold text-on-surface-variant uppercase tracking-wider pl-1">Email doanh nghiệp</label>
+<input class="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm" placeholder="name@company.com" required="" type="email"/>
+</div>
+<div class="space-y-1.5">
+<label class="text-xs font-bold text-on-surface-variant uppercase tracking-wider pl-1">Mật khẩu</label>
+<input class="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm" placeholder="••••••••" required="" type="password"/>
+</div>
+</div>
+</div>
+<!-- Thông tin Doanh nghiệp -->
+<div class="space-y-5">
+<h3 class="text-sm font-bold text-primary uppercase tracking-widest border-b border-outline-variant/30 pb-2">2. Thông tin doanh nghiệp</h3>
+<div class="space-y-1.5">
+<label class="text-xs font-bold text-on-surface-variant uppercase tracking-wider pl-1">Tên công ty</label>
+<input class="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm" placeholder="Ví dụ: Công ty Cổ phần Công nghệ Toàn cầu" required="" type="text"/>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+<div class="md:col-span-2 space-y-1.5">
+<label class="text-xs font-bold text-on-surface-variant uppercase tracking-wider pl-1">Địa chỉ công ty</label>
+<input class="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm" placeholder="Số nhà, tên đường, Quận/Huyện, Tỉnh/TP" required="" type="text"/>
+</div>
+<div class="space-y-1.5">
+<label class="text-xs font-bold text-on-surface-variant uppercase tracking-wider pl-1">Quy mô nhân viên</label>
+<select class="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm" required="">
+<option disabled="" selected="" value="">Chọn quy mô</option>
+<option value="1-10">1 - 10 nhân viên</option>
+<option value="11-50">11 - 50 nhân viên</option>
+<option value="51-200">51 - 200 nhân viên</option>
+<option value="201-500">201 - 500 nhân viên</option>
+<option value="500+">Trên 500 nhân viên</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Thông tin liên hệ -->
+<div class="space-y-5">
+<h3 class="text-sm font-bold text-primary uppercase tracking-widest border-b border-outline-variant/30 pb-2">3. Người liên hệ</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+<div class="space-y-1.5">
+<label class="text-xs font-bold text-on-surface-variant uppercase tracking-wider pl-1">Họ và tên</label>
+<input class="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm" placeholder="Ví dụ: Nguyễn Văn A" required="" type="text"/>
+</div>
+<div class="space-y-1.5">
+<label class="text-xs font-bold text-on-surface-variant uppercase tracking-wider pl-1">Số điện thoại liên hệ</label>
+<input class="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm" placeholder="Ví dụ: 0901234567" required="" type="tel"/>
+</div>
+</div>
+</div>
+<div class="flex items-start gap-3 py-2">
+<input class="mt-1 rounded border-outline-variant text-primary focus:ring-primary" id="terms" required="" type="checkbox"/>
+<label class="text-xs text-on-surface-variant leading-relaxed" for="terms">
+                            Tôi đồng ý với <a class="text-primary hover:underline font-semibold" href="#">Điều khoản Dịch vụ</a> và <a class="text-primary hover:underline font-semibold" href="#">Chính sách Bảo mật</a> của Career Authority.
+                        </label>
+</div>
+<button class="w-full py-4 bg-gradient-to-r from-primary to-primary-container text-on-primary font-headline font-bold rounded-md shadow-md hover:shadow-lg hover:opacity-90 transition-all duration-300 transform hover:-translate-y-0.5" type="submit">
+                        Đăng ký tài khoản doanh nghiệp
+                    </button>
+</form>
+<div class="text-center pt-4 border-t border-outline-variant/10">
+<p class="text-xs text-on-surface-variant">
+                        © 2024 The Predictive Career Authority. Tất cả các quyền được bảo lưu.
+                    </p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

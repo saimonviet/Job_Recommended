@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container-highest": "#e1e2ea",
+              "tertiary-fixed-dim": "#ffb691",
+              "on-error-container": "#93000a",
+              "surface-container-low": "#f2f3fb",
+              "on-surface": "#191c21",
+              "on-tertiary-container": "#ffd1bc",
+              "surface-container-lowest": "#ffffff",
+              "primary-fixed-dim": "#a8c8ff",
+              "inverse-primary": "#a8c8ff",
+              "outline": "#727783",
+              "on-tertiary": "#ffffff",
+              "tertiary-container": "#a04401",
+              "on-primary-fixed": "#001b3d",
+              "surface-container": "#ecedf6",
+              "secondary": "#4a5f83",
+              "on-secondary-fixed": "#011b3c",
+              "surface-dim": "#d8dae2",
+              "on-primary": "#ffffff",
+              "on-secondary-fixed-variant": "#324769",
+              "primary-container": "#005fb8",
+              "tertiary-fixed": "#ffdbcb",
+              "inverse-surface": "#2e3036",
+              "on-tertiary-fixed-variant": "#783100",
+              "on-primary-fixed-variant": "#00468b",
+              "primary-fixed": "#d6e3ff",
+              "outline-variant": "#c2c6d4",
+              "surface": "#f9f9ff",
+              "on-secondary-container": "#475c7f",
+              "secondary-fixed": "#d6e3ff",
+              "background": "#f9f9ff",
+              "tertiary": "#7b3200",
+              "error": "#ba1a1a",
+              "surface-variant": "#e1e2ea",
+              "surface-tint": "#005db5",
+              "on-background": "#191c21",
+              "surface-container-high": "#e7e8f0",
+              "primary": "#00488d",
+              "on-secondary": "#ffffff",
+              "secondary-fixed-dim": "#b2c7f0",
+              "inverse-on-surface": "#eff0f8",
+              "on-primary-container": "#cadcff",
+              "on-error": "#ffffff",
+              "secondary-container": "#c0d5ff",
+              "on-surface-variant": "#424752",
+              "surface-bright": "#f9f9ff",
+              "on-tertiary-fixed": "#341100",
+              "error-container": "#ffdad6"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f9f9ff;
+        color: #191c21;
+      }
+      h1, h2, h3 {
+        font-family: 'Manrope', sans-serif;
+      }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- Header Navigation -->
+<header class="bg-slate-50/80 backdrop-blur-xl dock full-width top-0 sticky z-50 shadow-sm">
+<nav class="flex justify-between items-center w-full px-6 py-3 max-w-screen-2xl mx-auto">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-bold text-blue-900 font-headline tracking-tight">CareerAuthority</span>
+<div class="hidden md:flex gap-6 items-center">
+<a class="text-slate-600 hover:text-blue-600 transition-colors font-medium" href="#">Giải pháp</a>
+<a class="text-slate-600 hover:text-blue-600 transition-colors font-medium" href="#">Bảng giá</a>
+<a class="text-slate-600 hover:text-blue-600 transition-colors font-medium" href="#">Tài nguyên</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<a class="hidden md:block text-blue-700 font-bold border-b-2 border-blue-700 pb-1 text-sm tracking-tight" href="#">
+                    Dành cho Người tìm việc
+                </a>
+<div class="h-6 w-[1px] bg-outline-variant/30 mx-2"></div>
+<button class="text-on-surface-variant font-medium px-4 py-2 hover:bg-surface-container-high rounded-lg transition-all">Đăng nhập</button>
+<button class="bg-primary text-on-primary px-5 py-2.5 rounded-md font-semibold text-sm hover:opacity-90 transition-all shadow-sm">
+                    Đăng tin ngay
+                </button>
+</div>
+</nav>
+</header>
+<!-- Hero Section -->
+<section class="relative overflow-hidden pt-24 pb-32 px-6">
+<div class="max-w-screen-2xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+<div class="z-10">
+<span class="inline-block px-4 py-1.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-xs font-bold uppercase tracking-widest mb-6">
+                    Kỷ nguyên Tuyển dụng Mới
+                </span>
+<h1 class="text-5xl lg:text-7xl font-extrabold text-on-surface leading-[1.1] mb-8 tracking-tight">
+                    Tuyển dụng nhân tài dựa trên <span class="text-primary italic">dữ liệu dự báo.</span>
+</h1>
+<p class="text-lg text-on-surface-variant max-w-xl mb-10 leading-relaxed">
+                    Vượt xa các phương pháp truyền thống. Sử dụng trí tuệ nhân tạo để dự báo nhu cầu nhân sự và kết nối với những ứng viên phù hợp nhất ngay cả trước khi họ bắt đầu tìm việc.
+                </p>
+<div class="flex flex-wrap gap-4">
+<button class="bg-gradient-to-r from-primary to-primary-container text-on-primary px-8 py-4 rounded-md font-bold text-lg hover:shadow-lg transition-all transform active:scale-95">
+                        Bắt đầu miễn phí
+                    </button>
+<button class="bg-surface-container-high text-on-surface-variant px-8 py-4 rounded-md font-bold text-lg hover:bg-surface-container-highest transition-all">
+                        Xem bản demo
+                    </button>
+</div>
+<div class="mt-12 flex items-center gap-4">
+<div class="flex -space-x-3">
+<img class="w-10 h-10 rounded-full border-2 border-surface" data-alt="portrait of a confident business executive in a modern office setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8cx0B0O8CHrcysbEL8mbddH0WdhE8FZZiMOeAcHEA6lZoz8MCIO3c_Lm8lAptayRkBrfgb8ILEkOZpk2hMYze-SYMX1RNTc1UX71QokhYDbUVy4fKz1_Ig2l-odbrD5dNFQS45_crRNtVD74gaCvoEMJPiIjEL_IEJkIZDXqekxGCBCp3vadlWSshY0MUUnokdrq0seX4m_N6i7HuBXS9Fe8lmKMOippqb3rK8FK4h_5vrKDHVOlCIEtDgPiqR-eE9-wTC_495WPq"/>
+<img class="w-10 h-10 rounded-full border-2 border-surface" data-alt="professional woman smiling in a bright corporate environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHobzXq7J6jBVzwaaIMm7Pyii9aigg2UzH0Ue4MxWdF1clG8d5JKTQTH1xwrdwf4S7sRzI58_160g8sgzzFfBqfYTfv47g9UCidcXcGkXy2kdeswzlT_F-1j376hi4vssS4HxoBCaxO0I4F0CMfUYFC0zFr8X87A47uaBEuLzGL7Slj4QJ3jeLZF5fW7FEL8se9J7waS861TybFD4O5PvwSEY36Pb5ZoyRRj0vXeIMaP7uIcFmDA14Sai1cSI4XqtLC6miGdT2TZ_w"/>
+<img class="w-10 h-10 rounded-full border-2 border-surface" data-alt="expert recruiter looking at a screen with data visualizations" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZQL9JfIX9XhlpJRAXdTz3dvFRxjVAjVPN5D5FYcx384cy22T2UxHxBxCVq7wFnh2vMmwi-mydCYF4mgG68Hz8Q1z8KuV3hNphTQETNaPulHAGNUiBHvUZX_rAQENedIBLd5uj8EfFxwO3dZaUe8NVkJuLGYTCkf8cN0c085_NrHuf_EtnuxAHmMIA5-EiLnpT4JZJPR_AK2f9P4slPiEXZKFHry2P1M0a2XIhGsFUrUnNQCjmEtX0SD8OakzXvTUoU1-_0_-GCOCy"/>
+</div>
+<p class="text-sm font-medium text-on-surface-variant">
+                        Được tin dùng bởi hơn <span class="text-primary font-bold">5,000+</span> tập đoàn hàng đầu
+                    </p>
+</div>
+</div>
+<div class="relative group">
+<div class="absolute -top-10 -right-10 w-64 h-64 bg-primary-container/10 rounded-full blur-3xl group-hover:bg-primary-container/20 transition-all duration-700"></div>
+<div class="absolute -bottom-10 -left-10 w-64 h-64 bg-tertiary/10 rounded-full blur-3xl group-hover:bg-tertiary/20 transition-all duration-700"></div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-2xl relative overflow-hidden">
+<div class="flex justify-between items-center mb-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">analytics</span>
+<span class="font-bold text-sm">Dự báo nhu cầu 2024</span>
+</div>
+<span class="text-xs bg-surface-container text-on-surface-variant px-2 py-1 rounded">Cập nhật 2 phút trước</span>
+</div>
+<img class="w-full h-auto rounded-lg mb-6 grayscale hover:grayscale-0 transition-all duration-500" data-alt="professional data dashboard showing hiring trends and candidate analytics with clean modern UI" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1XMRKWyBOCEQsi4QtHfx4W99zua58AxkJpG4E5_p0zYOFQHkIi0xlPq08rOKbt3Lbf-0-eU0aE7fV41TlTycIQmW_WfRUYenmUH_Q04W247SyDXl9emBmJem-BBoHh3VFD-DvDMQ9wNwvYAhIlA5MmCEljGalAT5k0Vb7neXhuo439VtZ99nYcJ4ZEkrd09S2ArP7jNIxrVObCNOO5tU8WVL8i6t7pW6kpMXKHPz5HCSTd-gtGeq5E2M32ZeB7kBY_gxFhAsGAGlj"/>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-4 rounded-lg">
+<p class="text-xs text-on-surface-variant mb-1">Chỉ số phù hợp</p>
+<p class="text-2xl font-extrabold text-primary tracking-tight">98.4%</p>
+</div>
+<div class="bg-surface-container-low p-4 rounded-lg">
+<p class="text-xs text-on-surface-variant mb-1">Thời gian giảm</p>
+<p class="text-2xl font-extrabold text-tertiary tracking-tight">-42%</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Solutions Section (Bento Grid) -->
+<section class="py-24 px-6 bg-surface-container-low">
+<div class="max-w-screen-2xl mx-auto">
+<div class="mb-16 text-center max-w-3xl mx-auto">
+<h2 class="text-4xl font-extrabold mb-6 tracking-tight">Giải pháp tuyển dụng toàn diện</h2>
+<p class="text-on-surface-variant">Tối ưu hóa mọi giai đoạn của quy trình tuyển dụng bằng các công cụ thông minh nhất thị trường.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6 h-auto md:h-[600px]">
+<!-- AI Search -->
+<div class="md:col-span-8 bg-surface-container-lowest p-8 rounded-xl flex flex-col justify-between group cursor-pointer hover:shadow-xl transition-all">
+<div class="flex justify-between items-start">
+<div class="max-w-md">
+<span class="material-symbols-outlined text-4xl text-primary mb-4" style="font-variation-settings: 'FILL' 1;">psychology</span>
+<h3 class="text-2xl font-bold mb-4">Tìm kiếm ứng viên bằng AI</h3>
+<p class="text-on-surface-variant leading-relaxed">Thuật toán Deep Learning tự động phân tích hàng triệu hồ sơ để đề xuất những gương mặt sáng giá nhất cho vị trí của bạn.</p>
+</div>
+<div class="hidden lg:block">
+<img class="w-48 h-48 object-cover rounded-xl shadow-lg transform rotate-3 group-hover:rotate-0 transition-transform" data-alt="team of professionals collaborating on candidate selection in a minimalist office" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtFrOCKf0am1hXO2BeaCOAZzYFeIRYluIEnCoRExzwMVFG6sgdsYkr1zXRCYw-0uqse3yWdC_i6kS1b9DR566OZdW9wA865mDczXuWhnbUGCLwKuOW3L8IApljQHgU4CE--21grKk92Dn2XPPypOcVXfBiRVHlD-20iSyPOxjdHi26Dy8RBs3DtZ52C1uZFlR8J00d55a50AsKxQUlOAseR4g_HUbSSTWUUHY1N0OH2Z-by5hYLlb400lmPclcX7Ebb79i_tdE6Iba"/>
+</div>
+</div>
+<div class="mt-8 flex items-center text-primary font-bold gap-2">
+<span>Khám phá công nghệ AI</span>
+<span class="material-symbols-outlined">arrow_forward</span>
+</div>
+</div>
+<!-- Job Posting -->
+<div class="md:col-span-4 bg-primary p-8 rounded-xl flex flex-col justify-between text-on-primary group cursor-pointer hover:shadow-xl transition-all">
+<div>
+<span class="material-symbols-outlined text-4xl mb-4">campaign</span>
+<h3 class="text-2xl font-bold mb-4">Đăng tin tuyển dụng</h3>
+<p class="opacity-80 text-sm leading-relaxed">Tin tuyển dụng của bạn được tối ưu hóa SEO và tự động đẩy lên các nền tảng mạng xã hội chuyên nghiệp nhất.</p>
+</div>
+<div class="mt-8">
+<div class="w-full h-1 bg-on-primary/20 rounded-full overflow-hidden">
+<div class="w-2/3 h-full bg-on-primary transition-all duration-1000"></div>
+</div>
+<p class="text-xs mt-2 font-medium">Khả năng tiếp cận: Cao (85%)</p>
+</div>
+</div>
+<!-- Market Analytics -->
+<div class="md:col-span-4 bg-tertiary-container p-8 rounded-xl flex flex-col justify-between text-on-tertiary-container group cursor-pointer hover:shadow-xl transition-all">
+<div>
+<span class="material-symbols-outlined text-4xl mb-4" style="font-variation-settings: 'FILL' 1;">query_stats</span>
+<h3 class="text-2xl font-bold mb-4">Phân tích thị trường</h3>
+<p class="opacity-90 text-sm leading-relaxed">Báo cáo lương thưởng, xu hướng kỹ năng và hành vi của ứng viên trong ngành nghề cụ thể của bạn.</p>
+</div>
+<button class="mt-8 flex items-center justify-center w-12 h-12 bg-on-tertiary-container text-tertiary-container rounded-full">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+<!-- Success Prediction -->
+<div class="md:col-span-8 bg-surface p-8 rounded-xl border border-outline-variant/20 flex items-center justify-between group cursor-pointer hover:bg-surface-container-lowest transition-all">
+<div class="max-w-lg">
+<h3 class="text-2xl font-bold mb-4">Dự báo tỷ lệ thành công</h3>
+<p class="text-on-surface-variant">Hệ thống của chúng tôi dự báo khả năng gắn bó và hiệu suất làm việc của ứng viên sau khi được tuyển dụng.</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="text-right">
+<p class="text-3xl font-black text-on-surface">92%</p>
+<p class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">Độ chính xác</p>
+</div>
+<div class="w-16 h-16 rounded-full border-4 border-primary border-t-transparent animate-spin-slow"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Benefits Section (Asymmetric Layout) -->
+<section class="py-32 px-6 overflow-hidden">
+<div class="max-w-screen-2xl mx-auto">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
+<div class="relative">
+<div class="absolute -top-12 -left-12 text-slate-200 text-9xl font-black select-none z-0">98%</div>
+<div class="relative z-10 space-y-12">
+<div class="flex gap-6 items-start">
+<div class="w-14 h-14 shrink-0 bg-blue-50 flex items-center justify-center rounded-xl">
+<span class="material-symbols-outlined text-primary text-3xl">speed</span>
+</div>
+<div>
+<h4 class="text-xl font-bold mb-3">Giảm thời gian tuyển dụng</h4>
+<p class="text-on-surface-variant leading-relaxed">Rút ngắn quy trình từ 45 ngày xuống còn 12 ngày nhờ hệ thống sàng lọc tự động và lịch phỏng vấn thông minh.</p>
+</div>
+</div>
+<div class="flex gap-6 items-start">
+<div class="w-14 h-14 shrink-0 bg-orange-50 flex items-center justify-center rounded-xl">
+<span class="material-symbols-outlined text-tertiary text-3xl">verified_user</span>
+</div>
+<div>
+<h4 class="text-xl font-bold mb-3">Tìm đúng người phù hợp 98%</h4>
+<p class="text-on-surface-variant leading-relaxed">Không chỉ là kỹ năng chuyên môn, chúng tôi khớp nối cả giá trị cốt lõi và văn hóa doanh nghiệp của ứng viên.</p>
+</div>
+</div>
+<div class="flex gap-6 items-start">
+<div class="w-14 h-14 shrink-0 bg-blue-50 flex items-center justify-center rounded-xl">
+<span class="material-symbols-outlined text-primary text-3xl">glass_cup</span>
+</div>
+<div>
+<h4 class="text-xl font-bold mb-3">Dự báo nhu cầu nhân sự</h4>
+<p class="text-on-surface-variant leading-relaxed">Biết trước khi nào đội ngũ của bạn cần thêm người dựa trên tốc độ tăng trưởng và dữ liệu thị trường thực tế.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="relative">
+<div class="aspect-square bg-surface-container rounded-3xl overflow-hidden shadow-2xl">
+<img class="w-full h-full object-cover" data-alt="diverse team of young creative professionals celebrating a successful hiring in a modern light-filled office" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGlkvj6EV8KBl1cXHetl_whZLobJaMBIMExdgAZkR0-LbpJjeMw-POE1CvwoWlJLL6Wz_arnpnhN8lRWtqvTLtkGNEmXv67trFOZnPYkETvpZ_muDxULgtX4BzYbBso3myF0fbkqhcKy0DtlkxCDyWBQfJao1hJuA5lIW6F1hcr1GIQuv4LzdbDBynj_hJ2EPmR76A7sjeaFhxy-IDrjk8yxgoyt3f4epVbdrkMqtOsaMf1vqrHRjJ_m60eE4_gEC7O0yFXfS2hv3X"/>
+</div>
+<div class="absolute -bottom-8 -left-8 bg-surface-container-lowest p-8 rounded-2xl shadow-xl max-w-xs border border-outline-variant/10">
+<p class="text-tertiary font-bold mb-2">Chuyên gia nhận xét:</p>
+<p class="text-sm italic text-on-surface leading-relaxed mb-4">"Nền tảng này đã thay đổi hoàn toàn cách chúng tôi nhìn nhận về quản trị nhân tài. Không còn là phỏng đoán nữa."</p>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-200"></div>
+<div>
+<p class="text-xs font-bold">Giám đốc Nhân sự</p>
+<p class="text-[10px] text-on-surface-variant">Global Tech Corp</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Trusted By Section -->
+<section class="py-20 bg-surface border-y border-outline-variant/20">
+<div class="max-w-screen-2xl mx-auto px-6">
+<p class="text-center text-xs font-bold uppercase tracking-[0.2em] text-on-surface-variant mb-12">Đồng hành cùng sự phát triển của các thương hiệu hàng đầu</p>
+<div class="flex flex-wrap justify-center items-center gap-12 md:gap-24 opacity-50 grayscale contrast-125">
+<span class="text-2xl font-black font-headline tracking-tighter">VIETTEL</span>
+<span class="text-2xl font-black font-headline tracking-tighter">FPT</span>
+<span class="text-2xl font-black font-headline tracking-tighter">VINGROUP</span>
+<span class="text-2xl font-black font-headline tracking-tighter">GRAB</span>
+<span class="text-2xl font-black font-headline tracking-tighter">SHOPEE</span>
+<span class="text-2xl font-black font-headline tracking-tighter">MOMO</span>
+</div>
+</div>
+</section>
+<!-- Call to Action -->
+<section class="py-24 px-6">
+<div class="max-w-4xl mx-auto bg-primary rounded-3xl p-12 lg:p-20 text-center relative overflow-hidden">
+<div class="absolute inset-0 opacity-10">
+<svg height="100%" width="100%" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<pattern height="40" id="dots" patternunits="userSpaceOnUse" width="40" x="0" y="0">
+<circle cx="2" cy="2" fill="white" r="2"></circle>
+</pattern>
+</defs>
+<rect fill="url(#dots)" height="100%" width="100%"></rect>
+</svg>
+</div>
+<div class="relative z-10">
+<h2 class="text-4xl md:text-5xl font-extrabold text-on-primary mb-8 tracking-tight">Bắt đầu hành trình tuyển dụng thông minh</h2>
+<p class="text-on-primary-container text-lg mb-12 max-w-2xl mx-auto">Gia nhập cộng đồng các doanh nghiệp dẫn đầu trong kỷ nguyên dữ liệu. Đăng tin tuyển dụng đầu tiên của bạn chỉ trong vài phút.</p>
+<div class="flex flex-col sm:flex-row justify-center gap-4">
+<button class="bg-on-primary text-primary px-10 py-4 rounded-md font-bold text-lg hover:bg-on-primary-container transition-all">
+                        Đăng bài ngay
+                    </button>
+<button class="border border-on-primary/30 text-on-primary px-10 py-4 rounded-md font-bold text-lg hover:bg-on-primary/10 transition-all">
+                        Liên hệ tư vấn
+                    </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="bg-slate-100 py-12 px-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-screen-2xl mx-auto">
+<div class="space-y-6">
+<span class="text-lg font-bold text-slate-900 font-headline">CareerAuthority</span>
+<p class="text-slate-500 max-w-sm leading-relaxed text-sm">© 2024 The Predictive Career Authority. Editorial Career Intelligence. Hệ thống tuyển dụng dựa trên trí tuệ nhân tạo hàng đầu Việt Nam.</p>
+</div>
+<div class="grid grid-cols-2 gap-8">
+<div>
+<h5 class="font-bold text-slate-900 mb-4 text-sm uppercase tracking-wider">Khám phá</h5>
+<ul class="space-y-3 text-sm">
+<li><a class="text-slate-500 hover:text-blue-600 transition-colors" href="#">Insights</a></li>
+<li><a class="text-slate-500 hover:text-blue-600 transition-colors" href="#">Methodology</a></li>
+<li><a class="text-slate-500 hover:text-blue-600 transition-colors" href="#">Báo cáo thị trường</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-bold text-slate-900 mb-4 text-sm uppercase tracking-wider">Pháp lý</h5>
+<ul class="space-y-3 text-sm">
+<li><a class="text-slate-500 hover:text-blue-600 transition-colors" href="#">Privacy</a></li>
+<li><a class="text-slate-500 hover:text-blue-600 transition-colors" href="#">Terms of Authority</a></li>
+<li><a class="text-slate-500 hover:text-blue-600 transition-colors" href="#">Cookie Policy</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="max-w-screen-2xl mx-auto mt-12 pt-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-medium text-slate-400">
+<p>Trụ sở chính: Tầng 42, Bitexco Financial Tower, Quận 1, TP. HCM</p>
+<div class="flex gap-6">
+<a class="hover:text-primary transition-colors" href="#">Facebook</a>
+<a class="hover:text-primary transition-colors" href="#">LinkedIn</a>
+<a class="hover:text-primary transition-colors" href="#">Twitter</a>
+</div>
+</div>
+</footer>
+</body></html>

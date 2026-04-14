@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Thông tin cá nhân | Career Authority</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#93000a",
+                        "error": "#ba1a1a",
+                        "on-background": "#191c21",
+                        "outline": "#727783",
+                        "tertiary-container": "#a04401",
+                        "surface-tint": "#005db5",
+                        "surface-container-high": "#e7e8f0",
+                        "surface-bright": "#f9f9ff",
+                        "on-primary-fixed-variant": "#00468b",
+                        "surface-variant": "#e1e2ea",
+                        "on-secondary-fixed-variant": "#324769",
+                        "secondary-fixed": "#d6e3ff",
+                        "background": "#f9f9ff",
+                        "secondary": "#4a5f83",
+                        "primary-fixed": "#d6e3ff",
+                        "tertiary-fixed-dim": "#ffb691",
+                        "surface": "#f9f9ff",
+                        "secondary-fixed-dim": "#b2c7f0",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-container": "#ffd1bc",
+                        "on-error": "#ffffff",
+                        "tertiary": "#7b3200",
+                        "surface-dim": "#d8dae2",
+                        "on-surface-variant": "#424752",
+                        "secondary-container": "#c0d5ff",
+                        "primary": "#00488d",
+                        "on-tertiary-fixed-variant": "#783100",
+                        "on-surface": "#191c21",
+                        "surface-container-low": "#f2f3fb",
+                        "inverse-surface": "#2e3036",
+                        "outline-variant": "#c2c6d4",
+                        "surface-container-highest": "#e1e2ea",
+                        "on-primary-fixed": "#001b3d",
+                        "primary-container": "#005fb8",
+                        "inverse-primary": "#a8c8ff",
+                        "on-secondary": "#ffffff",
+                        "surface-container": "#ecedf6",
+                        "on-secondary-container": "#475c7f",
+                        "on-primary-container": "#cadcff",
+                        "on-secondary-fixed": "#011b3c",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#eff0f8",
+                        "tertiary-fixed": "#ffdbcb",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed-dim": "#a8c8ff",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed": "#341100"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- TopNavBar (Shared Component) -->
+<nav class="docked full-width top-0 z-50 sticky bg-[#f9f9ff]/80 dark:bg-[#191c21]/80 backdrop-blur-md flex justify-between items-center w-full px-8 py-4 max-w-full font-manrope tracking-tight font-bold shadow-sm">
+<div class="text-xl font-bold text-[#00488d] dark:text-[#005fb8]">Career Authority</div>
+<div class="hidden md:flex items-center space-x-8">
+<a class="text-[#c2c6d4] hover:text-[#00488d] transition-colors transition-all duration-200 ease-in-out" href="#">Việc làm của tôi</a>
+<a class="text-[#00488d] dark:text-[#005fb8] border-b-2 border-[#00488d] pb-1 transition-all duration-200 ease-in-out" href="#">Hồ sơ</a>
+<a class="text-[#c2c6d4] hover:text-[#00488d] transition-colors transition-all duration-200 ease-in-out" href="#">Dự báo cá nhân</a>
+</div>
+<div class="flex items-center space-x-4">
+<button class="p-2 text-on-surface-variant hover:bg-[#f2f3fb] dark:hover:bg-slate-800 rounded-md transition-all duration-200 ease-in-out">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-[#f2f3fb] dark:hover:bg-slate-800 rounded-md transition-all duration-200 ease-in-out">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</nav>
+<!-- Main Layout Container -->
+<div class="flex min-h-screen">
+<!-- SideNavBar (Shared Component) -->
+<aside class="h-screen w-64 fixed left-0 top-0 pt-20 bg-[#ffffff] dark:bg-[#191c21] flex flex-col gap-2 py-6 pr-4 font-inter text-sm font-medium shadow-[20px_0_40px_rgba(25,28,33,0.04)]">
+<div class="px-6 mb-8">
+<h3 class="text-lg font-bold text-[#00488d]">Kiến trúc sư sự nghiệp</h3>
+<p class="text-slate-500 text-xs mt-1">Tài khoản cá nhân</p>
+</div>
+<nav class="flex-grow flex flex-col gap-2">
+<a class="flex items-center space-x-3 px-6 py-3 bg-[#00488d] text-white rounded-r-full mr-4 hover:translate-x-1 transition-transform Active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span>Thông tin cá nhân</span>
+</a>
+<a class="flex items-center space-x-3 px-6 py-3 text-[#5d5e66] hover:bg-[#ecedf6] rounded-r-full mr-4 hover:translate-x-1 transition-transform Active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="work">work</span>
+<span>Kinh nghiệm làm việc</span>
+</a>
+<a class="flex items-center space-x-3 px-6 py-3 text-[#5d5e66] hover:bg-[#ecedf6] rounded-r-full mr-4 hover:translate-x-1 transition-transform Active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="psychology">psychology</span>
+<span>Kỹ năng</span>
+</a>
+<a class="flex items-center space-x-3 px-6 py-3 text-[#5d5e66] hover:bg-[#ecedf6] rounded-r-full mr-4 hover:translate-x-1 transition-transform Active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="folder_special">folder_special</span>
+<span>Dự án</span>
+</a>
+<a class="flex items-center space-x-3 px-6 py-3 text-[#5d5e66] hover:bg-[#ecedf6] rounded-r-full mr-4 hover:translate-x-1 transition-transform Active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Cài đặt</span>
+</a>
+</nav>
+<div class="mt-auto px-6 pt-6 border-t border-outline-variant/20 space-y-2">
+<button class="w-full text-left flex items-center space-x-3 text-[#5d5e66] py-2 hover:bg-[#ecedf6] rounded-md transition-colors px-2">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span>Trợ giúp</span>
+</button>
+<button class="w-full text-left flex items-center space-x-3 text-error py-2 hover:bg-[#ecedf6] rounded-md transition-colors px-2">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span>Đăng xuất</span>
+</button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 flex-1 bg-surface-container-low p-10 pt-28">
+<div class="max-w-4xl mx-auto">
+<header class="mb-10">
+<h1 class="text-3xl font-extrabold tracking-tight text-on-surface mb-2">Thông tin cá nhân</h1>
+<p class="text-on-surface-variant">Cập nhật thông tin để nhà tuyển dụng có cái nhìn tổng quan tốt nhất về bạn.</p>
+</header>
+<!-- Profile Form Card -->
+<div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm">
+<form class="space-y-10">
+<!-- Avatar Upload Section -->
+<div class="flex items-center space-x-8">
+<div class="relative group">
+<div class="h-28 w-28 rounded-full overflow-hidden bg-surface-container-high border-4 border-surface ring-2 ring-primary/5">
+<img alt="Candidate Avatar" class="h-full w-full object-cover" data-alt="close-up portrait of a professional looking individual with a friendly expression, soft lighting, clean background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5pnp6NWwYflCbD8iWTUUQfxWAYUL2k4By9siZtbhg8G8Tw8LS7CHNR-aOT8jrhTMaourVN_6tUZCs_gVj0PLjSy6rgUzbCqV_3vNN0f8gxUQCBZYi0SR-bjabyGUVm3x6UtT48gZRWm2Fu91vmssCk0z0cJupFRCoF8ZKc1MWvR1XYXQGhgZzLgYM6TWOp1A7p9G8SRS6SjwSsBs12dVZbk0LPVaZwCB6hWoT6FltnrEonKyoe4wbzDqA6SkQbq2jwxHYPE6BAyuP"/>
+</div>
+<button class="absolute bottom-0 right-0 bg-primary text-on-primary p-2 rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-sm" data-icon="photo_camera">photo_camera</span>
+</button>
+</div>
+<div>
+<h4 class="font-bold text-on-surface">Ảnh đại diện</h4>
+<p class="text-sm text-on-surface-variant mt-1">Khuyên dùng ảnh chuyên nghiệp. Định dạng JPG, PNG (Tối đa 2MB).</p>
+<div class="mt-3 flex space-x-3">
+<button class="text-sm font-semibold text-primary hover:underline" type="button">Tải lên ảnh mới</button>
+<button class="text-sm font-semibold text-error/80 hover:underline" type="button">Gỡ bỏ</button>
+</div>
+</div>
+</div>
+<!-- Basic Info Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+<div class="space-y-2">
+<label class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">Họ và Tên</label>
+<input class="w-full bg-surface-container-low border-none rounded-md px-4 py-3 focus:ring-1 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all text-on-surface" type="text" value="Nguyễn Văn A"/>
+</div>
+<div class="space-y-2">
+<label class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">Tiêu đề nghề nghiệp</label>
+<input class="w-full bg-surface-container-low border-none rounded-md px-4 py-3 focus:ring-1 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all text-on-surface" placeholder="Ví dụ: Senior Product Designer" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">Email</label>
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-xl" data-icon="mail">mail</span>
+<input class="w-full bg-surface-container-low border-none rounded-md pl-11 pr-4 py-3 focus:ring-1 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all text-on-surface" type="email" value="nguyenvana@example.com"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">Số điện thoại</label>
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-xl" data-icon="call">call</span>
+<input class="w-full bg-surface-container-low border-none rounded-md pl-11 pr-4 py-3 focus:ring-1 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all text-on-surface" type="tel" value="0901 234 567"/>
+</div>
+</div>
+<div class="md:col-span-2 space-y-2">
+<label class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">Địa chỉ (Thành phố)</label>
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-xl" data-icon="location_on">location_on</span>
+<input class="w-full bg-surface-container-low border-none rounded-md pl-11 pr-4 py-3 focus:ring-1 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all text-on-surface" placeholder="TP. Hồ Chí Minh, Việt Nam" type="text"/>
+</div>
+</div>
+</div>
+<!-- Bio Section -->
+<div class="space-y-4 pt-4">
+<div class="flex justify-between items-center">
+<label class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">Giới thiệu bản thân</label>
+<span class="text-xs text-on-surface-variant">0 / 2000 ký tự</span>
+</div>
+<textarea class="w-full bg-surface-container-low border-none rounded-md px-4 py-4 focus:ring-1 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all text-on-surface resize-none" placeholder="Chia sẻ về đam mê, mục tiêu nghề nghiệp và những gì làm bạn khác biệt..." rows="6"></textarea>
+</div>
+<!-- Action Buttons -->
+<div class="flex justify-end items-center space-x-4 pt-8 border-t border-outline-variant/10">
+<button class="px-6 py-2.5 rounded-md font-semibold text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" type="button">
+                                Hủy bỏ
+                            </button>
+<button class="px-8 py-2.5 rounded-md font-semibold bg-gradient-to-tr from-primary to-primary-container text-on-primary hover:shadow-lg hover:shadow-primary/20 active:scale-95 transition-all duration-200" type="submit">
+                                Lưu thay đổi
+                            </button>
+</div>
+</form>
+</div>
+<!-- Guidance / Insights Footer Section -->
+<div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-surface-container-low rounded-lg p-6 flex flex-col space-y-2 border border-outline-variant/10">
+<span class="material-symbols-outlined text-tertiary" data-icon="bolt">bolt</span>
+<h5 class="font-bold text-on-surface">Mẹo nhỏ</h5>
+<p class="text-sm text-on-surface-variant leading-relaxed">Hồ sơ có ảnh đại diện chuyên nghiệp nhận được nhiều lượt xem hơn 40%.</p>
+</div>
+<div class="bg-surface-container-low rounded-lg p-6 flex flex-col space-y-2 border border-outline-variant/10">
+<span class="material-symbols-outlined text-primary" data-icon="visibility">visibility</span>
+<h5 class="font-bold text-on-surface">Khả năng hiển thị</h5>
+<p class="text-sm text-on-surface-variant leading-relaxed">Tiêu đề nghề nghiệp rõ ràng giúp thuật toán AI gợi ý công việc chính xác hơn.</p>
+</div>
+<div class="bg-surface-container-low rounded-lg p-6 flex flex-col space-y-2 border border-outline-variant/10">
+<span class="material-symbols-outlined text-secondary" data-icon="verified_user">verified_user</span>
+<h5 class="font-bold text-on-surface">Bảo mật</h5>
+<p class="text-sm text-on-surface-variant leading-relaxed">Thông tin liên hệ của bạn chỉ được chia sẻ với các nhà tuyển dụng được phê duyệt.</p>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

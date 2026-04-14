@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kinh nghiệm làm việc | CareerAuthority</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#ffd1bc",
+                        "surface-dim": "#d8dae2",
+                        "primary": "#00488d",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-high": "#e7e8f0",
+                        "on-primary-fixed": "#001b3d",
+                        "surface-variant": "#e1e2ea",
+                        "outline": "#727783",
+                        "secondary": "#4a5f83",
+                        "tertiary": "#7b3200",
+                        "primary-fixed-dim": "#a8c8ff",
+                        "outline-variant": "#c2c6d4",
+                        "secondary-container": "#c0d5ff",
+                        "tertiary-container": "#a04401",
+                        "on-tertiary-fixed": "#341100",
+                        "primary-container": "#005fb8",
+                        "inverse-surface": "#2e3036",
+                        "surface-container-low": "#f2f3fb",
+                        "on-surface": "#191c21",
+                        "on-secondary-fixed": "#011b3c",
+                        "primary-fixed": "#d6e3ff",
+                        "on-tertiary-fixed-variant": "#783100",
+                        "surface-bright": "#f9f9ff",
+                        "secondary-fixed": "#d6e3ff",
+                        "surface-container": "#ecedf6",
+                        "on-primary-fixed-variant": "#00468b",
+                        "surface-tint": "#005db5",
+                        "on-secondary-container": "#475c7f",
+                        "tertiary-fixed-dim": "#ffb691",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed-variant": "#324769",
+                        "on-primary-container": "#cadcff",
+                        "on-error-container": "#93000a",
+                        "on-surface-variant": "#424752",
+                        "inverse-on-surface": "#eff0f8",
+                        "tertiary-fixed": "#ffdbcb",
+                        "surface-container-highest": "#e1e2ea",
+                        "inverse-primary": "#a8c8ff",
+                        "error": "#ba1a1a",
+                        "background": "#f9f9ff",
+                        "surface": "#f9f9ff",
+                        "secondary-fixed-dim": "#b2c7f0",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-background": "#191c21",
+                        "on-secondary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "manrope": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "inter": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .tonal-shift {
+            transition: background-color 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-background font-body text-on-surface min-h-screen">
+<!-- TopNavBar Shared Component -->
+<nav class="bg-[#f9f9ff]/80 dark:bg-[#191c21]/80 backdrop-blur-md shadow-sm fixed top-0 w-full z-50 sticky px-8 py-4 flex justify-between items-center font-manrope tracking-tight font-bold">
+<div class="text-xl font-bold text-[#00488d] dark:text-[#005fb8]">Career Authority</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-[#c2c6d4] hover:text-[#00488d] transition-all duration-200 ease-in-out" href="#">Việc làm của tôi</a>
+<a class="text-[#00488d] dark:text-[#005fb8] border-b-2 border-[#00488d] pb-1 transition-all duration-200 ease-in-out" href="#">Hồ sơ</a>
+<a class="text-[#c2c6d4] hover:text-[#00488d] transition-all duration-200 ease-in-out" href="#">Dự báo cá nhân</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:bg-[#f2f3fb] dark:hover:bg-slate-800 rounded-md transition-all duration-200 ease-in-out">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-[#f2f3fb] dark:hover:bg-slate-800 rounded-md transition-all duration-200 ease-in-out">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</nav>
+<!-- SideNavBar Shared Component -->
+<aside class="h-screen w-64 fixed left-0 top-0 pt-20 bg-[#ffffff] dark:bg-[#191c21] shadow-[20px_0_40px_rgba(25,28,33,0.04)] font-inter text-sm font-medium flex flex-col gap-2 py-6 pr-4 hidden md:flex">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-10 h-10 rounded-full bg-primary-fixed overflow-hidden">
+<img alt="User Profile Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAr0Nwy4uS_ukPbagreNdlJthQ9awbVhhRXRq_nI12oS57rsgIJEe27iOc4cfB0SpG2xI9Pn7WaKWK4-cu9L-QD007P6-h-SEnG_GsWYV0v1S9RdZEIresUOJdsyPhs25u-2laGiclTVA8kU9NHuiDBKY3-oCVOeudXxi6a1AJ9W2Dlmcrk_bcKwnQnmr365gPE_Kdg5VslZDFj4M87mAirzLVLH3UezvzjULhALx4YzY2dQL57jgj2nlOtH1q8sptMqUkO8Cpprk60"/>
+</div>
+<div>
+<p class="font-bold text-[#00488d]">Kiến trúc sư sự nghiệp</p>
+<p class="text-xs text-[#5d5e66]">Tài khoản cá nhân</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-1">
+<a class="p-3 pl-6 flex items-center gap-3 text-[#5d5e66] hover:bg-[#ecedf6] rounded-r-full mr-4 hover:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span>Thông tin cá nhân</span>
+</a>
+<a class="p-3 pl-6 flex items-center gap-3 bg-[#00488d] text-white rounded-r-full mr-4 hover:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="work">work</span>
+<span>Kinh nghiệm làm việc</span>
+</a>
+<a class="p-3 pl-6 flex items-center gap-3 text-[#5d5e66] hover:bg-[#ecedf6] rounded-r-full mr-4 hover:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="psychology">psychology</span>
+<span>Kỹ năng</span>
+</a>
+<a class="p-3 pl-6 flex items-center gap-3 text-[#5d5e66] hover:bg-[#ecedf6] rounded-r-full mr-4 hover:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="folder_special">folder_special</span>
+<span>Dự án</span>
+</a>
+<a class="p-3 pl-6 flex items-center gap-3 text-[#5d5e66] hover:bg-[#ecedf6] rounded-r-full mr-4 hover:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Cài đặt</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Canvas -->
+<main class="md:ml-64 pt-8 min-h-screen">
+<div class="max-w-7xl mx-auto px-8 py-12">
+<!-- Hero Header Section -->
+<header class="mb-16">
+<h1 class="font-headline text-5xl font-extrabold tracking-tight text-on-surface mb-4">Kinh nghiệm làm việc</h1>
+<p class="text-lg text-on-surface-variant max-w-2xl leading-relaxed">
+                    Tổng hợp quá trình phát triển sự nghiệp từ <span class="font-semibold text-primary">Senior Architect</span> đến các cột mốc quan trọng tiếp theo.
+                </p>
+</header>
+<!-- Career Timeline Section -->
+<section class="grid grid-cols-12 gap-6 mb-20">
+<!-- Timeline Axis -->
+<div class="col-span-12 lg:col-span-8 bg-surface-container-low rounded-xl p-8 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+<h2 class="font-headline text-2xl font-bold mb-10 relative">Sơ đồ phát triển dự kiến</h2>
+<div class="relative pl-8 border-l-2 border-primary-container/30 space-y-12">
+<!-- Current Step -->
+<div class="relative">
+<div class="absolute -left-[41px] top-1 w-4 h-4 rounded-full bg-primary ring-4 ring-primary-container/20"></div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-headline font-bold text-lg">Vị trí hiện tại: Senior Architect</h3>
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-1 text-xs text-primary font-bold px-2 py-1 rounded hover:bg-primary/5 transition-colors">
+<span class="material-symbols-outlined text-sm">edit</span> Chỉnh sửa
+                                        </button>
+<span class="bg-primary/10 text-primary text-xs font-bold px-3 py-1 rounded-full">Hiện tại</span>
+</div>
+</div>
+<p class="text-sm text-on-surface-variant mb-4">Tập trung vào quản lý kỹ thuật và dẫn dắt các dự án quy mô vừa.</p>
+<div class="flex gap-2">
+<span class="text-xs bg-surface-container-high px-2 py-1 rounded">Revit</span>
+<span class="text-xs bg-surface-container-high px-2 py-1 rounded">Team Leadership</span>
+</div>
+</div>
+</div>
+<!-- Mid Term -->
+<div class="relative">
+<div class="absolute -left-[41px] top-1 w-4 h-4 rounded-full bg-primary-container"></div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm opacity-90">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-headline font-bold text-lg">Associate Principal</h3>
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-1 text-xs text-primary font-bold px-2 py-1 rounded hover:bg-primary/5 transition-colors">
+<span class="material-symbols-outlined text-sm">edit</span> Chỉnh sửa
+                                        </button>
+<span class="bg-secondary/10 text-secondary text-xs font-bold px-3 py-1 rounded-full">Dự kiến: 2 năm</span>
+</div>
+</div>
+<p class="text-sm text-on-surface-variant mb-4">Chuyển dịch sang vai trò chiến lược, quản lý danh mục khách hàng và phát triển kinh doanh.</p>
+<div class="p-3 bg-tertiary/5 rounded-lg border-l-2 border-tertiary">
+<p class="text-xs font-bold text-tertiary mb-1">Gợi ý hành động:</p>
+<p class="text-xs text-on-surface-variant">Hoàn thành chứng chỉ PMP hoặc MBA rút gọn để bổ sung tư duy kinh doanh.</p>
+</div>
+</div>
+</div>
+<!-- Target Goal -->
+<div class="relative">
+<div class="absolute -left-[41px] top-1 w-4 h-4 rounded-full bg-tertiary shadow-[0_0_15px_rgba(123,50,0,0.4)]"></div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-md border-t-2 border-tertiary">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-headline font-bold text-xl text-tertiary">Director of Design</h3>
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-1 text-xs text-tertiary font-bold px-2 py-1 rounded hover:bg-tertiary/5 transition-colors">
+<span class="material-symbols-outlined text-sm">edit</span> Chỉnh sửa
+                                        </button>
+<span class="bg-tertiary/10 text-tertiary text-xs font-bold px-3 py-1 rounded-full">Mục tiêu: 5 năm</span>
+</div>
+</div>
+<p class="text-sm text-on-surface-variant">Lãnh đạo toàn bộ tầm nhìn thiết kế của tổ chức, xây dựng văn hóa sáng tạo và định hướng thương hiệu kiến trúc.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Growth Insights -->
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-6">
+<div class="bg-gradient-to-br from-primary to-primary-container p-6 rounded-xl text-white shadow-xl">
+<span class="material-symbols-outlined mb-4 text-3xl" data-icon="auto_awesome">auto_awesome</span>
+<h3 class="font-headline font-bold text-xl mb-2">Phân tích khả thi</h3>
+<p class="text-sm text-on-primary-container leading-relaxed mb-6">Dựa trên kỹ năng hiện tại, bạn có 78% độ tương thích với lộ trình này. Cần tập trung thêm vào kỹ năng "Strategic Negotiation".</p>
+<div class="w-full bg-white/20 h-2 rounded-full overflow-hidden">
+<div class="bg-white w-[78%] h-full"></div>
+</div>
+</div>
+<div class="bg-surface-container-high p-6 rounded-xl">
+<h3 class="font-headline font-bold text-lg mb-4">Thị trường hiện tại</h3>
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<span class="text-sm">Nhu cầu tuyển dụng</span>
+<span class="text-sm font-bold text-green-600">Cao (+12%)</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-sm">Mức lương kỳ vọng</span>
+<span class="text-sm font-bold text-primary">$4,500 - $6,000</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Milestones Progress Tracker -->
+<section class="bg-surface-container-low rounded-2xl p-12 mb-20 border border-outline-variant/10">
+<div class="max-w-3xl">
+<h2 class="font-headline text-3xl font-extrabold mb-8">Danh sách kiểm tra cột mốc</h2>
+<div class="space-y-6">
+<div class="flex gap-4 items-start">
+<div class="mt-1 w-6 h-6 rounded-full border-2 border-primary flex items-center justify-center flex-shrink-0 bg-primary text-white">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h4 class="font-bold">Đạt mốc 10 năm kinh nghiệm thực chiến</h4>
+<button class="flex items-center gap-1 text-xs text-primary font-bold hover:bg-primary/5 px-2 py-1 rounded transition-colors">
+<span class="material-symbols-outlined text-sm">edit</span> Chỉnh sửa
+                                    </button>
+</div>
+<p class="text-sm text-on-surface-variant">Hoàn thành vào tháng 12, 2023</p>
+</div>
+</div>
+<div class="flex gap-4 items-start">
+<div class="mt-1 w-6 h-6 rounded-full border-2 border-primary flex items-center justify-center flex-shrink-0">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h4 class="font-bold">Chứng chỉ Kiến trúc sư quốc tế (RIBA)</h4>
+<button class="flex items-center gap-1 text-xs text-primary font-bold hover:bg-primary/5 px-2 py-1 rounded transition-colors">
+<span class="material-symbols-outlined text-sm">edit</span> Chỉnh sửa
+                                    </button>
+</div>
+<p class="text-sm text-on-surface-variant">Đang tiến hành - Dự kiến hoàn thành trong 6 tháng tới</p>
+<div class="mt-3 flex items-center gap-4">
+<div class="flex-1 bg-surface-container-high h-1.5 rounded-full">
+<div class="bg-primary w-2/3 h-full"></div>
+</div>
+<span class="text-xs font-bold">65%</span>
+</div>
+</div>
+</div>
+<div class="flex gap-4 items-start opacity-50">
+<div class="mt-1 w-6 h-6 rounded-full border-2 border-outline flex items-center justify-center flex-shrink-0"></div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h4 class="font-bold">Xây dựng Portfolio dự án cấp quốc gia</h4>
+<button class="flex items-center gap-1 text-xs text-primary font-bold hover:bg-primary/5 px-2 py-1 rounded transition-colors">
+<span class="material-symbols-outlined text-sm">edit</span> Chỉnh sửa
+                                    </button>
+</div>
+<p class="text-sm text-on-surface-variant">Cột mốc cho vị trí Associate Principal</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Call to Action Footer Section -->
+<section class="text-center bg-white p-12 rounded-2xl shadow-[0_20px_40px_rgba(25,28,33,0.06)] mb-20 border border-slate-50">
+<h2 class="font-headline text-3xl font-extrabold mb-4">Sẵn sàng bước tiếp?</h2>
+<p class="text-on-surface-variant max-w-xl mx-auto mb-8">CareerAuthority AI giúp bạn kết nối trực tiếp với các chuyên gia đầu ngành để có những buổi tư vấn 1-1 về lộ trình này.</p>
+<div class="flex flex-wrap justify-center gap-4">
+<button class="bg-primary text-white px-8 py-3 rounded-md font-bold hover:bg-primary-container transition-colors shadow-lg shadow-primary/20">Kết nối với Mentor</button>
+<button class="bg-surface-container-high text-on-surface px-8 py-3 rounded-md font-bold hover:bg-surface-container-highest transition-colors">Tải kinh nghiệm (PDF)</button>
+</div>
+</section>
+</div>
+</main>
+<!-- Mobile Navigation -->
+<div class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-slate-100 flex justify-around py-3 z-50 px-4">
+<button class="flex flex-col items-center gap-1 text-slate-500">
+<span class="material-symbols-outlined">work</span>
+<span class="text-[10px]">Việc làm</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">timeline</span>
+<span class="text-[10px] font-bold">Lộ trình</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-500">
+<span class="material-symbols-outlined">psychology</span>
+<span class="text-[10px]">Kỹ năng</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-500">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px]">Hồ sơ</span>
+</button>
+</div>
+</body></html>

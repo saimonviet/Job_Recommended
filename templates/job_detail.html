@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Chi tiết công việc | Career Authority</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "outline": "#727783",
+              "primary-fixed": "#d6e3ff",
+              "on-secondary-fixed-variant": "#324769",
+              "surface-variant": "#e1e2ea",
+              "tertiary-fixed": "#ffdbcb",
+              "surface-dim": "#d8dae2",
+              "surface-container-high": "#e7e8f0",
+              "surface-tint": "#005db5",
+              "surface-container-low": "#f2f3fb",
+              "on-error": "#ffffff",
+              "secondary-container": "#c0d5ff",
+              "secondary": "#4a5f83",
+              "on-error-container": "#93000a",
+              "error-container": "#ffdad6",
+              "on-primary-fixed": "#001b3d",
+              "on-tertiary-fixed-variant": "#783100",
+              "on-tertiary": "#ffffff",
+              "tertiary-fixed-dim": "#ffb691",
+              "surface-container-highest": "#e1e2ea",
+              "primary": "#00488d",
+              "outline-variant": "#c2c6d4",
+              "on-background": "#191c21",
+              "tertiary-container": "#a04401",
+              "background": "#f9f9ff",
+              "on-secondary": "#ffffff",
+              "secondary-fixed": "#d6e3ff",
+              "on-primary": "#ffffff",
+              "on-tertiary-fixed": "#341100",
+              "surface-container": "#ecedf6",
+              "on-primary-container": "#cadcff",
+              "primary-container": "#005fb8",
+              "surface-bright": "#f9f9ff",
+              "on-tertiary-container": "#ffd1bc",
+              "secondary-fixed-dim": "#b2c7f0",
+              "on-secondary-fixed": "#011b3c",
+              "inverse-primary": "#a8c8ff",
+              "inverse-surface": "#2e3036",
+              "surface": "#f9f9ff",
+              "inverse-on-surface": "#eff0f8",
+              "error": "#ba1a1a",
+              "on-surface-variant": "#424752",
+              "primary-fixed-dim": "#a8c8ff",
+              "tertiary": "#7b3200",
+              "on-primary-fixed-variant": "#00468b",
+              "on-secondary-container": "#475c7f",
+              "on-surface": "#191c21",
+              "surface-container-lowest": "#ffffff"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .tonal-shift { transition: background-color 0.3s ease; }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md shadow-sm flex justify-between items-center px-8 py-4 max-w-full">
+<div class="text-2xl font-bold text-primary font-headline tracking-tight">Career Authority</div>
+<div class="hidden md:flex gap-8 items-center">
+<a class="text-on-surface-variant font-medium hover:text-primary-container transition-colors font-inter" href="#">Dự báo</a>
+<a class="text-on-surface-variant font-medium hover:text-primary-container transition-colors font-inter" href="#">Thị trường</a>
+<a class="text-primary font-bold border-b-2 border-primary font-inter" href="#">Công ty</a>
+<a class="text-on-surface-variant font-medium hover:text-primary-container transition-colors font-inter" href="#">Về chúng tôi</a>
+</div>
+<div class="flex gap-4 items-center">
+<button class="text-primary font-medium px-4 py-2 scale-95 active:scale-100 transition-transform">Đăng nhập</button>
+<button class="bg-primary text-on-primary px-6 py-2 rounded-md font-bold scale-95 active:scale-100 transition-transform bg-gradient-to-br from-primary to-primary-container">Tham gia ngay</button>
+</div>
+</nav>
+<main class="pt-24 pb-20 px-4 md:px-12 max-w-7xl mx-auto">
+<!-- Hero Header Section (Asymmetric Layout) -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mb-16">
+<div class="lg:col-span-8">
+<div class="flex items-center gap-6 mb-8">
+<div class="w-20 h-20 bg-surface-container-lowest rounded-xl flex items-center justify-center p-2 shadow-sm">
+<img alt="Logo công ty" class="w-full h-full object-contain rounded-lg" data-alt="logo công ty công nghệ chuyên nghiệp tối giản với các đường nét hình học sạch sẽ trên nền trắng mềm mại" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJGujKAdQGu9xyRLhAWaSmTlJfM3ZfCqqxoCzB0hL31-ihU1ak6Y3GcROiY39WhkNzmERm64k3oOTjckboE1lIkjOWP0yns9IgvNrKcJhTkfeVJtwElRsgZrgCNgrHhDmvz7oAM8eJBYqSlTCt6HHGQRsfXOmhl7sv-wLJIgk9swX3nvnZ7NTx8OJxVsF__TEOAfmmF2IMZd9AtL4qi5XvUZJ-kPFBwub4C_tl6-ju2gVQVhe_Or1URpLFrZg-37FvrI9b6kY3GcIG"/>
+</div>
+<div>
+<h1 class="text-4xl md:text-5xl font-headline font-extrabold tracking-tight text-on-surface mb-2">Kiến trúc sư Dự báo Cao cấp</h1>
+<p class="text-xl text-primary font-medium">Visionary Dynamics Corp.</p>
+</div>
+</div>
+<div class="flex flex-wrap gap-4 mb-10">
+<div class="bg-surface-container-low px-4 py-2 rounded-full flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" style="font-size: 20px;">payments</span>
+<span class="text-sm font-semibold">$120k - $180k</span>
+</div>
+<div class="bg-surface-container-low px-4 py-2 rounded-full flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" style="font-size: 20px;">location_on</span>
+<span class="text-sm font-semibold">Quận 1, TP.HCM (Hybrid)</span>
+</div>
+<div class="bg-tertiary-fixed px-4 py-2 rounded-full flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary" data-weight="fill" style="font-size: 20px;">workspace_premium</span>
+<span class="text-sm font-bold text-on-tertiary-fixed-variant">Độ phù hợp: 98%</span>
+</div>
+</div>
+</div>
+<!-- Action Column -->
+<div class="lg:col-span-4 flex flex-col gap-4 sticky top-28">
+<button class="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all">Ứng tuyển ngay</button>
+<div class="flex gap-4">
+<button class="flex-1 bg-surface-container-high py-3 rounded-xl flex items-center justify-center gap-2 font-semibold text-on-surface-variant hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined">bookmark</span> Lưu
+                    </button>
+<button class="flex-1 bg-surface-container-high py-3 rounded-xl flex items-center justify-center gap-2 font-semibold text-on-surface-variant hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined">share</span> Chia sẻ
+                    </button>
+</div>
+<!-- Forecast Summary Mini-Card -->
+<div class="mt-4 p-6 bg-surface-container rounded-2xl border-l-4 border-tertiary">
+<h4 class="font-headline font-bold text-on-surface mb-2">Thị hiếu thị trường</h4>
+<p class="text-sm text-on-surface-variant mb-4 leading-relaxed">Vị trí này đang có nhu cầu tăng <span class="text-tertiary font-bold">14%</span> trong quý tới. Ứng viên có chuyên môn về AI được ưu tiên.</p>
+<div class="h-1.5 w-full bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-tertiary w-3/4"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-16">
+<!-- Left Column: Details -->
+<div class="lg:col-span-8 space-y-16">
+<!-- Description -->
+<article>
+<h2 class="text-2xl font-headline font-bold text-on-surface mb-6 border-b border-outline-variant/20 pb-4">Mô tả công việc</h2>
+<div class="space-y-4 text-on-surface-variant leading-relaxed text-lg">
+<p>Chúng tôi đang tìm kiếm một Kiến trúc sư Dự báo Cao cấp để dẫn dắt việc thiết kế và triển khai các mô hình tính toán cao cấp cho khung tư vấn toàn cầu của chúng tôi. Trong vai trò này, bạn sẽ là cầu nối giữa chiến lược tầm nhìn và thực thi kỹ thuật, xây dựng các hệ thống không chỉ phản hồi dữ liệu mà còn dự đoán được nó.</p>
+<p>Công việc của bạn sẽ ảnh hưởng đến lộ trình sự nghiệp của hàng triệu người, sử dụng triết lý "Kiến trúc sư Tầm nhìn" để xây dựng sự rõ ràng thông qua phân lớp dữ liệu tinh vi và sự bất đối xứng hệ thống có chủ đích.</p>
+</div>
+</article>
+<!-- Requirements -->
+<article>
+<h2 class="text-2xl font-headline font-bold text-on-surface mb-6 border-b border-outline-variant/20 pb-4">Yêu cầu công việc</h2>
+<ul class="space-y-4">
+<li class="flex items-start gap-4">
+<span class="material-symbols-outlined text-primary mt-1">check_circle</span>
+<span class="text-on-surface-variant text-lg">Hơn 8 năm kinh nghiệm trong kiến trúc hệ thống hoặc mô hình dự báo.</span>
+</li>
+<li class="flex items-start gap-4">
+<span class="material-symbols-outlined text-primary mt-1">check_circle</span>
+<span class="text-on-surface-variant text-lg">Thành thạo các nguyên tắc thiết kế UI cao cấp và kể chuyện bằng dữ liệu.</span>
+</li>
+<li class="flex items-start gap-4">
+<span class="material-symbols-outlined text-primary mt-1">check_circle</span>
+<span class="text-on-surface-variant text-lg">Bằng Thạc sĩ về Khoa học Máy tính, Toán học Ứng dụng hoặc lĩnh vực liên quan.</span>
+</li>
+<li class="flex items-start gap-4">
+<span class="material-symbols-outlined text-primary mt-1">check_circle</span>
+<span class="text-on-surface-variant text-lg">Năng lực lãnh đạo mạnh mẽ với khả năng điều phối các dự án có phạm vi mơ hồ.</span>
+</li>
+</ul>
+</article>
+<!-- Benefits -->
+<article>
+<h2 class="text-2xl font-headline font-bold text-on-surface mb-6 border-b border-outline-variant/20 pb-4">Quyền lợi &amp; Phát triển</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="p-6 bg-surface-container-low rounded-xl">
+<span class="material-symbols-outlined text-primary mb-3" style="font-size: 32px;">rocket_launch</span>
+<h4 class="font-bold text-on-surface mb-1">Lộ trình tăng tốc</h4>
+<p class="text-sm text-on-surface-variant">Các hội nghị tầm nhìn hàng năm và sự cố vấn trực tiếp từ cấp lãnh đạo C-suite.</p>
+</div>
+<div class="p-6 bg-surface-container-low rounded-xl">
+<span class="material-symbols-outlined text-primary mb-3" style="font-size: 32px;">health_and_safety</span>
+<h4 class="font-bold text-on-surface mb-1">Chăm sóc sức khỏe cao cấp</h4>
+<p class="text-sm text-on-surface-variant">Bảo hiểm y tế toàn cầu bao gồm sức khỏe tinh thần &amp; phụ cấp công thái học.</p>
+</div>
+<div class="p-6 bg-surface-container-low rounded-xl">
+<span class="material-symbols-outlined text-primary mb-3" style="font-size: 32px;">home_work</span>
+<h4 class="font-bold text-on-surface mb-1">Tự chủ công việc</h4>
+<p class="text-sm text-on-surface-variant">Mô hình làm việc hybrid linh hoạt và ngân sách làm việc tại nhà 5.000 USD mỗi năm.</p>
+</div>
+<div class="p-6 bg-surface-container-low rounded-xl">
+<span class="material-symbols-outlined text-primary mb-3" style="font-size: 32px;">currency_exchange</span>
+<h4 class="font-bold text-on-surface mb-1">Cổ phiếu thưởng</h4>
+<p class="text-sm text-on-surface-variant">Gói cổ phần bậc 1 với hệ số nhân hiệu suất định kỳ hai lần một năm.</p>
+</div>
+</div>
+</article>
+</div>
+<!-- Right Column: Predictive Competition & Side Meta -->
+<div class="lg:col-span-4 space-y-8">
+<!-- Competition Analysis (Bento Card style) -->
+<div class="bg-on-background p-8 rounded-3xl text-surface">
+<h3 class="font-headline text-xl font-bold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-fixed">analytics</span>
+                        Cạnh tranh dự kiến
+                    </h3>
+<div class="space-y-8">
+<div>
+<div class="flex justify-between text-sm mb-2">
+<span class="text-primary-fixed/80">Số lượng ứng tuyển</span>
+<span class="font-bold">Cao</span>
+</div>
+<div class="h-2 w-full bg-surface/10 rounded-full">
+<div class="h-full bg-primary-fixed w-[85%] rounded-full shadow-[0_0_12px_rgba(214,227,255,0.4)]"></div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface/5 p-4 rounded-2xl">
+<div class="text-2xl font-bold font-headline">42</div>
+<div class="text-xs text-primary-fixed/60 uppercase tracking-widest">Ứng viên đang nộp</div>
+</div>
+<div class="bg-surface/5 p-4 rounded-2xl">
+<div class="text-2xl font-bold font-headline text-tertiary-fixed-dim">Top 5%</div>
+<div class="text-xs text-primary-fixed/60 uppercase tracking-widest">Xếp hạng của bạn</div>
+</div>
+</div>
+<div class="p-4 bg-primary-fixed/10 rounded-2xl border border-primary-fixed/20">
+<p class="text-sm leading-relaxed italic">"Hồ sơ của bạn phù hợp với 94% ứng viên đã được tuyển dụng thành công trong lĩnh vực này trong 6 tháng qua."</p>
+</div>
+</div>
+</div>
+<!-- Related Map/Location (Simplified) -->
+<div class="bg-surface-container-low rounded-3xl overflow-hidden">
+<div class="h-48 bg-surface-dim relative group">
+<img alt="Bản đồ vị trí văn phòng" class="w-full h-full object-cover" data-alt="bố cục bản đồ thành phố tối giản sạch sẽ với tông màu xanh trang nhã và các điểm đánh dấu địa lý đơn giản" data-location="Ho Chi Minh City" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPpZ5TaEXqIiC0fROlCvRFEknLKlncoG7JXAvXVsIqvaqHNshGSgNoYVgleBcIrGBkxXRNKe2awFmKHwzANgmZxV2DdHGKAoanYz2G-n0n6-3B_ovGRNm0r1_cY-w_0cc1rVc03h91-d6DQE7ynDlxytutsVSbwcwHytZjm2blXFMlnTKgrGCr7NqEmvPHqf8rSPCLEAmmuYs8T_KFkRC_wBFahHTYdbN1tPti4_Qm9ieO3ngJiytngw_OhobkTWOiIHL_iVLZXe0S"/>
+<div class="absolute inset-0 bg-primary/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="bg-surface px-4 py-2 rounded-full text-xs font-bold shadow-lg">Xem bản đồ đầy đủ</span>
+</div>
+</div>
+<div class="p-6">
+<h4 class="font-bold mb-1">Tòa nhà Tài chính Bitexco</h4>
+<p class="text-xs text-on-surface-variant">02 Hải Triều, Quận 1, TP.HCM</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Similar Jobs (Bento Grid) -->
+<section class="mt-24">
+<h2 class="text-3xl font-headline font-extrabold mb-12">Cơ hội tầm nhìn dành cho bạn</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+<!-- Job Card 1 -->
+<div class="bg-surface-container-lowest p-8 rounded-2xl hover:shadow-[0_20px_40px_rgba(25,28,33,0.06)] transition-all group">
+<div class="flex justify-between items-start mb-6">
+<div class="w-12 h-12 bg-surface-container-low rounded-lg p-2">
+<img alt="Logo đối tác" class="w-full h-full object-contain" data-alt="logo công ty công nghệ đơn giản phong cách line art tối giản" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHVtiIAkA-aRMHdx55bB4iZIrD9MucEiNoKs6GObhgNdbhQi7Gz_edYB8R1qpYIxcv7iuXbMzXY87-nAAo0nT6_x-QaohkO67TprsLH4z1er9adBPdrcjp1QvlIBQWSNL911bdFhzNgt4g5MjD2mhWX10FBJ_a-WsActBfRA6jA_scy2v6YrtAGk6AcyjBzLPCUt0a5oZYx5w8LnyC5KGSDe7jPP_qQ1tdBYg7HeMQC-rEUYJYITcxFnO51137YNQLo3QC9mh6hiAH"/>
+</div>
+<span class="bg-tertiary/10 text-tertiary px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider">92% Phù hợp</span>
+</div>
+<h3 class="text-xl font-bold font-inter mb-2 group-hover:text-primary transition-colors">Trưởng bộ phận Trí tuệ Chiến lược</h3>
+<p class="text-sm text-on-surface-variant mb-6">Nexus Data Solutions • Singapore</p>
+<div class="flex justify-between items-center">
+<span class="font-bold text-primary">$140k - $160k</span>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">arrow_forward</span>
+</div>
+</div>
+<!-- Job Card 2 -->
+<div class="bg-surface-container-lowest p-8 rounded-2xl hover:shadow-[0_20px_40px_rgba(25,28,33,0.06)] transition-all group">
+<div class="flex justify-between items-start mb-6">
+<div class="w-12 h-12 bg-surface-container-low rounded-lg p-2">
+<img alt="Logo đối tác" class="w-full h-full object-contain" data-alt="logo công ty logistics hiện đại tối giản icon đơn giản" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAP_Xv0pW5IG-36iV77_3pwbLFfHYPMqtMeXk0vfnqGfidzGYY8GEFsnjmaAApoXHCScQUUc65UOohN3fcRBDNPT063_FPl02huJoRz2hC0nr_GjWZ8jT7stqAICsJSpb9hdJyRK8sXmM3eMM4jAc5YhZVsFiw4SKIJVAbPHxDeKZIoz5Ii2UcUcPEfQysQpxFp9r_n_p9BOU1kr9kDcK9wd09LesV5iuhnScVfFJNAobqzz7Z3V_LbcIYReBR938hyty_FE38MfIRw"/>
+</div>
+<span class="bg-tertiary/10 text-tertiary px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider">89% Phù hợp</span>
+</div>
+<h3 class="text-xl font-bold font-inter mb-2 group-hover:text-primary transition-colors">Kỹ sư Hệ thống Dự báo</h3>
+<p class="text-sm text-on-surface-variant mb-6">Aether Logistics • Từ xa</p>
+<div class="flex justify-between items-center">
+<span class="font-bold text-primary">$110k - $135k</span>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">arrow_forward</span>
+</div>
+</div>
+<!-- Job Card 3 -->
+<div class="bg-surface-container-lowest p-8 rounded-2xl hover:shadow-[0_20px_40px_rgba(25,28,33,0.06)] transition-all group">
+<div class="flex justify-between items-start mb-6">
+<div class="w-12 h-12 bg-surface-container-low rounded-lg p-2">
+<img alt="Logo đối tác" class="w-full h-full object-contain" data-alt="logo công ty fintech trừu tượng hình tròn tối giản" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSjQe4dehkVCEi9Ud58Z0gz2ncXqTo1qiuvoiitTIBrF0-zbIpbYexOESZMXKrtd5asvzZFl2FqykupOnmBLroJ46A31TjBsIbhFMnoev1Z39UxAXN4iPa55p0giKPOe4A89fzOdPzfFC_lv2rESnLtLHekJsW58nvNeTpz_5ciaVyDCJPAqqYCm0kG7eRcejEpV2ldY4x5MhVPy8cpDJpNhTMyVE8I3bnc2nFFFR-Asm85Px8P_zH9kO0a-FKvp75Q3SAJmSgjwo7"/>
+</div>
+<span class="bg-tertiary/10 text-tertiary px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider">85% Phù hợp</span>
+</div>
+<h3 class="text-xl font-bold font-inter mb-2 group-hover:text-primary transition-colors">Kiến trúc sư Thuật toán Tăng trưởng</h3>
+<p class="text-sm text-on-surface-variant mb-6">Bloom Capital • Luân Đôn</p>
+<div class="flex justify-between items-center">
+<span class="font-bold text-primary">$150k - $190k</span>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">arrow_forward</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low flex flex-col md:flex-row justify-between items-center px-12 py-12 gap-8 border-t-0">
+<div class="text-lg font-black text-on-surface font-inter">Career Authority</div>
+<div class="flex flex-wrap justify-center gap-8">
+<a class="text-on-surface-variant font-inter text-xs uppercase tracking-widest hover:underline transition-all" href="#">Chính sách bảo mật</a>
+<a class="text-on-surface-variant font-inter text-xs uppercase tracking-widest hover:underline transition-all" href="#">Điều khoản dịch vụ</a>
+<a class="text-on-surface-variant font-inter text-xs uppercase tracking-widest hover:underline transition-all" href="#">Hỗ trợ</a>
+<a class="text-on-surface-variant font-inter text-xs uppercase tracking-widest hover:underline transition-all" href="#">Phương pháp luận AI</a>
+</div>
+<p class="text-on-surface-variant font-inter text-xs uppercase tracking-widest opacity-80">© 2024 The Predictive Career Authority. Bảo lưu mọi quyền.</p>
+</footer>
+</body></html>

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dự án - CareerAuthority</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-container": "#ffd1bc",
+                    "surface-dim": "#d8dae2",
+                    "primary": "#00488d",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-high": "#e7e8f0",
+                    "on-primary-fixed": "#001b3d",
+                    "surface-variant": "#e1e2ea",
+                    "outline": "#727783",
+                    "secondary": "#4a5f83",
+                    "tertiary": "#7b3200",
+                    "primary-fixed-dim": "#a8c8ff",
+                    "outline-variant": "#c2c6d4",
+                    "secondary-container": "#c0d5ff",
+                    "tertiary-container": "#a04401",
+                    "on-tertiary-fixed": "#341100",
+                    "primary-container": "#005fb8",
+                    "inverse-surface": "#2e3036",
+                    "surface-container-low": "#f2f3fb",
+                    "on-surface": "#191c21",
+                    "on-secondary-fixed": "#011b3c",
+                    "primary-fixed": "#d6e3ff",
+                    "on-tertiary-fixed-variant": "#783100",
+                    "surface-bright": "#f9f9ff",
+                    "secondary-fixed": "#d6e3ff",
+                    "surface-container": "#ecedf6",
+                    "on-primary-fixed-variant": "#00468b",
+                    "surface-tint": "#005db5",
+                    "on-secondary-container": "#475c7f",
+                    "tertiary-fixed-dim": "#ffb691",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-fixed-variant": "#324769",
+                    "on-primary-container": "#cadcff",
+                    "on-error-container": "#93000a",
+                    "on-surface-variant": "#424752",
+                    "inverse-on-surface": "#eff0f8",
+                    "tertiary-fixed": "#ffdbcb",
+                    "surface-container-highest": "#e1e2ea",
+                    "inverse-primary": "#a8c8ff",
+                    "error": "#ba1a1a",
+                    "background": "#f9f9ff",
+                    "surface": "#f9f9ff",
+                    "secondary-fixed-dim": "#b2c7f0",
+                    "on-primary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "on-background": "#191c21",
+                    "on-secondary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .tonal-shift {
+        transition: background-color 0.2s ease-in-out;
+      }
+      .asymmetric-grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 1.5rem;
+      }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body min-h-screen">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-[#f9f9ff]/80 dark:bg-[#191c21]/80 backdrop-blur-md shadow-sm flex items-center px-8 h-16">
+<div class="w-48">
+<span class="text-xl font-bold text-[#00488d] dark:text-[#005fb8] font-headline tracking-tight whitespace-nowrap">Career Authority</span>
+</div>
+<div class="flex-1 hidden md:flex items-center justify-center gap-6">
+<a class="text-[#c2c6d4] hover:text-[#00488d] font-manrope tracking-tight font-bold transition-all duration-200 ease-in-out" href="#">Việc làm của tôi</a>
+<a class="text-[#00488d] dark:text-[#005fb8] border-b-2 border-[#00488d] pb-1 font-manrope tracking-tight font-bold transition-all duration-200 ease-in-out" href="#">Hồ sơ</a>
+<a class="text-[#c2c6d4] hover:text-[#00488d] font-manrope tracking-tight font-bold transition-all duration-200 ease-in-out" href="#">Dự báo cá nhân</a>
+</div>
+<div class="w-48 flex items-center justify-end gap-4">
+<button class="p-2 hover:bg-[#f2f3fb] dark:hover:bg-slate-800 rounded-md transition-all duration-200 ease-in-out">
+<span class="material-symbols-outlined text-[#00488d] dark:text-[#005fb8]">notifications</span>
+</button>
+<button class="p-2 hover:bg-[#f2f3fb] dark:hover:bg-slate-800 rounded-md transition-all duration-200 ease-in-out">
+<span class="material-symbols-outlined text-[#00488d] dark:text-[#005fb8]">account_circle</span>
+</button>
+</div>
+</nav>
+<div class="flex pt-16">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-screen w-64 pt-20 bg-[#ffffff] dark:bg-[#191c21] shadow-[20px_0_40px_rgba(25,28,33,0.04)] flex flex-col font-inter text-sm font-medium">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-[#f2f3fb] dark:bg-[#2e3036] overflow-hidden flex items-center justify-center">
+<img alt="User Profile Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkTKv9hHOMCONyBy6fn-XJK9ZzA2EEzi0tuVO9y10StZCDtuFlGG-iKFc_O3ENlV8LfG1XBQXDsuMmCiyZALMV7XvyevKg-OzjFAUdNdQpu1G9n3-pdRlJlZtQxZ5iYzZ7sp1tB0MWlflZs8NPbd34JqL6RWB8h76XDM-x9Pt3gkV_qWDLrPiSvnMUr6xTgBNqceGfDLvet8BEAYNhNpLbLCgH9dJ7caq7A7gPMeQcwBJ6PpwppjpXNzVHV5aZYO-Ea9QF4Fm_VkAi"/>
+</div>
+<div>
+<p class="font-bold text-[#00488d] dark:text-[#005fb8] leading-none">Nguyễn Văn A</p>
+<p class="text-xs text-[#5d5e66] mt-1">Tài khoản cá nhân</p>
+</div>
+</div>
+</div>
+<nav class="flex flex-col gap-2 py-6 pr-4">
+<a class="p-3 pl-6 flex items-center gap-3 transition-transform hover:translate-x-1 text-[#5d5e66] hover:bg-[#ecedf6] rounded-r-full mr-4" href="#">
+<span class="material-symbols-outlined">person</span>
+<span>Thông tin cá nhân</span>
+</a>
+<a class="p-3 pl-6 flex items-center gap-3 transition-transform hover:translate-x-1 text-[#5d5e66] hover:bg-[#ecedf6] rounded-r-full mr-4" href="#">
+<span class="material-symbols-outlined">work</span>
+<span>Kinh nghiệm làm việc</span>
+</a>
+<a class="p-3 pl-6 flex items-center gap-3 transition-transform hover:translate-x-1 text-[#5d5e66] hover:bg-[#ecedf6] rounded-r-full mr-4" href="#">
+<span class="material-symbols-outlined">psychology</span>
+<span>Kỹ năng</span>
+</a>
+<a class="p-3 pl-6 flex items-center gap-3 transition-transform hover:translate-x-1 bg-[#00488d] text-white rounded-r-full mr-4 shadow-sm" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">folder_special</span>
+<span>Dự án</span>
+</a>
+<a class="p-3 pl-6 flex items-center gap-3 transition-transform hover:translate-x-1 text-[#5d5e66] hover:bg-[#ecedf6] rounded-r-full mr-4" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Cài đặt</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 flex-1 p-12 bg-surface">
+<!-- Header Section with Asymmetry -->
+<header class="mb-16 flex justify-between items-end">
+<div class="max-w-2xl">
+<h1 class="font-headline text-5xl font-extrabold text-on-surface tracking-tighter mb-4">Danh mục dự án</h1>
+<p class="text-on-surface-variant text-lg leading-relaxed">Khám phá các thành tựu kiến trúc và giải pháp kỹ thuật đã thực hiện. Mỗi dự án là một minh chứng cho tầm nhìn và kỹ năng thực tế.</p>
+</div>
+<div class="flex flex-col gap-3 items-stretch min-w-[200px]">
+<button class="flex items-center justify-center gap-2 bg-[#00488d] text-white px-6 py-3 rounded-md font-medium hover:shadow-[0_10px_20px_rgba(0,72,141,0.15)] transition-all order-first">
+<span class="material-symbols-outlined text-xl">add</span>
+<span>Thêm dự án mới</span>
+</button>
+<button class="flex items-center justify-center gap-2 border border-outline-variant bg-surface-container-low text-primary px-5 py-2 rounded-lg font-medium hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined text-xl">edit</span>
+<span>Chỉnh sửa</span>
+</button>
+</div>
+</header>
+<!-- Projects Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Large Featured Project Card -->
+<article class="group bg-surface-container-lowest rounded-xl overflow-hidden hover:shadow-[0_20px_40px_rgba(25,28,33,0.06)] transition-all flex flex-col"><div class="aspect-video overflow-hidden relative">
+<img alt="ultra modern skyscraper facade" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC07ypdRw2GxOJp9P7e3zau9hokn3_650-3gjZ2ukuRbtWzz2BRcw8vL7qbsbRl1VKXs9TJVwHEEPOWZ7D9l3Lde7dY-jnU5mVOpCUzP23ezNwBCPvX25Dp0hnm2UoaBmyRVJcnJ5GSFAFyGMIvuEkKEYrE5nFVL-NVUzgXLb2UKZmzXmupyT-AC11Skd84zdtBAXeM-s9bVp56vKe1cyGxDqk7FBEKQo63jx97_eGHFuIus98zG0vQXeVD5LsSB3Ml7FuIPujxg-IG"/>
+<button class="absolute top-4 right-4 p-2 bg-white/90 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white text-primary">
+<span class="material-symbols-outlined text-sm">edit</span>
+</button>
+</div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="flex justify-between items-start mb-4">
+<span class="bg-tertiary-fixed-dim text-on-tertiary-fixed text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full">Dự án Tiêu biểu</span>
+<span class="text-primary font-semibold text-sm">2023 - 2024</span>
+</div>
+<h2 class="font-headline text-xl font-bold text-on-surface mb-2">Trung tâm Thương mại Nexus</h2>
+<p class="text-on-surface-variant text-sm mb-6">Thiết kế hệ thống kiến trúc bền vững cho tổ hợp văn phòng hạng A rộng 50,000m2.</p>
+<div class="pt-4 border-t border-outline-variant/10 flex justify-between items-center mt-auto">
+<span class="text-xs font-bold text-on-surface-variant uppercase">Vai trò chính</span>
+<span class="text-primary text-sm font-medium">Lead Architect</span>
+</div>
+</div></article>
+<!-- Status Card (Asymmetric element) -->
+<!-- Regular Project Cards -->
+<article class="bg-surface-container-lowest rounded-xl p-6 hover:shadow-[0_20px_40px_rgba(25,28,33,0.06)] transition-all group flex flex-col">
+<div class="aspect-video rounded-lg overflow-hidden mb-6 relative">
+<img alt="interior view of a minimalist modern home with concrete walls and large windows overlooking a garden" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgndv75rCHlz7jIgj2vUqNUdjvB84wm0AfOIVg2bGTO3_DBhmjx_P-8IVDmpTrb1M6_vfobGZnOat5v65-n3EcDHD9GI1i6U_cQd3-D6Z6JtylA9p-2xL3ADNclh-jBiJXgTfYSvMkQZIM12yCiw7k9G1PK63-lTHcx1XqRgt3PnnK5tDVEzXfTJ2cSJur5LVh7JU2BkRzU2ggGLKWAvtDsCzhowsZcggvsm3-POPDvdi_Jg14Xtwl6A9euViF3CSkz5N05ZKM2LDx"/>
+<button class="absolute top-3 right-3 p-2 bg-white/95 border border-outline-variant/20 rounded-lg shadow-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+</div>
+<div class="flex justify-between items-start mb-3">
+<h3 class="font-headline text-lg font-bold text-on-surface">Biệt thự Urban Oasis</h3>
+<span class="bg-surface-container-high text-on-surface-variant text-[10px] px-2 py-1 rounded">Cá nhân</span>
+</div>
+<p class="text-on-surface-variant text-sm mb-6 line-clamp-2">Giải pháp nhà ở thông minh với hệ thống thu nước mưa và điều hòa không khí tự nhiên tại khu đô thị đông đúc.</p>
+<div class="flex items-center justify-between mt-auto">
+<div class="flex -space-x-2">
+<div class="w-7 h-7 rounded-full border-2 border-white bg-slate-200"></div>
+<div class="w-7 h-7 rounded-full border-2 border-white bg-slate-300"></div>
+</div>
+<span class="text-xs text-on-surface-variant font-medium">Senior Designer</span>
+</div>
+</article>
+<article class="bg-surface-container-lowest rounded-xl p-6 hover:shadow-[0_20px_40px_rgba(25,28,33,0.06)] transition-all group flex flex-col">
+<div class="aspect-video rounded-lg overflow-hidden mb-6 relative">
+<img alt="bright open-plan creative office space with plants and wooden furniture at midday" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrH7Y8VC_zTuAPYQZh5A40dE__X7_h0XsKkgVJO1ZoZ5HqmK2_qNMGdLOalB8gXRvSOCCtE54ZLOnlEl0FNcvIALcjBxTPm9SxWgqdMlQ0kV0DtSuqs6lnrO2s6qm75P-EhgVz4T23FKJzNsSPYFEiejCNc1lq0kbTKJFdEMQCG3XCyETwHW_goc6xtltLHTjZaWQlehsbPp_eipd_ghSm56eZsf_hCalFc7ouj3QgTNOI_YeCTQBVsf1hyzZq64XelyXBeiVEd9Wb"/>
+<button class="absolute top-3 right-3 p-2 bg-white/95 border border-outline-variant/20 rounded-lg shadow-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+</div>
+<div class="flex justify-between items-start mb-3">
+<h3 class="font-headline text-lg font-bold text-on-surface">Co-working Hub Alpha</h3>
+<span class="bg-surface-container-high text-on-surface-variant text-[10px] px-2 py-1 rounded">Nhóm</span>
+</div>
+<p class="text-on-surface-variant text-sm mb-6 line-clamp-2">Thiết kế không gian làm việc linh hoạt cho startup, tối ưu hóa sự tương tác và khả năng tập trung của nhân viên.</p>
+<div class="flex items-center justify-between mt-auto">
+<div class="flex -space-x-2">
+<img alt="headshot of male professional" class="w-7 h-7 rounded-full border-2 border-white object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxHb6bVMwBlO9MARmCCpzNGItjzW5gPN0fTc01LLLYJ_RyO2Ud5LkNLznsSjPyLw7T35FsBjvGOBtVCKQ01bHEJH38H3g9ikDdVE87tIJ01LeRsY6ts-dNQlw8ZuYhvrNlpagYAyWcF_UQygKvetbbuCdXzlhlHa09QbcFkhtV4IBjjjUG0eieU05QqM7eys4fScOuy-c7gqyXGXLNEtydQV5X7seMvpQaaKwiTdr57-68-el3Z80HaW_RnTP_xDCGn1lanh3WNZ07"/>
+<img alt="headshot of female professional" class="w-7 h-7 rounded-full border-2 border-white object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPcpLY3fOaO7Mk95HzZvmKymOeP4MO4VdjjcHi0NwixU_HulmW6Ijn5BtYB0kUf_U0qD1dUjThDqd5ixJKUDmR8_243u3b0sRApfokjLb8o2Wyj-MQyc8N3jouUBcWHVwTHkQ-rANeyCmoDml2HOwPRKDH9JQ-46viIKNj2ZXr7Os7GnAgUIYQMJqPVzvgDZj2s7o8zagzoArvyELW5WzbwhWDo7Fqb2pkPwzu89m7GsABA1gdUbLOKlQEy_-1z7fwyErZ3a7DwyKf"/>
+<div class="w-7 h-7 rounded-full border-2 border-white bg-primary-container text-[8px] flex items-center justify-center text-white">+3</div>
+</div>
+<span class="text-xs text-on-surface-variant font-medium">BIM Coordinator</span>
+</div>
+</article>
+<article class="bg-surface-container-lowest rounded-xl p-6 hover:shadow-[0_20px_40px_rgba(25,28,33,0.06)] transition-all group flex flex-col">
+<div class="aspect-video rounded-lg overflow-hidden mb-6 relative">
+<img alt="abstract architectural detail of curved steel beams and glass in a futuristic museum building" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuXxJjnPWGx9OCVSyWX-YluSsb4gIrIesaofYVEK1uOaZ2oGMwj3zFOEEBkKPUOcLAPW2HgcmfVnJLZN2aHM5GZxUzUDIQf64x04LH6hwvY-fkiON13GoHnJYtX5ft7Gmt7X9_ruvbkFgBhUnNnEZcqAOd5gwntV4dUIQad9d3VwG2ITv1m_KUoRoiHaKh7T-_ub0qi80W2CshrN_R_KtSrPTgg-allh2MB5GWhpAPly67ORdyqxxpSXb68fFTNUs-2M8zcGrhGZ8S"/>
+<button class="absolute top-3 right-3 p-2 bg-white/95 border border-outline-variant/20 rounded-lg shadow-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+</div>
+<div class="flex justify-between items-start mb-3">
+<h3 class="font-headline text-lg font-bold text-on-surface">Bảo tàng Nghệ thuật Số</h3>
+<span class="bg-surface-container-high text-on-surface-variant text-[10px] px-2 py-1 rounded">Nhóm</span>
+</div>
+<p class="text-on-surface-variant text-sm mb-6 line-clamp-2">Đề xuất kiến trúc mang tính biểu tượng, sử dụng vật liệu composite mới và hệ thống chiếu sáng thông minh.</p>
+<div class="flex items-center justify-between mt-auto">
+<div class="flex -space-x-2">
+<img alt="headshot of woman designer" class="w-7 h-7 rounded-full border-2 border-white object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUjv39bYGL-vE9We4a1U3Meo909X76WGEJjdDeSR63d43kW4cu7GqD9iv8dCIlnY356ZdS0890e4Ht8qB19SgZh_Spp0eI9GkcWW_AddVpcRhxUc4nxyTNnc0dfVUDiTDwaiC4OZmaDbMOFU0j7QjvJP152_cU2ThGtC9kO3eTNU1OhO4zAB3wb-pUDgtOzpIPtxFQpyVlxNnqybgEF24e4X3qHY-xSV5-bZhv8KMRS-WabrrMiM7ibL01y1m7FGBv8MV8pw9U7nH1"/>
+<div class="w-7 h-7 rounded-full border-2 border-white bg-slate-200"></div>
+</div>
+<span class="text-xs text-on-surface-variant font-medium">Concept Designer</span>
+</div>
+</article>
+</div>
+<!-- Footer Spacing -->
+<div class="h-24"></div>
+</main>
+</div>
+</body></html>
