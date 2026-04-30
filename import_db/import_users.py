@@ -28,7 +28,7 @@ def import_users_from_csv(csv_file):
         try:
             # Đọc file CSV
             print(f"📁 Đang đọc file: {csv_file}")
-            df = pd.read_csv(csv_file)
+            df = pd.read_csv(csv_file, sep=';', on_bad_lines='skip', engine='python')
             
             print(f"📊 Tổng số người dùng: {len(df)}")
             print(f"📋 Các cột: {list(df.columns)}")
@@ -54,9 +54,9 @@ def import_users_from_csv(csv_file):
                     
                     # Tạo đối tượng InforUser mới với tất cả dữ liệu từ CSV
                     infor_user = InforUser(
-                        user_id=int(row.get('UserID', idx)) if pd.notna(row.get('UserID')) else None,
+                        # user_id=int(row.get('UserID', idx)) if pd.notna(row.get('UserID')) else None,
                         username=username,
-                        industry=get_optional(row, 'Industry'),
+                        industry=get_optional(row, 'industry_group'),
                         desired_job=get_optional(row, 'Desired Job'),
                         workplace_desired=get_optional(row, 'Workplace Desired'),
                         desired_salary=get_optional(row, 'Desired Salary'),
@@ -66,8 +66,8 @@ def import_users_from_csv(csv_file):
                         target=get_optional(row, 'Target'),
                         skills=get_optional(row, 'Skills'),
                         degree=get_optional(row, 'Degree'),
-                        work_experience=get_optional(row, 'Work Experience'),
-                        url_user=get_optional(row, 'URL User')
+                        exp_min = get_optional(row, 'exp_min'),
+                        exp_max = get_optional(row, 'exp_max'),
                     )
                     
                     db.session.add(infor_user)
@@ -102,5 +102,5 @@ def import_users_from_csv(csv_file):
 
 if __name__ == '__main__':
     # Lấy đường dẫn file CSV
-    csv_file = os.path.join(os.path.dirname(__file__), 'USER_DATA_PROCESSED.csv')
+    csv_file = os.path.join(os.path.dirname(__file__), 'USER_DATA_PROCESSED2.csv')
     import_users_from_csv(csv_file)

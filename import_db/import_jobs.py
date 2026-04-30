@@ -49,11 +49,11 @@ def import_jobs_from_excel(excel_file):
             
             for idx, row in df.iterrows():
                 try:
-                    # Kiểm tra job_id đã tồn tại hay chưa
-                    existing = Job.query.filter_by(job_id=str(row['job_id'])).first()
-                    if existing:
-                        error_count += 1
-                        continue
+                    # # Kiểm tra job_id đã tồn tại hay chưa
+                    # existing = Job.query.filter_by(job_id=str(row['job_id'])).first()
+                    # if existing:
+                    #     error_count += 1
+                    #     continue
                     
                     # Xử lý ngày deadline
                     deadline = None
@@ -65,17 +65,19 @@ def import_jobs_from_excel(excel_file):
                     
                     # Tạo object Job
                     job = Job(
-                        job_id=str(row['job_id']),
+                        # job_id=str(row['job_id']),
                         job_title=str(row['job_title']),
                         company_name=str(row['company_name']),
                         salary_min=get_optional(row, 'salary_min'),
                         salary_max=get_optional(row, 'salary_max'),
-                        job_address=get_optional(row, 'job_address', 'address', 'job_location'),
+                        job_address=get_optional(row, 'province'),
                         deadline=deadline,
-                        job_experience_required=get_optional(row, 'job_experience_required'),
+                        exp_min = get_optional(row, 'exp_min'),
+                        exp_max = get_optional(row, 'exp_max'),
+                        benefits =get_optional(row, 'benefits'),
                         employment_type=get_optional(row, 'employment_type'),
                         job_function=get_optional(row, 'job_function'),
-                        industries=get_optional(row, 'industries'),
+                        industries=get_optional(row, 'industry_group'),
                         job_description=get_optional(row, 'job_description'),
                         job_requirement=get_optional(row, 'job_requirement'),
                     )
@@ -110,7 +112,7 @@ def import_jobs_from_excel(excel_file):
 if __name__ == '__main__':
     # Xác định đường dẫn file Excel
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    excel_file = os.path.join(current_dir, 'COMBINED_DATA_PROCESSED.csv')
+    excel_file = os.path.join(current_dir, 'COMBINED_DATA_PROCESSED1.csv')
     
     # Kiểm tra file tồn tại
     if not os.path.exists(excel_file):

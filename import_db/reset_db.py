@@ -21,6 +21,5 @@ if __name__ == '__main__':
         print("\n🔧 Đang tạo tables mới từ models...")
         db.create_all()
         print("✅ Database tables đã được tạo thành công!")
-        print("   - User table")
         print("   - InforUser table (infor_user)")
         print("   - Job table")
