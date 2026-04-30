@@ -10,10 +10,17 @@ import sys
 import os
 
 # Add the backend directory to path
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'backend'))
 
 def import_jobs_from_excel(excel_file):
     """Nhập dữ liệu công việc từ file Excel"""
+
+    def get_optional(row, *column_names):
+        for column_name in column_names:
+            value = row.get(column_name)
+            if pd.notna(value):
+                return str(value)
+        return None
     
     # Import Flask app từ run.py
     from run import app
@@ -23,7 +30,7 @@ def import_jobs_from_excel(excel_file):
         try:
             # Đọc file Excel
             print(f"📁 Đang đọc file: {excel_file}")
-            df = pd.read_excel(excel_file)
+            df = pd.read_csv(excel_file)
             
             print(f"📊 Tổng số công việc: {len(df)}")
             print("\n⏳ Đang cập nhật dữ liệu (không xóa dữ liệu cũ)...\n")
@@ -52,7 +59,7 @@ def import_jobs_from_excel(excel_file):
                     deadline = None
                     if pd.notna(row['deadline']):
                         if isinstance(row['deadline'], str):
-                            deadline = datetime.strptime(row['deadline'], '%Y-%m-%d')
+                            deadline = datetime.strptime(row['deadline'], '%d/%m/%Y')
                         else:
                             deadline = pd.Timestamp(row['deadline']).to_pydatetime()
                     
@@ -61,16 +68,16 @@ def import_jobs_from_excel(excel_file):
                         job_id=str(row['job_id']),
                         job_title=str(row['job_title']),
                         company_name=str(row['company_name']),
-                        salary_min=str(row['salary_min']) if pd.notna(row['salary_min']) else None,
-                        salary_max=str(row['salary_max']) if pd.notna(row['salary_max']) else None,
-                        job_address=str(row['job_address']) if pd.notna(row['job_address']) else None,
+                        salary_min=get_optional(row, 'salary_min'),
+                        salary_max=get_optional(row, 'salary_max'),
+                        job_address=get_optional(row, 'job_address', 'address', 'job_location'),
                         deadline=deadline,
-                        job_experience_required=str(row['job_experience_required']) if pd.notna(row['job_experience_required']) else None,
-                        employment_type=str(row['employment_type']) if pd.notna(row['employment_type']) else None,
-                        job_function=str(row['job_function']) if pd.notna(row['job_function']) else None,
-                        industries=str(row['industries']) if pd.notna(row['industries']) else None,
-                        job_description=str(row['job_description']) if pd.notna(row['job_description']) else None,
-                        job_requirement=str(row['job_requirement']) if pd.notna(row['job_requirement']) else None,
+                        job_experience_required=get_optional(row, 'job_experience_required'),
+                        employment_type=get_optional(row, 'employment_type'),
+                        job_function=get_optional(row, 'job_function'),
+                        industries=get_optional(row, 'industries'),
+                        job_description=get_optional(row, 'job_description'),
+                        job_requirement=get_optional(row, 'job_requirement'),
                     )
                     
                     db.session.add(job)
@@ -103,7 +110,7 @@ def import_jobs_from_excel(excel_file):
 if __name__ == '__main__':
     # Xác định đường dẫn file Excel
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    excel_file = os.path.join(current_dir, 'output_careerviet.xlsx')
+    excel_file = os.path.join(current_dir, 'COMBINED_DATA_PROCESSED.csv')
     
     # Kiểm tra file tồn tại
     if not os.path.exists(excel_file):

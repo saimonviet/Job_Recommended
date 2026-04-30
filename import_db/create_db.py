@@ -3,6 +3,11 @@
 Script để tạo tables trong database từ models
 """
 
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'backend'))
+
 from run import app
 from app.models import db
 

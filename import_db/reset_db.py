@@ -3,6 +3,12 @@
 Script để xóa tất cả tables cũ và tạo lại từ models
 """
 
+import pandas as pd
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'backend'))
+
+
 from run import app
 from app.models import db
 

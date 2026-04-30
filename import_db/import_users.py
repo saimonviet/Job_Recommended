@@ -9,14 +9,20 @@ import sys
 import os
 
 # Add the backend directory to path
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'backend'))
 
 def import_users_from_csv(csv_file):
     """Nhập dữ liệu người dùng từ file CSV"""
+
+    def get_optional(row, column_name):
+        value = row.get(column_name)
+        if pd.notna(value):
+            return str(value).strip()
+        return None
     
     # Import Flask app từ run.py
-    from run import app
-    from app.models import db, InforUser
+    from run import app  # type: ignore
+    from app.models import db, InforUser  # type: ignore
     
     with app.app_context():
         try:
@@ -50,18 +56,18 @@ def import_users_from_csv(csv_file):
                     infor_user = InforUser(
                         user_id=int(row.get('UserID', idx)) if pd.notna(row.get('UserID')) else None,
                         username=username,
-                        industry=str(row.get('Industry', '')).strip() if pd.notna(row.get('Industry')) else None,
-                        desired_job=str(row.get('Desired Job', '')).strip() if pd.notna(row.get('Desired Job')) else None,
-                        workplace_desired=str(row.get('Workplace Desired', '')).strip() if pd.notna(row.get('Workplace Desired')) else None,
-                        desired_salary=str(row.get('Desired Salary', '')).strip() if pd.notna(row.get('Desired Salary')) else None,
-                        gender=str(row.get('Gender', '')).strip() if pd.notna(row.get('Gender')) else None,
-                        marriage=str(row.get('Marriage', '')).strip() if pd.notna(row.get('Marriage')) else None,
+                        industry=get_optional(row, 'Industry'),
+                        desired_job=get_optional(row, 'Desired Job'),
+                        workplace_desired=get_optional(row, 'Workplace Desired'),
+                        desired_salary=get_optional(row, 'Desired Salary'),
+                        gender=get_optional(row, 'Gender'),
+                        marriage=get_optional(row, 'Marriage'),
                         age=int(row.get('Age', 0)) if pd.notna(row.get('Age')) else None,
-                        target=str(row.get('Target', '')).strip() if pd.notna(row.get('Target')) else None,
-                        skills=str(row.get('Skills', '')).strip() if pd.notna(row.get('Skills')) else None,
-                        degree=str(row.get('Degree', '')).strip() if pd.notna(row.get('Degree')) else None,
-                        work_experience=str(row.get('Work Experience', '')).strip() if pd.notna(row.get('Work Experience')) else None,
-                        url_user=str(row.get('URL User', '')).strip() if pd.notna(row.get('URL User')) else None
+                        target=get_optional(row, 'Target'),
+                        skills=get_optional(row, 'Skills'),
+                        degree=get_optional(row, 'Degree'),
+                        work_experience=get_optional(row, 'Work Experience'),
+                        url_user=get_optional(row, 'URL User')
                     )
                     
                     db.session.add(infor_user)
@@ -96,5 +102,5 @@ def import_users_from_csv(csv_file):
 
 if __name__ == '__main__':
     # Lấy đường dẫn file CSV
-    csv_file = os.path.join(os.path.dirname(__file__), 'USER_DATA_FINAL.csv')
+    csv_file = os.path.join(os.path.dirname(__file__), 'USER_DATA_PROCESSED.csv')
     import_users_from_csv(csv_file)

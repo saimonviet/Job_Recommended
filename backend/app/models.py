@@ -21,7 +21,7 @@ class InforUser(db.Model):
     age = db.Column(db.Integer)
     target = db.Column(db.Text)
     skills = db.Column(db.Text)
-    degree = db.Column(db.String(255))
+    degree = db.Column(db.Text)
     work_experience = db.Column(db.String(100))
     url_user = db.Column(db.String(500))
 
