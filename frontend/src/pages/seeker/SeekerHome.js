@@ -1,0 +1,691 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import '../../styles/seeker-home.css';
+
+const SeekerHome = () => {
+  const navigate = useNavigate();
+  const [jobs, setJobs] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [totalResults, setTotalResults] = useState(0);
+  
+  // Filter states
+  const [filters, setFilters] = useState({
+    location: '',
+    salaryMin: '',
+    salaryMax: '',
+    employmentType: ''
+  });
+  const [showFilters, setShowFilters] = useState(false);
+  
+  // Search suggestions & history
+  const [suggestions, setSuggestions] = useState([]);
+  const [searchHistory, setSearchHistory] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  
+  // View mode
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  
+  const debounceTimer = useRef(null);
+  const API_URL = 'http://127.0.0.1:5000';
+  const perPage = 6;
+
+  // Load search history from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('searchHistory');
+    if (saved) {
+      setSearchHistory(JSON.parse(saved));
+    }
+    // Fetch initial jobs
+    fetchJobs(1, '', {
+      location: '',
+      salaryMin: '',
+      salaryMax: '',
+      employmentType: ''
+    });
+  }, []);
+
+  // Fetch jobs when page, search, or filters change
+  useEffect(() => {
+    fetchJobs(currentPage, searchQuery, filters);
+  }, [currentPage, searchQuery, filters]);
+
+  // Fetch jobs from API
+  const fetchJobs = async (page = 1, search = '', appliedFilters = filters) => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: page,
+        per_page: perPage,
+      });
+
+      if (search) {
+        params.append('search', search);
+      }
+      if (appliedFilters.location) {
+        params.append('location', appliedFilters.location);
+      }
+      if (appliedFilters.salaryMin) {
+        params.append('salary_min', appliedFilters.salaryMin);
+      }
+      if (appliedFilters.salaryMax) {
+        params.append('salary_max', appliedFilters.salaryMax);
+      }
+      if (appliedFilters.employmentType) {
+        params.append('employment_type', appliedFilters.employmentType);
+      }
+
+      const response = await fetch(`${API_URL}/jobs?${params}`);
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setJobs(data.jobs || []);
+      setTotalPages(data.pages || 1);
+      setCurrentPage(data.current_page || 1);
+      setTotalResults(data.total || 0);
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+      setJobs([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch suggestions as user types
+  const fetchSuggestions = useCallback(async (query) => {
+    if (!query || query.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+    
+    try {
+      const params = new URLSearchParams({ search: query, per_page: 5 });
+      const response = await fetch(`${API_URL}/jobs?${params}`);
+      if (!response.ok) throw new Error('Failed to fetch suggestions');
+      
+      const data = await response.json();
+      const uniqueTitles = [...new Set(data.jobs.map(job => job.job_title))];
+      setSuggestions(uniqueTitles.slice(0, 5));
+      setShowSuggestions(true);
+    } catch (error) {
+      console.error('Error fetching suggestions:', error);
+      setSuggestions([]);
+    }
+  }, []);
+
+  // Debounced search handler
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    setShowSuggestions(true);
+    
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+    
+    debounceTimer.current = setTimeout(() => {
+      fetchSuggestions(value);
+    }, 500);
+  };
+
+  // Handle search submission
+  const handleSearch = (e, query = null) => {
+    e.preventDefault();
+    const finalQuery = query || searchQuery;
+    
+    if (finalQuery && !searchHistory.includes(finalQuery)) {
+      const newHistory = [finalQuery, ...searchHistory].slice(0, 5);
+      setSearchHistory(newHistory);
+      localStorage.setItem('searchHistory', JSON.stringify(newHistory));
+    }
+    
+    setCurrentPage(1);
+    setShowSuggestions(false);
+    fetchJobs(1, finalQuery, filters);
+  };
+
+  // Clear search
+  const clearSearch = () => {
+    setSearchQuery('');
+    setSuggestions([]);
+    setShowSuggestions(false);
+    setCurrentPage(1);
+    fetchJobs(1, '', filters);
+  };
+
+  // Delete from history
+  const deleteHistory = (query) => {
+    const newHistory = searchHistory.filter(item => item !== query);
+    setSearchHistory(newHistory);
+    localStorage.setItem('searchHistory', JSON.stringify(newHistory));
+  };
+
+  // Handle filter change
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Apply filters
+  const applyFilters = () => {
+    setCurrentPage(1);
+    setShowFilters(false);
+    // useEffect sẽ tự động fetch với filters mới
+  };
+
+  // Clear filters
+  const clearFilters = () => {
+    setFilters({
+      location: '',
+      salaryMin: '',
+      salaryMax: '',
+      employmentType: ''
+    });
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Chưa cập nhật';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN');
+  };
+
+  const formatText = (text) => {
+    if (!text) return '';
+    return text.split('\n').map((line, i) => (
+      <React.Fragment key={i}>
+        {line}
+        <br />
+      </React.Fragment>
+    ));
+  };
+
+  const JobCard = ({ job }) => (
+    <div className={`bg-surface-container-lowest rounded-xl hover:shadow-[0_20px_40px_rgba(25,28,33,0.06)] transition-all h-full group ${
+      viewMode === 'list' 
+        ? 'flex items-center gap-6 p-6' 
+        : 'flex flex-col p-6 relative'
+    }`}>
+      {/* Logo / Icon */}
+      <div className={`w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center overflow-hidden flex-shrink-0 ${
+        viewMode === 'list' ? '' : 'mb-6'
+      }`}>
+        <span className="material-symbols-outlined text-primary">business</span>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1">
+        <h4 className={`font-bold text-on-surface group-hover:text-primary transition-colors mb-1 ${
+          viewMode === 'list' ? 'text-lg' : 'text-xl'
+        }`}>
+          {job.job_title}
+        </h4>
+
+        <p className="text-sm font-medium text-on-surface-variant mb-3">
+          {job.company_name} {job.job_address && `• ${job.job_address}`}
+        </p>
+
+        {/* Tags - chỉ hiển thị khi grid view */}
+        {viewMode === 'grid' && (
+          <div className="flex flex-wrap gap-2 mb-8">
+            {job.job_function && (
+              <span className="px-2 py-1 bg-surface-container text-xs rounded-md text-on-surface-variant">
+                {job.job_function}
+              </span>
+            )}
+            {job.employment_type && (
+              <span className="px-2 py-1 bg-surface-container text-xs rounded-md text-on-surface-variant">
+                {job.employment_type}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* List view tags */}
+        {viewMode === 'list' && (
+          <div className="flex flex-wrap gap-2">
+            {job.job_function && (
+              <span className="px-2 py-0.5 bg-surface-container text-xs rounded-md text-on-surface-variant">
+                {job.job_function}
+              </span>
+            )}
+            {job.employment_type && (
+              <span className="px-2 py-0.5 bg-surface-container text-xs rounded-md text-on-surface-variant">
+                {job.employment_type}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Salary & Button */}
+      <div className={`flex ${viewMode === 'list' ? 'flex-col items-end gap-3' : 'pt-6 justify-between items-center border-t border-surface-container w-full'}`}>
+        <div className={`font-bold text-on-surface ${viewMode === 'list' ? 'text-right whitespace-nowrap' : ''}`}>
+          <div className="text-sm text-on-surface-variant">Mức lương</div>
+          {job.salary_min} - {job.salary_max}
+        </div>
+        <button
+          onClick={() => navigate(`/jobs/${job.id}`)}
+          className={`text-primary font-bold hover:underline transition-colors ${
+            viewMode === 'list' 
+              ? 'text-sm whitespace-nowrap bg-primary/10 px-4 py-2 rounded-lg hover:bg-primary/20' 
+              : 'text-sm'
+          }`}
+        >
+          {viewMode === 'list' ? 'Chi tiết' : 'Xem chi tiết'}
+        </button>
+      </div>
+
+      {/* Phù hợp badge - chỉ grid view */}
+      {viewMode === 'grid' && (
+        <div className="absolute top-6 right-6 bg-tertiary/10 text-tertiary px-3 py-1 rounded-full text-xs font-bold">
+          Phù hợp
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <>
+      <style>{`
+        html { color-scheme: light; }
+        body { 
+          font-family: 'Inter', sans-serif; 
+          background-color: #f9f9ff; 
+          color: #191c21; 
+        }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-nav { background: rgba(249, 249, 255, 0.8); backdrop-filter: blur(12px); }
+        .hero-gradient { background: linear-gradient(135deg, #00488d 0%, #005fb8 100%); }
+      `}</style>
+
+      {/* TopNavBar */}
+      <nav className="fixed top-0 w-full z-50 glass-nav shadow-sm flex justify-between items-center px-8 py-4 max-w-full font-manrope tracking-tight bg-white/80 backdrop-blur-md">
+        <div className="text-2xl font-bold text-primary">Career Authority</div>
+        <div className="hidden md:flex items-center gap-8">
+          <a className="text-primary font-bold border-b-2 border-primary transition-colors" href="#forecast">Dự báo</a>
+          <a className="text-on-surface-variant font-medium hover:text-primary-container transition-colors" href="#market">Phân tích thị trường</a>
+          <a className="text-on-surface-variant font-medium hover:text-primary-container transition-colors" href="#companies">Công ty</a>
+          <a className="text-on-surface-variant font-medium hover:text-primary-container transition-colors" href="#about">Về chúng tôi</a>
+          <button 
+            onClick={() => navigate('/employer')}
+            className="text-on-surface-variant font-medium hover:text-primary-container transition-colors border-l border-outline-variant/30 pl-8 ml-4 cursor-pointer bg-none border-none p-0"
+          >
+            Dành cho Nhà tuyển dụng
+          </button>
+        </div>
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => navigate('/login-seeker')}
+            className="text-primary font-medium px-4 py-2 transition-transform scale-95 active:scale-100 cursor-pointer bg-none border-none"
+          >
+            Đăng nhập
+          </button>
+          <button 
+            onClick={() => navigate('/register-seeker')}
+            className="bg-primary text-on-primary px-6 py-2 rounded-xl font-bold shadow-sm transition-transform scale-95 active:scale-100 cursor-pointer border-none"
+          >
+            Tham gia ngay
+          </button>
+        </div>
+      </nav>
+
+      <main className="pt-24 pb-20">
+        {/* Hero & Search Section */}
+        <section className="px-8 mb-20 flex flex-col items-center text-center">
+          {/* <h1 className="text-5xl md:text-7xl font-extrabold text-on-surface tracking-tighter mb-6 max-w-4xl">
+            Tương lai nghề nghiệp của bạn, <span className="text-primary">Được dự đoán.</span>
+          </h1>
+          <p className="text-on-surface-variant text-lg max-w-2xl mb-12 font-body">
+            Khám phá những cơ hội công việc được cá nhân hóa dựa trên nhu cầu kỹ năng thị trường hiện tại và xu hướng tương lai.
+          </p> */}
+
+          {/* Prominent Job Search Bar */}
+          <div className="w-full max-w-4xl bg-surface-container-lowest p-2 rounded-full shadow-lg flex flex-col md:flex-row items-center gap-2 relative">
+            <form onSubmit={handleSearch} className="flex-1 flex items-center px-6 gap-3 w-full">
+              <span className="material-symbols-outlined text-outline">search</span>
+              <input
+                id="job-search-input"
+                className="w-full border-none focus:ring-0 bg-transparent text-on-surface placeholder:text-outline-variant font-body"
+                placeholder="Chức danh, kỹ năng, hoặc vai trò dự đoán..."
+                type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                onFocus={() => setShowSuggestions(true)}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  className="text-outline-variant hover:text-on-surface transition-colors"
+                >
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              )}
+              <button
+                type="submit"
+                className="hero-gradient text-on-primary px-10 py-4 rounded-full font-bold flex items-center justify-center gap-2 transition-all hover:shadow-xl"
+              >
+                <span className="material-symbols-outlined">search</span>
+                <span className="hidden sm:inline">Tìm</span>
+              </button>
+            </form>
+
+            {/* Search Suggestions */}
+            {showSuggestions && (suggestions.length > 0 || searchHistory.length > 0) && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg z-50 max-h-96 overflow-y-auto">
+                {suggestions.length > 0 && (
+                  <div className="border-b border-outline-variant/20">
+                    <p className="px-4 py-2 text-xs font-bold text-outline-variant uppercase">Gợi ý</p>
+                    {suggestions.map((title, i) => (
+                      <button
+                        key={i}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setSearchQuery(title);
+                          handleSearch(e, title);
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-surface-container-low transition-colors flex items-center gap-3"
+                      >
+                        <span className="material-symbols-outlined text-sm text-primary">trending_up</span>
+                        <span className="text-on-surface">{title}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {searchHistory.length > 0 && !suggestions.length && (
+                  <div>
+                    <p className="px-4 py-2 text-xs font-bold text-outline-variant uppercase">Lịch sử tìm kiếm</p>
+                    {searchHistory.map((query, i) => (
+                      <div key={i} className="flex items-center justify-between px-4 py-3 hover:bg-surface-container-low transition-colors">
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setSearchQuery(query);
+                            handleSearch(e, query);
+                          }}
+                          className="flex-1 text-left flex items-center gap-3"
+                        >
+                          <span className="material-symbols-outlined text-sm text-on-surface-variant">history</span>
+                          <span className="text-on-surface">{query}</span>
+                        </button>
+                        <button
+                          onClick={() => deleteHistory(query)}
+                          className="text-outline-variant hover:text-error transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-sm">close</span>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Bento Grid: Market Forecast & Trends */}
+   
+
+        {/* Job Postings List */}
+        <section className="px-8 max-w-7xl mx-auto">
+          <div className="flex justify-between items-end mb-10">
+            <div>
+              <h2 className="text-4xl font-extrabold tracking-tight mb-2">Vị trí đang tuyển</h2>
+              <p className="text-on-surface-variant">
+                Các vai trò được tuyển chọn từ những công ty dẫn đầu sự thay đổi thị trường.
+                {totalResults > 0 && <span className="font-bold text-primary"> ({totalResults} kết quả)</span>}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setShowFilters(!showFilters)}
+                className="p-2 rounded-full border border-outline-variant/20 hover:bg-surface-container transition-colors relative"
+              >
+                <span className="material-symbols-outlined">filter_list</span>
+                {(filters.location || filters.salaryMin || filters.salaryMax || filters.employmentType) && (
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full"></span>
+                )}
+              </button>
+              <button 
+                onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                className="p-2 rounded-full border border-outline-variant/20 hover:bg-surface-container transition-colors"
+                title={viewMode === 'grid' ? 'Chuyển sang danh sách' : 'Chuyển sang lưới'}
+              >
+                <span className="material-symbols-outlined">
+                  {viewMode === 'grid' ? 'view_list' : 'grid_view'}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {/* Advanced Filters Panel */}
+          {showFilters && (
+            <div className="bg-surface-container-low rounded-xl p-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div>
+                  <label className="block text-sm font-bold text-on-surface mb-2">Tỉnh / Thành phố</label>
+                  <select
+                    name="location"
+                    value={filters.location}
+                    onChange={handleFilterChange}
+                    className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface-container-lowest text-on-surface"
+                  >
+                    <option value="">Tất cả tỉnh thành</option>
+                    <option value="Hà Nội">Hà Nội</option>
+                    <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+                    <option value="Đà Nẵng">Đà Nẵng</option>
+                    <option value="Hải Phòng">Hải Phòng</option>
+                    <option value="Cần Thơ">Cần Thơ</option>
+                    <option value="An Giang">An Giang</option>
+                    <option value="Bắc Giang">Bắc Giang</option>
+                    <option value="Bắc Kạn">Bắc Kạn</option>
+                    <option value="Bạc Liêu">Bạc Liêu</option>
+                    <option value="Bắc Ninh">Bắc Ninh</option>
+                    <option value="Bến Tre">Bến Tre</option>
+                    <option value="Biên Hòa">Biên Hòa</option>
+                    <option value="Cà Mau">Cà Mau</option>
+                    <option value="Cao Bằng">Cao Bằng</option>
+                    <option value="Đắk Lắk">Đắk Lắk</option>
+                    <option value="Đắk Nông">Đắk Nông</option>
+                    <option value="Điện Biên">Điện Biên</option>
+                    <option value="Đồng Nai">Đồng Nai</option>
+                    <option value="Đồng Tháp">Đồng Tháp</option>
+                    <option value="Gia Lai">Gia Lai</option>
+                    <option value="Hà Giang">Hà Giang</option>
+                    <option value="Hà Nam">Hà Nam</option>
+                    <option value="Hà Tĩnh">Hà Tĩnh</option>
+                    <option value="Hải Dương">Hải Dương</option>
+                    <option value="Hậu Giang">Hậu Giang</option>
+                    <option value="Hòa Bình">Hòa Bình</option>
+                    <option value="Hưng Yên">Hưng Yên</option>
+                    <option value="Khánh Hòa">Khánh Hòa</option>
+                    <option value="Kiên Giang">Kiên Giang</option>
+                    <option value="Kon Tum">Kon Tum</option>
+                    <option value="Lai Châu">Lai Châu</option>
+                    <option value="Lâm Đồng">Lâm Đồng</option>
+                    <option value="Lạng Sơn">Lạng Sơn</option>
+                    <option value="Lào Cai">Lào Cai</option>
+                    <option value="Long An">Long An</option>
+                    <option value="Nam Định">Nam Định</option>
+                    <option value="Nghệ An">Nghệ An</option>
+                    <option value="Ninh Bình">Ninh Bình</option>
+                    <option value="Ninh Thuận">Ninh Thuận</option>
+                    <option value="Phú Thọ">Phú Thọ</option>
+                    <option value="Phú Yên">Phú Yên</option>
+                    <option value="Quảng Bình">Quảng Bình</option>
+                    <option value="Quảng Nam">Quảng Nam</option>
+                    <option value="Quảng Ngãi">Quảng Ngãi</option>
+                    <option value="Quảng Ninh">Quảng Ninh</option>
+                    <option value="Quảng Trị">Quảng Trị</option>
+                    <option value="Sóc Trăng">Sóc Trăng</option>
+                    <option value="Sơn La">Sơn La</option>
+                    <option value="Tây Ninh">Tây Ninh</option>
+                    <option value="Thái Bình">Thái Bình</option>
+                    <option value="Thái Nguyên">Thái Nguyên</option>
+                    <option value="Thanh Hóa">Thanh Hóa</option>
+                    <option value="Thừa Thiên Huế">Thừa Thiên Huế</option>
+                    <option value="Tiền Giang">Tiền Giang</option>
+                    <option value="Trà Vinh">Trà Vinh</option>
+                    <option value="Tuyên Quang">Tuyên Quang</option>
+                    <option value="Vĩnh Long">Vĩnh Long</option>
+                    <option value="Vĩnh Phúc">Vĩnh Phúc</option>
+                    <option value="Yên Bái">Yên Bái</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-on-surface mb-2">Mức lương tối thiểu</label>
+                  <input
+                    type="number"
+                    name="salaryMin"
+                    value={filters.salaryMin}
+                    onChange={handleFilterChange}
+                    placeholder="VND..."
+                    className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface-container-lowest text-on-surface"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-on-surface mb-2">Mức lương tối đa</label>
+                  <input
+                    type="number"
+                    name="salaryMax"
+                    value={filters.salaryMax}
+                    onChange={handleFilterChange}
+                    placeholder="VND..."
+                    className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface-container-lowest text-on-surface"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-on-surface mb-2">Loại hình công việc</label>
+                  <select
+                    name="employmentType"
+                    value={filters.employmentType}
+                    onChange={handleFilterChange}
+                    className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface-container-lowest text-on-surface"
+                  >
+                    <option value="">Tất cả</option>
+                    <option value="Toàn thời gian">Toàn thời gian</option>
+                    <option value="Bán thời gian">Bán thời gian</option>
+                    <option value="Hợp đồng">Hợp đồng</option>
+                    <option value="Thực tập">Thực tập</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <button
+                  onClick={applyFilters}
+                  className="bg-primary text-on-primary px-6 py-2 rounded-lg font-bold hover:shadow-lg transition-all"
+                >
+                  Áp dụng bộ lọc
+                </button>
+                <button
+                  onClick={() => {
+                    clearFilters();
+                    setCurrentPage(1);
+                    setShowFilters(false);
+                    fetchJobs(1, searchQuery, {
+                      location: '',
+                      salaryMin: '',
+                      salaryMax: '',
+                      employmentType: ''
+                    });
+                  }}
+                  className="border border-outline-variant px-6 py-2 rounded-lg font-bold hover:bg-surface-container transition-all"
+                >
+                  Xóa bộ lọc
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Job Card Grid */}
+          <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8' : 'space-y-3'}>
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '3rem', color: '#666' }}>
+                ⏳ Đang tải dữ liệu công việc...
+              </div>
+            ) : jobs.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '3rem', color: '#666' }}>
+                Không tìm thấy công việc nào. Vui lòng thử tìm kiếm khác.
+              </div>
+            ) : (
+              jobs.map((job) => (
+                <JobCard key={job.id} job={job} />
+              ))
+            )}
+          </div>
+
+          {/* Pagination */}
+          <div className="flex justify-center items-center gap-4 mt-8">
+            <button
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className="px-4 py-2 bg-white border border-gray-300 rounded-lg font-bold hover:bg-primary hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              ← Trước
+            </button>
+            <span className="font-bold text-gray-600">Trang {currentPage} / {totalPages}</span>
+            <button
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage >= totalPages}
+              className="px-4 py-2 bg-white border border-gray-300 rounded-lg font-bold hover:bg-primary hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Tiếp →
+            </button>
+          </div>
+        </section>
+
+        {/* Insights Call to Action */}
+        <section className="mt-32 px-8 max-w-7xl mx-auto">
+          <div className="bg-primary rounded-2xl p-12 flex flex-col md:flex-row items-center justify-between gap-12 text-on-primary relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary-container/20 rounded-full blur-3xl -mr-20 -mt-20"></div>
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary-container/10 rounded-full blur-3xl -ml-40 -mb-40"></div>
+            <div className="max-w-xl relative z-10">
+              <h2 className="text-4xl font-extrabold tracking-tight mb-4">Mở khóa Dự báo Nghề nghiệp Cá nhân hóa của Bạn</h2>
+              <p className="text-primary-container text-lg mb-8">Nhận những phân tích sâu sắc về việc kỹ năng nào sẽ tăng giá trị thị trường của bạn hơn 30% trong 18 tháng tới.</p>
+              <div className="flex flex-wrap gap-4">
+                <button className="bg-white text-primary px-8 py-4 rounded-xl font-bold shadow-lg transition-transform hover:scale-105">Nhận Kiểm định Miễn phí</button>
+                <button className="border border-primary-container text-on-primary px-8 py-4 rounded-xl font-bold transition-all hover:bg-primary-container/20">Tìm hiểu Phương pháp AI</button>
+              </div>
+            </div>
+            <div className="relative z-10 w-full md:w-1/3">
+              <div className="bg-surface-container-lowest/10 backdrop-blur-md p-6 rounded-xl border border-white/10">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-tertiary"></div>
+                  <div>
+                    <p className="text-xs uppercase font-bold tracking-widest opacity-60">Điểm nghề nghiệp</p>
+                    <p className="text-2xl font-black">885 / 1000</p>
+                  </div>
+                </div>
+                <div className="w-full bg-white/20 h-2 rounded-full mb-4">
+                  <div className="bg-tertiary w-[88%] h-full rounded-full"></div>
+                </div>
+                <p className="text-sm italic opacity-80">"Bạn nằm trong top 5% ứng viên cho các vai trò Kỹ thuật Dự báo."</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-surface-container-low border-t-0 font-inter text-xs uppercase tracking-widest text-on-surface-variant px-12 py-12">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-8 w-full">
+          <div className="text-lg font-black text-on-surface">Career Authority</div>
+          <div className="flex flex-wrap justify-center gap-8">
+            <a className="hover:underline transition-all opacity-80 hover:opacity-100" href="#">Chính sách Bảo mật</a>
+            <a className="hover:underline transition-all opacity-80 hover:opacity-100" href="#">Điều khoản Dịch vụ</a>
+            <a className="hover:underline transition-all opacity-80 hover:opacity-100" href="#">Liên hệ Hỗ trợ</a>
+            <a className="hover:underline transition-all opacity-80 hover:opacity-100" href="#">Phương pháp AI</a>
+          </div>
+          <div className="opacity-80">© 2024 The Predictive Career Authority. Bảo lưu mọi quyền.</div>
+        </div>
+      </footer>
+    </>
+  );
+};
+
+export default SeekerHome;

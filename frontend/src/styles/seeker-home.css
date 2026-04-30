@@ -1,0 +1,125 @@
+/* Material Symbols Outlined Font Configuration */
+@import 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap';
+@import 'https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap';
+
+:root {
+  --clr-primary: #00488d;
+  --clr-primary-container: #d3e3f7;
+  --clr-on-primary: #ffffff;
+  --clr-on-primary-fixed: #000000;
+  --clr-on-primary-container: #001c3d;
+  --clr-tertiary: #946d01;
+  --clr-on-tertiary: #ffffff;
+  --clr-on-tertiary-container: #fde8a8;
+  --clr-tertiary-container: #fde8a8;
+  --clr-surface: #ffffff;
+  --clr-surface-container: #f3f3f8;
+  --clr-surface-container-low: #faf8fd;
+  --clr-surface-container-lowest: #ffffff;
+  --clr-surface-container-high: #ede9f3;
+  --clr-on-surface: #191c21;
+  --clr-on-surface-variant: #49454f;
+  --clr-outline: #79747e;
+  --clr-outline-variant: #cac7d0;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f9f9ff;
+  color: #191c21;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Manrope', sans-serif;
+}
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: 400;
+  font-style: normal;
+  font-size: 24px;
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Utility Classes for Tailwind */
+.primary { color: var(--clr-primary); }
+.on-surface { color: var(--clr-on-surface); }
+.on-surface-variant { color: var(--clr-on-surface-variant); }
+.surface-container { background-color: var(--clr-surface-container); }
+.surface-container-low { background-color: var(--clr-surface-container-low); }
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .text-5xl {
+    font-size: 2.5rem;
+  }
+  
+  .hidden.md\:flex {
+    display: none;
+  }
+}
+
+/* Focus states for accessibility */
+button:focus,
+a:focus,
+input:focus {
+  outline: 2px solid var(--clr-primary);
+  outline-offset: 2px;
+}
+
+/* Scroll bar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--clr-surface-container-low);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--clr-outline-variant);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--clr-outline);
+}

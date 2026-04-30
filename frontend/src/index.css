@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+
+* {
+  font-family: 'Inter', sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Manrope', sans-serif;
+}
+
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Custom color variables based on Material Design 3 */
+:root {
+  --color-primary: #00488d;
+  --color-primary-container: #d6e3ff;
+  --color-secondary: #6c5ce7;
+  --color-tertiary: #00a86b;
+  --color-surface: #fffbfe;
+  --color-surface-container: #f7eff4;
+  --color-surface-container-low: #fdf8fd;
+  --color-surface-container-lowest: #fffbfe;
+  --color-on-surface: #191c21;
+  --color-on-surface-variant: #49454e;
+  --color-outline-variant: #cac4cf;
+}
+
+.dark {
+  --color-primary: #005fb8;
+  --color-surface: #191c21;
+  --color-on-surface: #e6e0e9;
+}
