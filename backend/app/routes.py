@@ -3,6 +3,28 @@ from .models import db, User, Job
 
 main = Blueprint('main', __name__)
 
+
+@main.route('/register', methods=['POST'])
+def register_seeker():
+    data = request.get_json(silent=True) or {}
+
+    username = (data.get('username') or data.get('email') or '').strip()
+    email = (data.get('email') or '').strip()
+    password = data.get('password')
+
+    if not username or not email or not password:
+        return jsonify({"message": "Thiếu thông tin đăng ký"}), 400
+
+    existing_user = User.query.filter_by(username=username).first()
+    if existing_user:
+        return jsonify({"message": "Tài khoản đã tồn tại"}), 409
+
+    user = User(username=username, email=email)
+    db.session.add(user)
+    db.session.commit()
+
+    return jsonify({"message": "Đăng ký thành công"}), 201
+
 # CREATE
 @main.route('/users', methods=['POST'])
 def create_user():
@@ -77,7 +99,9 @@ def get_jobs():
         "salary_max": job.salary_max,
         "job_address": job.job_address,
         "deadline": job.deadline.isoformat() if job.deadline else None,
-        "job_experience_required": job.job_experience_required,
+        "exp_min": job.exp_min,
+        "exp_max": job.exp_max,
+        "benefits": job.benefits,
         "employment_type": job.employment_type,
         "job_function": job.job_function,
         "industries": job.industries,
@@ -108,10 +132,12 @@ def get_job(job_id):
         "salary_max": job.salary_max,
         "job_address": job.job_address,
         "deadline": job.deadline.isoformat() if job.deadline else None,
-        "job_experience_required": job.job_experience_required,
+        "exp_min": job.exp_min,
+        "exp_max": job.exp_max,
+        "benefits": job.benefits,
         "employment_type": job.employment_type,
         "job_function": job.job_function,
         "industries": job.industries,
         "job_description": job.job_description,
-        "job_requirement": job.job_requirement
+        "job_requirement": job.job_requirement,
     })

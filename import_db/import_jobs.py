@@ -65,7 +65,7 @@ def import_jobs_from_excel(excel_file):
                     
                     # Tạo object Job
                     job = Job(
-                        # job_id=str(row['job_id']),
+                        job_id=str(row['job_id']),
                         job_title=str(row['job_title']),
                         company_name=str(row['company_name']),
                         salary_min=get_optional(row, 'salary_min'),

@@ -54,7 +54,7 @@ def import_users_from_csv(csv_file):
                     
                     # Tạo đối tượng InforUser mới với tất cả dữ liệu từ CSV
                     infor_user = InforUser(
-                        # user_id=int(row.get('UserID', idx)) if pd.notna(row.get('UserID')) else None,
+                        user_id=int(row.get('UserID', idx)) if pd.notna(row.get('UserID')) else None,
                         username=username,
                         industry=get_optional(row, 'industry_group'),
                         desired_job=get_optional(row, 'Desired Job'),

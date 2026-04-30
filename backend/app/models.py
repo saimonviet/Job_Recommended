@@ -10,7 +10,7 @@ class User(db.Model):
 
 class InforUser(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    # user_id = db.Column(db.Integer)
+    user_id = db.Column(db.Integer)
     username = db.Column(db.String(255), unique=True)
     industry = db.Column(db.String(255))
     desired_job = db.Column(db.String(255))
@@ -27,7 +27,7 @@ class InforUser(db.Model):
 
 class Job(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    # job_id = db.Column(db.String(100), unique=True, nullable=False)
+    job_id = db.Column(db.String(100), unique=True, nullable=False)
     job_title = db.Column(db.String(255), nullable=False)
     company_name = db.Column(db.String(255), nullable=False)
     salary_min = db.Column(db.String(50))
