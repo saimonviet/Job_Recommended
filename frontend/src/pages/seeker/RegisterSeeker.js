@@ -39,10 +39,9 @@ const RegisterSeeker = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username: formData.email,
+          username: formData.fullName,
           email: formData.email,
           password: formData.password,
-          fullName: formData.fullName
         })
       });
 

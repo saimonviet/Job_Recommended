@@ -7,11 +7,14 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50))
     email = db.Column(db.String(100))
+    password = db.Column(db.String(32))
 
 class InforUser(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer)
     username = db.Column(db.String(255), unique=True)
+    avatar_path = db.Column(db.String(255))
+    phone = db.Column(db.String(20))
     industry = db.Column(db.String(255))
     desired_job = db.Column(db.String(255))
     workplace_desired = db.Column(db.String(255))

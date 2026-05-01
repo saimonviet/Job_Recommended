@@ -188,50 +188,18 @@ const Settings = () => {
           </section>
         </div>
 
-        {/* Account Connections */}
-        <section className="bg-surface-container-lowest rounded-xl p-8">
-          <h2 className="text-xl font-headline font-bold text-on-surface mb-6">Liên kết tài khoản</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[
-              { name: 'Google', icon: 'G', color: 'text-blue-600', connected: true },
-              { name: 'Facebook', icon: 'f', color: 'text-white', bgColor: 'bg-blue-600', connected: false },
-              { name: 'LinkedIn', icon: 'in', color: 'text-white', bgColor: 'bg-blue-700', connected: false },
-            ].map(account => (
-              <div
-                key={account.name}
-                className={`flex items-center justify-between p-4 rounded-xl ${
-                  account.connected
-                    ? 'bg-surface-container'
-                    : 'bg-surface-container-low hover:bg-surface-container cursor-pointer transition-colors'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded flex items-center justify-center font-black text-xs ${
-                    account.bgColor ? account.bgColor : 'bg-white border border-outline-variant'
-                  } ${account.color}`}>
-                    {account.icon}
-                  </div>
-                  <span className="text-sm font-medium">{account.name}</span>
-                </div>
-                {account.connected && (
-                  <span className="text-xs text-primary font-bold">Đã kết nối</span>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-
+ 
         {/* Logout */}
         <div className="flex gap-4">
           <button
             onClick={handleLogout}
-            className="flex-1 bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition-all"
+            className="flex-1 flex items-center justify-center gap-2 bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition-all"
           >
-            <span className="material-symbols-outlined text-sm inline-block mr-2">logout</span>
+            <span className="material-symbols-outlined text-sm leading-none">logout</span>
             Đăng xuất
           </button>
-          <button className="flex-1 border-2 border-red-600 text-red-600 px-6 py-3 rounded-lg font-semibold hover:bg-red-50 transition-all">
-            <span className="material-symbols-outlined text-sm inline-block mr-2">delete</span>
+          <button className="flex-1 flex items-center justify-center gap-2 border-2 border-red-600 text-red-600 px-6 py-3 rounded-lg font-semibold hover:bg-red-50 transition-all">
+            <span className="material-symbols-outlined text-sm leading-none">delete</span>
             Xóa tài khoản
           </button>
         </div>

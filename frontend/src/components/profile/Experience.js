@@ -1,26 +1,14 @@
 import React, { useState } from 'react';
 
 const Experience = () => {
-  const [experiences, setExperiences] = useState([
-    {
-      id: 1,
-      company: 'FPT Software',
-      position: 'Senior Architect',
-      startDate: '2020',
-      endDate: 'Hiện tại',
-      description: 'Thiết kế và quản lý các dự án kiến trúc quy mô lớn, đạt 50,000m² diện tích xây dựng.',
-      skills: ['BIM', 'Revit', 'CAD'],
-    },
-    {
-      id: 2,
-      company: 'VNG Corporation',
-      position: 'Architect',
-      startDate: '2018',
-      endDate: '2020',
-      description: 'Phát triển các giải pháp kiến trúc bền vững cho các dự án thương mại.',
-      skills: ['Sustainability', 'Design', 'Planning'],
-    },
-  ]);
+  const currentUser = JSON.parse(localStorage.getItem('user')) || {};
+  const storageKey = `experiences_${currentUser.username || currentUser.email || currentUser.id || 'guest'}`;
+
+  
+  const savedExperiences = localStorage.getItem(storageKey);
+  const [experiences, setExperiences] = useState(
+    savedExperiences ? JSON.parse(savedExperiences) : []
+  );
   const [isEditing, setIsEditing] = useState(false);
   const [newExp, setNewExp] = useState({
     company: '',
@@ -33,7 +21,11 @@ const Experience = () => {
 
   const handleAddExperience = () => {
     if (newExp.company && newExp.position) {
-      setExperiences([...experiences, { ...newExp, id: Date.now() }]);
+      const newExperience = { ...newExp, id: Date.now() };
+      const updatedExperiences = [...experiences, newExperience];
+      setExperiences(updatedExperiences);
+      // Lưu vào localStorage
+      localStorage.setItem(storageKey, JSON.stringify(updatedExperiences));
       setNewExp({
         company: '',
         position: '',
@@ -46,7 +38,19 @@ const Experience = () => {
   };
 
   const handleDeleteExperience = (id) => {
-    setExperiences(experiences.filter(exp => exp.id !== id));
+    const updatedExperiences = experiences.filter(exp => exp.id !== id);
+    setExperiences(updatedExperiences);
+    // Lưu vào localStorage
+    localStorage.setItem(storageKey, JSON.stringify(updatedExperiences));
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString || dateString === 'Hiện tại') return dateString;
+    const parts = dateString.split('-'); // YYYY-MM-DD
+    const year = parts[0];
+    const month = parts[1];
+    const day = parts[2];
+    return `${day}/${month}/${year}`; // DD/MM/YYYY
   };
 
   return (
@@ -58,7 +62,7 @@ const Experience = () => {
         </div>
         <button
           onClick={() => setIsEditing(!isEditing)}
-          className="flex items-center gap-2 px-6 py-3 bg-[#00488d] text-white rounded-lg font-semibold hover:shadow-lg transition-all"
+          className="flex items-center gap-2 px-3 py-1 bg-[#00488d] text-white rounded-lg font-semibold hover:shadow-lg transition-all text-sm"
         >
           <span className="material-symbols-outlined text-xl">{isEditing ? 'close' : 'edit'}</span>
           {isEditing ? 'Hủy' : 'Chỉnh sửa'}
@@ -85,7 +89,7 @@ const Experience = () => {
             </div>
 
             <p className="text-sm text-on-surface-variant mb-4">
-              {exp.startDate} - {exp.endDate}
+              {formatDate(exp.startDate)} - {formatDate(exp.endDate)}
             </p>
 
             <p className="text-on-surface mb-6">{exp.description}</p>
@@ -137,22 +141,39 @@ const Experience = () => {
               <div>
                 <label className="block text-xs font-bold text-on-surface-variant mb-2">Từ năm</label>
                 <input
-                  type="text"
-                  value={newExp.startDate}
-                  onChange={(e) => setNewExp({ ...newExp, startDate: e.target.value })}
+                  type="date"
+                  value={newExp.startDate || ''}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      setNewExp({ ...newExp, startDate: e.target.value });
+                    }
+                  }}
                   className="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-lg px-4 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10"
-                  placeholder="2020"
                 />
               </div>
               <div>
                 <label className="block text-xs font-bold text-on-surface-variant mb-2">Đến năm</label>
-                <input
-                  type="text"
-                  value={newExp.endDate}
-                  onChange={(e) => setNewExp({ ...newExp, endDate: e.target.value })}
-                  className="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-lg px-4 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10"
-                  placeholder="Hiện tại"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    value={newExp.endDate && newExp.endDate !== 'Hiện tại' ? newExp.endDate : ''}
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        setNewExp({ ...newExp, endDate: e.target.value });
+                      }
+                    }}
+                    className="flex-1 bg-surface-container-low border-2 border-outline-variant/20 rounded-lg px-4 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10"
+                  />
+                  <label className="flex items-center gap-2 px-4 py-2 bg-surface-container-low border-2 border-outline-variant/20 rounded-lg cursor-pointer hover:bg-surface-variant transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={newExp.endDate === 'Hiện tại'}
+                      onChange={(e) => setNewExp({ ...newExp, endDate: e.target.checked ? 'Hiện tại' : '' })}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-xs font-semibold text-on-surface-variant whitespace-nowrap">Hiện tại</span>
+                  </label>
+                </div>
               </div>
             </div>
 
@@ -167,11 +188,47 @@ const Experience = () => {
               />
             </div>
 
+            <div className="mb-4">
+              <label className="block text-xs font-bold text-on-surface-variant mb-2">Kỹ năng</label>
+              <div className="space-y-2">
+                {newExp.skills && newExp.skills.map((skill, idx) => (
+                  <div key={idx} className="flex gap-2">
+                    <input
+                      type="text"
+                      value={skill}
+                      onChange={(e) => {
+                        const updatedSkills = [...newExp.skills];
+                        updatedSkills[idx] = e.target.value;
+                        setNewExp({ ...newExp, skills: updatedSkills });
+                      }}
+                      className="flex-1 bg-surface-container-low border-2 border-outline-variant/20 rounded-lg px-4 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10"
+                      placeholder="Nhập kỹ năng"
+                    />
+                    <button
+                      onClick={() => {
+                        const updatedSkills = newExp.skills.filter((_, i) => i !== idx);
+                        setNewExp({ ...newExp, skills: updatedSkills });
+                      }}
+                      className="px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-sm">close</span>
+                    </button>
+                  </div>
+                ))}
+                <button
+                  onClick={() => setNewExp({ ...newExp, skills: [...newExp.skills, ''] })}
+                  className="w-full px-4 py-2 bg-surface-container-high text-on-surface rounded-lg font-semibold hover:bg-surface-variant transition-colors text-sm"
+                >
+                  + Thêm kỹ năng
+                </button>
+              </div>
+            </div>
+
             <button
               onClick={handleAddExperience}
               className="w-full bg-gradient-to-br from-[#00488d] to-[#0066cc] text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all"
             >
-              <span className="material-symbols-outlined text-sm inline-block mr-2">add</span>
+              {/* <span className="material-symbols-outlined text-sm inline-block mr-2">add</span> */}
               Thêm kinh nghiệm
             </button>
           </div>

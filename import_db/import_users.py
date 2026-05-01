@@ -56,6 +56,8 @@ def import_users_from_csv(csv_file):
                     infor_user = InforUser(
                         user_id=int(row.get('UserID', idx)) if pd.notna(row.get('UserID')) else None,
                         username=username,
+                        avatar_path=None,
+                        phone='',
                         industry=get_optional(row, 'industry_group'),
                         desired_job=get_optional(row, 'Desired Job'),
                         workplace_desired=get_optional(row, 'Workplace Desired'),

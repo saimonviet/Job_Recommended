@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import API from '../../services/api';
 
 const LoginSeeker = () => {
   const navigate = useNavigate();
@@ -10,22 +11,34 @@ const LoginSeeker = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Simple login demo - save to localStorage
-    if (email && password) {
-      const user = {
-        name: email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1),
-        email: email,
-        token: 'demo_token_' + Date.now(),
-      };
-      
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('token', user.token);
-      
-      // Redirect to logged in home page
-      navigate('/seeker/home');
-    } else {
+    if (!email || !password) {
       alert('Vui lòng nhập email và mật khẩu');
+      return;
     }
+
+    API.get('/users')
+      .then((res) => {
+        const matchedUser = (res.data || []).find((u) => u.email === email || u.username === email);
+
+        if (!matchedUser) {
+          alert('Không tìm thấy tài khoản, vui lòng đăng ký trước');
+          return;
+        }
+
+        const user = {
+          id: matchedUser.id,
+          username: matchedUser.username,
+          email: matchedUser.email,
+          token: 'demo_token_' + Date.now(),
+        };
+
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('token', user.token);
+        navigate('/seeker/home');
+      })
+      .catch(() => {
+        alert('Không thể kết nối đến máy chủ');
+      });
   };
 
   return (

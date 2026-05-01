@@ -83,7 +83,7 @@ const TopNavBar = ({ currentPage = 'home' }) => {
             {/* Dropdown Menu */}
             <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#2e3036] rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
               <div className="p-4 border-b border-outline-variant/20">
-                <p className="font-bold text-sm">{user.name}</p>
+                <p className="font-bold text-sm">{user.username}</p>
                 <p className="text-xs text-on-surface-variant">{user.email}</p>
               </div>
               <div className="p-2">
