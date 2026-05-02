@@ -1,14 +1,187 @@
 import os
 import json
+import hashlib
+import re
+import unicodedata
 
 from flask import Blueprint, request, jsonify, send_from_directory
 from .models import db, User, Job, InforUser
-import hashlib
 from datetime import datetime
 from werkzeug.utils import secure_filename
 
+import torch
+import torch.nn as nn
+
 main = Blueprint('main', __name__)
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'instance', 'uploads')
+MODEL_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'best_model.pt')
+_recommendation_model = None
+
+
+class RecommendationScorer(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.encoder = nn.Module()
+        self.encoder.proj = nn.Module()
+        self.encoder.proj.user = nn.Linear(267, 128)
+        self.encoder.proj.job = nn.Linear(265, 128)
+        self.encoder.out_proj = nn.Module()
+        self.encoder.out_proj.user = nn.Linear(128, 64)
+        self.encoder.out_proj.job = nn.Linear(128, 64)
+        self.decoder = nn.Module()
+        self.decoder.lin = nn.Sequential(
+            nn.Linear(128, 64),
+            nn.ReLU(),
+            nn.Linear(64, 1),
+        )
+
+
+def _normalize_text(value):
+    if value is None:
+        return ''
+
+    text = unicodedata.normalize('NFKD', str(value).lower())
+    text = text.encode('ascii', 'ignore').decode('ascii')
+    return re.sub(r'[^a-z0-9]+', ' ', text).strip()
+
+
+def _build_feature_vector(dimension, values, salt):
+    vector = torch.zeros(dimension, dtype=torch.float32)
+
+    for value in values:
+        normalized = _normalize_text(value)
+        if not normalized:
+            continue
+
+        tokens = [normalized]
+        tokens.extend(normalized.split())
+
+        for token in tokens:
+            digest = hashlib.sha1(f'{salt}:{token}'.encode('utf-8')).hexdigest()
+            vector[int(digest, 16) % dimension] += 1.0
+
+    norm = torch.linalg.norm(vector)
+    if norm > 0:
+        vector = vector / norm
+
+    return vector
+
+
+def _format_salary(job):
+    salary_min = (job.salary_min or '').strip()
+    salary_max = (job.salary_max or '').strip()
+
+    if salary_min and salary_max:
+        return f'{salary_min} - {salary_max}'
+    return salary_min or salary_max or 'Thoả thuận'
+
+
+def _job_logo_seed(job):
+    return job.company_name or job.job_title or job.job_id or str(job.id)
+
+
+def _serialize_job(job, score=None):
+    payload = {
+        'id': job.id,
+        'title': job.job_title,
+        'company': job.company_name,
+        'location': job.job_address,
+        'salary': _format_salary(job),
+        'logo': f"https://api.dicebear.com/7.x/icons/svg?seed={_normalize_text(_job_logo_seed(job)).replace(' ', '-') or job.id}",
+        'deadline': job.deadline.isoformat() if job.deadline else None,
+        'employmentType': job.employment_type,
+        'jobFunction': job.job_function,
+        'industries': job.industries,
+        'description': job.job_description,
+        'requirement': job.job_requirement,
+    }
+
+    if score is not None:
+        payload['matchScore'] = round(float(score), 2)
+
+    return payload
+
+
+def _get_recommendation_model():
+    global _recommendation_model
+
+    if _recommendation_model is not None:
+        return _recommendation_model
+
+    try:
+        state_dict = torch.load(MODEL_PATH, map_location='cpu', weights_only=True)
+    except TypeError:
+        state_dict = torch.load(MODEL_PATH, map_location='cpu')
+
+    model = RecommendationScorer()
+    model.load_state_dict(state_dict, strict=False)
+    model.eval()
+    _recommendation_model = model
+    return _recommendation_model
+
+
+def _score_job_for_user(user, infor, job):
+    user_features = _build_feature_vector(
+        267,
+        [
+            user.username,
+            user.email,
+            infor.industry if infor else None,
+            infor.desired_job if infor else None,
+            infor.workplace_desired if infor else None,
+            infor.desired_salary if infor else None,
+            infor.gender if infor else None,
+            infor.marriage if infor else None,
+            infor.age if infor and infor.age is not None else None,
+            infor.target if infor else None,
+            infor.skills if infor else None,
+            infor.degree if infor else None,
+            infor.exp_min if infor else None,
+            infor.exp_max if infor else None,
+        ],
+        'user',
+    )
+
+    job_features = _build_feature_vector(
+        265,
+        [
+            job.job_id,
+            job.job_title,
+            job.company_name,
+            job.salary_min,
+            job.salary_max,
+            job.job_address,
+            job.exp_min,
+            job.exp_max,
+            job.benefits,
+            job.employment_type,
+            job.job_function,
+            job.industries,
+            job.job_description,
+            job.job_requirement,
+        ],
+        'job',
+    )
+
+    model = _get_recommendation_model()
+    with torch.no_grad():
+        user_embedding = torch.relu(model.encoder.proj.user(user_features.unsqueeze(0)))
+        user_embedding = torch.relu(model.encoder.out_proj.user(user_embedding))
+        job_embedding = torch.relu(model.encoder.proj.job(job_features.unsqueeze(0)))
+        job_embedding = torch.relu(model.encoder.out_proj.job(job_embedding))
+        pair_embedding = torch.cat([user_embedding, job_embedding], dim=-1)
+        raw_score = model.decoder.lin(pair_embedding).squeeze().item()
+
+    return 100.0 * torch.sigmoid(torch.tensor(raw_score)).item()
+
+
+def _get_user_context(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return None, None
+
+    infor = InforUser.query.filter_by(username=user.username).first()
+    return user, infor
 
 
 def _save_avatar_file(avatar_file, username):
@@ -131,7 +304,7 @@ def get_jobs():
     salary_max = request.args.get('salary_max', None)
     employment_type = request.args.get('employment_type', '', type=str)
     
-    query = Job.query
+    query = Job.query.order_by(Job.id.desc())
     
     # Search by job title or company name
     if search:
@@ -192,6 +365,43 @@ def get_jobs():
         "current_page": page
     })
 
+
+@main.route('/recommendations', methods=['GET'])
+def get_recommendations():
+    """Dự đoán 5 công việc phù hợp nhất cho người dùng hiện tại."""
+    user_id = request.args.get('user_id', type=int)
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
+
+    user, infor = _get_user_context(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    jobs = Job.query.order_by(Job.id.desc()).all()
+    if not jobs:
+        return jsonify({"recommendations": []})
+
+    scored_jobs = []
+    for job in jobs:
+        try:
+            score = _score_job_for_user(user, infor, job)
+        except Exception:
+            score = 0.0
+        scored_jobs.append((score, job))
+
+    scored_jobs.sort(key=lambda item: item[0], reverse=True)
+    recommendations = [_serialize_job(job, score=score) for score, job in scored_jobs[:5]]
+
+    return jsonify({
+        "user": {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+        },
+        "recommendations": recommendations,
+        "total_jobs_considered": len(jobs),
+    })
+
 @main.route('/jobs/<int:job_id>', methods=['GET'])
 def get_job(job_id):
     """Lấy chi tiết một công việc"""
@@ -200,22 +410,12 @@ def get_job(job_id):
         return jsonify({"error": "Job not found"}), 404
     
     return jsonify({
-        "id": job.id,
+        **_serialize_job(job),
         "job_id": job.job_id,
-        "job_title": job.job_title,
-        "company_name": job.company_name,
         "salary_min": job.salary_min,
         "salary_max": job.salary_max,
-        "job_address": job.job_address,
-        "deadline": job.deadline.isoformat() if job.deadline else None,
         "exp_min": job.exp_min,
         "exp_max": job.exp_max,
-        "benefits": job.benefits,
-        "employment_type": job.employment_type,
-        "job_function": job.job_function,
-        "industries": job.industries,
-        "job_description": job.job_description,
-        "job_requirement": job.job_requirement,
     })
 
 # USER PROFILE ENDPOINTS

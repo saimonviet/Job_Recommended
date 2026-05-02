@@ -29,8 +29,8 @@ const UserProfile = () => {
         return <PersonalInfo />;
       case 'experience':
         return <Experience />;
-      case 'skills':
-        return <Skills />;
+      // case 'skills':
+      //   return <Skills />;
       case 'projects':
         return <Projects />;
       case 'settings':

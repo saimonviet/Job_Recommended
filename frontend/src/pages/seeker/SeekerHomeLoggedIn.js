@@ -1,85 +1,102 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TopNavBar from '../../components/TopNavBar';
+import API from '../../services/api';
+
+const createJobLogo = (seed) => `https://api.dicebear.com/7.x/icons/svg?seed=${encodeURIComponent(seed || 'job')}`;
+
+const formatSalary = (job) => {
+  if (job.salary) {
+    return job.salary;
+  }
+
+  if (job.salary_min && job.salary_max) {
+    return `${job.salary_min} - ${job.salary_max}`;
+  }
+
+  return job.salary_min || job.salary_max || 'Thoả thuận';
+};
+
+const toRecommendedJob = (job) => ({
+  id: job.id,
+  title: job.title || job.job_title,
+  company: job.company || job.company_name,
+  location: job.location || job.job_address,
+  salary: formatSalary(job),
+  logo: job.logo || createJobLogo(job.company || job.company_name || job.title || job.job_title),
+  matchScore: job.matchScore ?? job.match_score ?? 0,
+});
+
+const toLatestJob = (job) => ({
+  id: job.id,
+  title: job.title || job.job_title,
+  company: job.company || job.company_name,
+  location: job.location || job.job_address,
+  salary: formatSalary(job),
+  logo: job.logo || createJobLogo(job.company || job.company_name || job.title || job.job_title),
+  posted: job.deadline ? `Hạn ${new Date(job.deadline).toLocaleDateString('vi-VN')}` : 'Mới đăng',
+});
 
 const SeekerHomeLoggedIn = () => {
   const navigate = useNavigate();
   const [recommendations, setRecommendations] = useState([]);
   const [latestJobs, setLatestJobs] = useState([]);
   const [careerScore] = useState(842);
-  const [newRecommendations] = useState(12);
+  const [newRecommendations, setNewRecommendations] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in
     const user = localStorage.getItem('user');
     if (!user) {
       navigate('/login-seeker');
       return;
     }
+
     setIsLoggedIn(true);
-    loadJobs();
+    loadJobs(JSON.parse(user));
   }, [navigate]);
 
-  const loadJobs = () => {
-    // Mock job recommendations
-    const mockRecommendations = [
-      {
-        id: 1,
-        title: 'Senior Product Designer',
-        company: 'FPT Software',
-        location: 'TP. Hồ Chí Minh',
-        salary: '2,500 - 3,500 USD',
-        logo: 'https://api.dicebear.com/7.x/icons/svg?seed=fpt',
-        matchScore: 92,
-      },
-      {
-        id: 2,
-        title: 'Lead UX Researcher',
-        company: 'VNG Corporation',
-        location: 'Hà Nội',
-        salary: 'Cạnh tranh',
-        logo: 'https://api.dicebear.com/7.x/icons/svg?seed=vng',
-        matchScore: 88,
-      },
-    ];
+  const loadJobs = async (user) => {
+    setLoading(true);
 
-    const mockLatestJobs = [
-      {
-        id: 3,
-        title: 'Frontend Developer',
-        company: 'Techcombank',
-        location: 'TP. Hồ Chí Minh',
-        salary: '1,800 - 2,500 USD',
-        logo: 'https://api.dicebear.com/7.x/icons/svg?seed=techcom',
-        posted: '2 giờ trước',
-      },
-      {
-        id: 4,
-        title: 'Data Analyst',
-        company: 'Grab Vietnam',
-        location: 'Hà Nội',
-        salary: '1,500 - 2,200 USD',
-        logo: 'https://api.dicebear.com/7.x/icons/svg?seed=grab',
-        posted: '5 giờ trước',
-      },
-      {
-        id: 5,
-        title: 'Backend Engineer',
-        company: 'Shopee',
-        location: 'TP. Hồ Chí Minh',
-        salary: '2,200 - 3,000 USD',
-        logo: 'https://api.dicebear.com/7.x/icons/svg?seed=shopee',
-        posted: '8 giờ trước',
-      },
-    ];
+    try {
+      const [recommendationResponse, latestJobsResponse] = await Promise.all([
+        API.get('/recommendations', { params: { user_id: user.id } }),
+        API.get('/jobs', { params: { per_page: 6 } }),
+      ]);
 
-    setRecommendations(mockRecommendations);
-    setLatestJobs(mockLatestJobs);
+      const recommendedJobs = (recommendationResponse.data?.recommendations || []).map(toRecommendedJob);
+      const freshJobs = (latestJobsResponse.data?.jobs || []).map(toLatestJob);
+
+      setRecommendations(recommendedJobs);
+      setLatestJobs(freshJobs);
+      setNewRecommendations(recommendedJobs.length);
+    } catch (error) {
+      console.error('Failed to load seeker dashboard jobs:', error);
+      setRecommendations([]);
+      setLatestJobs([]);
+      setNewRecommendations(0);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!isLoggedIn) {
     return null;
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-surface flex items-center justify-center px-6">
+        <div className="text-center space-y-3">
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#00488d]/10 text-[#00488d]">
+            <span className="material-symbols-outlined animate-pulse">progress_activity</span>
+          </div>
+          <p className="text-on-surface-variant font-medium">Đang tải gợi ý việc làm...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -190,6 +207,11 @@ const SeekerHomeLoggedIn = () => {
                   </div>
                 </div>
               ))}
+              {!recommendations.length && (
+                <div className="rounded-xl border border-dashed border-outline-variant/30 bg-surface-container-lowest p-6 text-center text-sm text-on-surface-variant">
+                  Chưa tìm thấy việc làm phù hợp cho hồ sơ hiện tại.
+                </div>
+              )}
             </div>
           </section>
 
@@ -263,6 +285,11 @@ const SeekerHomeLoggedIn = () => {
                 </div>
               </div>
             ))}
+            {!latestJobs.length && (
+              <div className="col-span-full rounded-xl border border-dashed border-outline-variant/30 bg-surface-container-lowest p-6 text-center text-sm text-on-surface-variant">
+                Chưa có dữ liệu việc làm mới nhất.
+              </div>
+            )}
           </div>
         </section>
       </main>

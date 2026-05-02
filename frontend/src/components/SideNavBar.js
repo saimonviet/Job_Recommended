@@ -8,8 +8,7 @@ const SideNavBar = ({ activeTab = 'personal' }) => {
   const menuItems = [
     { id: 'personal', label: 'Thông tin cá nhân', icon: 'person' },
     { id: 'experience', label: 'Kinh nghiệm làm việc', icon: 'work' },
-    { id: 'skills', label: 'Kỹ năng', icon: 'psychology' },
-    { id: 'projects', label: 'Dự án', icon: 'folder_special' },
+    // { id: 'projects', label: 'Dự án', icon: 'folder_special' },
     { id: 'settings', label: 'Cài đặt', icon: 'settings' },
   ];
 
