@@ -91,7 +91,12 @@ const PersonalInfo = () => {
     }
 
     // Lấy experiences từ localStorage
-    const experiences = JSON.parse(localStorage.getItem(`experiences_${user.username || user.email || user.id || 'guest'}`)) || [];
+    const experiences = JSON.parse(localStorage.getItem(experienceStorageKey)) || [];
+    console.log('[PersonalInfo] Experiences from localStorage:', experiences);
+    console.log('[PersonalInfo] Experiences count:', experiences.length);
+    console.log('[PersonalInfo] localStorage key used:', experienceStorageKey);
+    console.log('[PersonalInfo] User object:', user);
+    console.log('[PersonalInfo] Sending experiences to backend:', JSON.stringify(experiences));
 
     const formDataToSave = new FormData();
     // Append only fields defined in InforUser model
@@ -293,9 +298,9 @@ const PersonalInfo = () => {
                     onChange={handleChange}
                     className="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
                   >
-                    <option value="Single">Độc thân</option>
-                    <option value="Married">Đã kết hôn</option>
-                    <option value="Other">Khác</option>
+                    <option value="Độc thân">Độc thân</option>
+                    <option value="Đã kết hôn">Đã kết hôn</option>
+                    <option value="Khác">Khác</option>
                   </select>
                 ) : (
                   <p className="text-on-surface">{formData.marriage}</p>

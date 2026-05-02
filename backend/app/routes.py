@@ -8,6 +8,7 @@ from flask import Blueprint, request, jsonify, send_from_directory
 from .models import db, User, Job, InforUser
 from datetime import datetime
 from werkzeug.utils import secure_filename
+from sqlalchemy import inspect, text
 
 import torch
 import torch.nn as nn
@@ -86,6 +87,8 @@ def _serialize_job(job, score=None):
         'title': job.job_title,
         'company': job.company_name,
         'location': job.job_address,
+        'job_detail_address': job.job_detail_address,
+        'benefits': job.benefits,
         'salary': _format_salary(job),
         'logo': f"https://api.dicebear.com/7.x/icons/svg?seed={_normalize_text(_job_logo_seed(job)).replace(' ', '-') or job.id}",
         'deadline': job.deadline.isoformat() if job.deadline else None,
@@ -102,6 +105,46 @@ def _serialize_job(job, score=None):
     return payload
 
 
+def _deserialize_recommendations_cache(cached_value):
+    if not cached_value:
+        return None
+
+    try:
+        recommendations = json.loads(cached_value)
+    except (TypeError, ValueError):
+        return None
+
+    return recommendations if isinstance(recommendations, list) else None
+
+
+def _save_recommendations_cache(user, recommendations):
+    user.recommendations = json.dumps(recommendations, ensure_ascii=False)
+
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+
+def _clear_recommendations_cache(user):
+    user.recommendations = None
+
+
+def _ensure_user_recommendations_column():
+    inspector = inspect(db.engine)
+
+    try:
+        columns = {column['name'] for column in inspector.get_columns('user')}
+    except Exception:
+        return
+
+    if 'recommendations' in columns:
+        return
+
+    with db.engine.begin() as connection:
+        connection.execute(text('ALTER TABLE `user` ADD COLUMN recommendations LONGTEXT NULL'))
+
+
 def _get_recommendation_model():
     global _recommendation_model
 
@@ -109,9 +152,18 @@ def _get_recommendation_model():
         return _recommendation_model
 
     try:
+        # Prefer a safe weights-only load when possible (prevents arbitrary code execution).
         state_dict = torch.load(MODEL_PATH, map_location='cpu', weights_only=True)
-    except TypeError:
-        state_dict = torch.load(MODEL_PATH, map_location='cpu')
+    except Exception as e:
+        # If weights-only loading fails (e.g. UnpicklingError due to UninitializedParameter),
+        # fall back to a regular torch.load. This may execute pickled code, so only do this
+        # for trusted checkpoint files (the project stores the checkpoint locally).
+        try:
+            print(f"Warning: weights_only load failed ({e}). Retrying without weights_only...")
+            state_dict = torch.load(MODEL_PATH, map_location='cpu')
+        except Exception:
+            # Re-raise the original error if fallback also fails.
+            raise
 
     model = RecommendationScorer()
     model.load_state_dict(state_dict, strict=False)
@@ -183,6 +235,28 @@ def _get_user_context(user_id):
     infor = InforUser.query.filter_by(username=user.username).first()
     return user, infor
 
+def _get_profile_missing_fields(infor):
+    # Keep completion criteria aligned with the 2-step onboarding UX:
+    # 1) Personal intent (location + desired job), 2) experience range.
+    if not infor:
+        return ['location', 'desired_job', 'experience']
+
+    missing_fields = []
+    if not (infor.workplace_desired or '').strip():
+        missing_fields.append('location')
+    if not (infor.desired_job or '').strip():
+        missing_fields.append('desired_job')
+
+    has_experience_range = (infor.exp_min or '').strip() and (infor.exp_max or '').strip()
+    if not has_experience_range:
+        missing_fields.append('experience')
+
+    return missing_fields
+
+
+def _is_profile_complete(infor):
+    return len(_get_profile_missing_fields(infor)) == 0
+
 
 def _save_avatar_file(avatar_file, username):
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -208,17 +282,24 @@ def _extract_experience_range_and_skills(experiences):
     years = []
     skills = []
 
-    for exp in experiences:
+    for i, exp in enumerate(experiences):
         start_date = exp.get('startDate')
         end_date = exp.get('endDate')
+        print(f"[_extract_experience_range_and_skills] Experience {i}: startDate={start_date}, endDate={end_date}")
 
         if isinstance(start_date, str) and len(start_date) >= 4 and start_date[:4].isdigit():
-            years.append(int(start_date[:4]))
+            year = int(start_date[:4])
+            print(f"[_extract_experience_range_and_skills] Added year from startDate: {year}")
+            years.append(year)
 
         if end_date == 'Hiện tại':
-            years.append(datetime.now().year)
+            year = datetime.now().year
+            print(f"[_extract_experience_range_and_skills] Added current year (Hiện tại): {year}")
+            years.append(year)
         elif isinstance(end_date, str) and len(end_date) >= 4 and end_date[:4].isdigit():
-            years.append(int(end_date[:4]))
+            year = int(end_date[:4])
+            print(f"[_extract_experience_range_and_skills] Added year from endDate: {year}")
+            years.append(year)
 
         exp_skills = exp.get('skills') or []
         if isinstance(exp_skills, list):
@@ -229,6 +310,7 @@ def _extract_experience_range_and_skills(experiences):
     unique_skills = list(dict.fromkeys(skills))
     exp_min = str(min(years)) if years else None
     exp_max = str(max(years)) if years else None
+    print(f"[_extract_experience_range_and_skills] Final result: exp_min={exp_min}, exp_max={exp_max}, skills={unique_skills}")
     return exp_min, exp_max, unique_skills
 
 
@@ -292,7 +374,6 @@ def get_users():
         for u in users
     ])
 
-# JOB ENDPOINTS
 @main.route('/jobs', methods=['GET'])
 def get_jobs():
     """Lấy danh sách công việc với phân trang và bộ lọc"""
@@ -303,42 +384,59 @@ def get_jobs():
     salary_min = request.args.get('salary_min', None)
     salary_max = request.args.get('salary_max', None)
     employment_type = request.args.get('employment_type', '', type=str)
-    
-    query = Job.query.order_by(Job.id.desc())
-    
-    # Search by job title or company name
+    industries = request.args.get('industries', '', type=str)
+    exp_min = request.args.get('exp_min', None)
+
+    query = Job.query.order_by(Job.deadline.desc(), Job.id.desc())
+
     if search:
         query = query.filter(
-            (Job.job_title.ilike(f'%{search}%')) | 
+            (Job.job_title.ilike(f'%{search}%')) |
             (Job.company_name.ilike(f'%{search}%'))
         )
-    
-    # Filter by location
+
     if location:
         query = query.filter(Job.job_address.ilike(f'%{location}%'))
-    
-    # Filter by minimum salary
+
     if salary_min:
         try:
             salary_min = int(salary_min)
             query = query.filter(Job.salary_min >= salary_min)
         except (ValueError, TypeError):
             pass
-    
-    # Filter by maximum salary
+
     if salary_max:
         try:
             salary_max = int(salary_max)
             query = query.filter(Job.salary_max <= salary_max)
         except (ValueError, TypeError):
             pass
-    
-    # Filter by employment type
+
     if employment_type:
         query = query.filter(Job.employment_type.ilike(f'%{employment_type}%'))
-    
+
+    if industries:
+        # tokenize the incoming industries string and broaden matching across
+        # the industries column, job title and description to be more resilient
+        # to formatting/diacritics differences from the source data.
+        tokens = [t.strip() for t in re.split(r"\W+", industries) if t.strip()]
+        for tok in tokens:
+            pattern = f"%{tok}%"
+            query = query.filter(
+                (Job.industries.ilike(pattern)) |
+                (Job.job_title.ilike(pattern)) |
+                (Job.job_description.ilike(pattern))
+            )
+
+    if exp_min:
+        try:
+            exp_min = int(exp_min)
+            query = query.filter(Job.exp_min <= exp_min)
+        except (ValueError, TypeError):
+            pass
+
     pagination = query.paginate(page=page, per_page=per_page)
-    
+
     jobs = [{
         "id": job.id,
         "job_id": job.job_id,
@@ -355,14 +453,14 @@ def get_jobs():
         "job_function": job.job_function,
         "industries": job.industries,
         "job_description": job.job_description,
-        "job_requirement": job.job_requirement
+        "job_requirement": job.job_requirement,
     } for job in pagination.items]
-    
+
     return jsonify({
         "jobs": jobs,
         "total": pagination.total,
         "pages": pagination.pages,
-        "current_page": page
+        "current_page": page,
     })
 
 
@@ -377,9 +475,32 @@ def get_recommendations():
     if not user:
         return jsonify({"error": "User not found"}), 404
 
+    missing_fields = _get_profile_missing_fields(infor)
+    if missing_fields:
+        return jsonify({
+            "profile_complete": False,
+            "profile_missing_fields": missing_fields,
+            "recommendations": [],
+            "message": "Profile incomplete",
+        }), 200
+
+    cached_recommendations = _deserialize_recommendations_cache(user.recommendations)
+    if cached_recommendations is not None:
+        return jsonify({
+            "profile_complete": True,
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+            },
+            "recommendations": cached_recommendations,
+            "total_jobs_considered": 0,
+            "cached": True,
+        })
+
     jobs = Job.query.order_by(Job.id.desc()).all()
     if not jobs:
-        return jsonify({"recommendations": []})
+        return jsonify({"profile_complete": True, "recommendations": []})
 
     scored_jobs = []
     for job in jobs:
@@ -392,7 +513,10 @@ def get_recommendations():
     scored_jobs.sort(key=lambda item: item[0], reverse=True)
     recommendations = [_serialize_job(job, score=score) for score, job in scored_jobs[:5]]
 
+    _save_recommendations_cache(user, recommendations)
+
     return jsonify({
+        "profile_complete": True,
         "user": {
             "id": user.id,
             "username": user.username,
@@ -402,13 +526,14 @@ def get_recommendations():
         "total_jobs_considered": len(jobs),
     })
 
+
 @main.route('/jobs/<int:job_id>', methods=['GET'])
 def get_job(job_id):
     """Lấy chi tiết một công việc"""
     job = Job.query.get(job_id)
     if not job:
         return jsonify({"error": "Job not found"}), 404
-    
+
     return jsonify({
         **_serialize_job(job),
         "job_id": job.job_id,
@@ -416,7 +541,9 @@ def get_job(job_id):
         "salary_max": job.salary_max,
         "exp_min": job.exp_min,
         "exp_max": job.exp_max,
+        "benefits": job.benefits,
     })
+
 
 # USER PROFILE ENDPOINTS
 @main.route('/user-profile/<int:user_id>', methods=['POST'])
@@ -429,7 +556,7 @@ def save_user_profile(user_id):
         return jsonify({"error": "User not found"}), 404
 
     infor = _find_or_create_infor_by_username(username=user.username, user_id=user.id)
-    db.session.flush()  # Flush changes to detect constraint errors early
+    db.session.flush()
 
     avatar_file = request.files.get('avatar')
     if avatar_file and avatar_file.filename:
@@ -437,7 +564,6 @@ def save_user_profile(user_id):
 
     if 'phone' in data:
         infor.phone = (data.get('phone') or '').strip() or None
-    # support both old frontend keys and new model-backed keys
     if 'location' in data or 'workplace_desired' in data:
         infor.workplace_desired = (data.get('workplace_desired') or data.get('location') or '').strip() or None
     if 'position' in data or 'desired_job' in data:
@@ -445,7 +571,6 @@ def save_user_profile(user_id):
     if 'bio' in data or 'target' in data:
         infor.target = (data.get('target') or data.get('bio') or '').strip() or None
 
-    # Additional profile fields
     if 'age' in data:
         age_val = (data.get('age') or '').strip()
         try:
@@ -460,15 +585,26 @@ def save_user_profile(user_id):
         infor.degree = (data.get('degree') or '').strip() or None
 
     experiences = data.get('experiences')
+    print(f"[save_user_profile] Raw experiences from request: {experiences}")
+    print(f"[save_user_profile] Type of experiences: {type(experiences)}")
+    
     if isinstance(experiences, str):
         try:
             experiences = json.loads(experiences)
-        except Exception:
+        except Exception as e:
+            print(f"[save_user_profile] Failed to parse experiences JSON: {e}")
             experiences = []
+    
+    print(f"[save_user_profile] Parsed experiences: {experiences}")
+    print(f"[save_user_profile] Experiences is list: {isinstance(experiences, list)}")
+    
     if isinstance(experiences, list):
+        print(f"[save_user_profile] Processing {len(experiences)} experience entries")
         exp_min, exp_max, exp_skills = _extract_experience_range_and_skills(experiences)
+        print(f"[save_user_profile] Extracted exp_min={exp_min}, exp_max={exp_max}, skills={exp_skills}")
         infor.exp_min = exp_min
         infor.exp_max = exp_max
+        print(f"[save_user_profile] After assignment: infor.exp_min={infor.exp_min}, infor.exp_max={infor.exp_max}")
         if exp_skills:
             merged = []
             if infor.skills:
@@ -478,11 +614,22 @@ def save_user_profile(user_id):
 
     try:
         db.session.commit()
+        _clear_recommendations_cache(user)
+        db.session.commit()
         return jsonify({"message": "Profile saved successfully", "username": user.username}), 200
+
     except Exception as e:
         db.session.rollback()
-        print(f"Database error: {str(e)}")
+        print(f"[save_user_profile] Database error: {str(e)}")
         return jsonify({"error": f"Failed to save profile: {str(e)}"}), 500
+    
+        # Final verification - query the database to confirm what was saved
+    print(f"[save_user_profile] Final verification - querying database...")
+    saved_infor = InforUser.query.filter_by(username=user.username).first()
+    if saved_infor:
+        print(f"[save_user_profile] SAVED TO DB: exp_min={saved_infor.exp_min}, exp_max={saved_infor.exp_max}, skills={saved_infor.skills}")
+    else:
+        print(f"[save_user_profile] ERROR: Could not find saved infor in database")
 
 @main.route('/user-profile/<int:user_id>', methods=['GET'])
 def get_user_profile(user_id):
@@ -494,6 +641,10 @@ def get_user_profile(user_id):
     infor = InforUser.query.filter_by(username=user.username).first()
     if not infor:
         return jsonify({"error": "User profile not found"}), 404
+
+    print(f"[get_user_profile] infor.exp_min={infor.exp_min}, infor.exp_max={infor.exp_max}, infor.skills={infor.skills}")
+    missing_fields = _get_profile_missing_fields(infor)
+    print(f"[get_user_profile] missing_fields={missing_fields}")
 
     return jsonify({
         "fullName": user.username,
@@ -510,7 +661,9 @@ def get_user_profile(user_id):
         "gender": infor.gender,
         "marriage": infor.marriage,
         "degree": infor.degree,
-        "username": infor.username
+        "username": infor.username,
+        "profile_complete": len(missing_fields) == 0,
+        "profile_missing_fields": missing_fields,
     })
 
 

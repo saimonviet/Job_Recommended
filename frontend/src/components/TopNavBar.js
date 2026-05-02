@@ -34,7 +34,7 @@ const TopNavBar = ({ currentPage = 'home' }) => {
               navigate('/seeker/home');
             }}
           >
-            Việc làm của tôi
+            Việc làm
           </a>
           <a
             className={`pb-1 transition-all duration-200 ease-in-out ${

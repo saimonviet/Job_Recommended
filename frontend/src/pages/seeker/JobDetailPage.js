@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import TopNavBar from '../../components/TopNavBar';
 
 const JobDetailPage = () => {
   const { jobId } = useParams();
@@ -7,8 +8,23 @@ const JobDetailPage = () => {
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [user, setUser] = useState(null);
+  const [mapCoords, setMapCoords] = useState(null);
+  const [mapLoading, setMapLoading] = useState(false);
 
   const API_URL = 'http://127.0.0.1:5000';
+
+  // Check if user is logged in from localStorage
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        console.error('Error parsing stored user:', e);
+      }
+    }
+  }, []);
 
   // Fetch job data from API
   useEffect(() => {
@@ -51,6 +67,66 @@ const JobDetailPage = () => {
     ));
   };
 
+  const buildMapEmbedUrl = (coords) => {
+    if (!coords) return '';
+
+    const delta = 0.01;
+    const left = (coords.lon - delta).toFixed(6);
+    const right = (coords.lon + delta).toFixed(6);
+    const top = (coords.lat + delta).toFixed(6);
+    const bottom = (coords.lat - delta).toFixed(6);
+    const marker = `${coords.lat.toFixed(6)}%2C${coords.lon.toFixed(6)}`;
+
+    return `https://www.openstreetmap.org/export/embed.html?bbox=${left}%2C${bottom}%2C${right}%2C${top}&layer=mapnik&marker=${marker}`;
+  };
+
+  const buildMapOpenUrl = (coords) => {
+    if (!coords) return '';
+
+    return `https://www.openstreetmap.org/?mlat=${coords.lat.toFixed(6)}&mlon=${coords.lon.toFixed(6)}#map=15/${coords.lat.toFixed(6)}/${coords.lon.toFixed(6)}`;
+  };
+
+  useEffect(() => {
+    const fetchCoordinates = async () => {
+      const detailAddress = job?.job_detail_address || job?.detail_address;
+      if (!detailAddress) {
+        setMapCoords(null);
+        return;
+      }
+
+      setMapLoading(true);
+      try {
+        const query = encodeURIComponent(`${detailAddress}, Vietnam`);
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${query}`, {
+          headers: {
+            'Accept-Language': 'vi',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Geocoding error: ${response.status}`);
+        }
+
+        const result = await response.json();
+        if (Array.isArray(result) && result.length > 0) {
+          setMapCoords({
+            lat: Number(result[0].lat),
+            lon: Number(result[0].lon),
+          });
+        } else {
+          setMapCoords(null);
+        }
+      } catch (geocodingError) {
+        console.error('Error geocoding location:', geocodingError);
+        setMapCoords(null);
+      } finally {
+        setMapLoading(false);
+      }
+    };
+
+    fetchCoordinates();
+  }, [job?.job_detail_address, job?.detail_address]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -90,47 +166,42 @@ const JobDetailPage = () => {
         }
         h1, h2, h3 { font-family: 'Manrope', sans-serif; }
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-        .job-description p::first-letter,
-        .job-requirement p::first-letter {
-          font-size: 2.5em;
-          font-weight: bold;
-          float: left;
-          line-height: 1;
-          margin-right: 0.1em;
-          color: #00488d;
-        }
       `}</style>
 
-      {/* TopNavBar */}
-      <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md shadow-sm flex justify-between items-center px-8 py-4 max-w-full">
-        <button
-          onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-primary font-bold text-lg hover:opacity-80 transition-opacity"
-        >
-          <span className="material-symbols-outlined">arrow_back</span>
-          Career Authority
-        </button>
-        <div className="hidden md:flex gap-8 items-center">
-          <a className="text-on-surface-variant font-medium hover:text-primary transition-colors" href="#forecast">Dự báo</a>
-          <a className="text-on-surface-variant font-medium hover:text-primary transition-colors" href="#market">Thị trường</a>
-          <a className="text-primary font-bold border-b-2 border-primary" href="#jobs">Công ty</a>
-          <a className="text-on-surface-variant font-medium hover:text-primary transition-colors" href="#about">Về chúng tôi</a>
-        </div>
-        <div className="flex gap-4 items-center">
-          <button 
-            onClick={() => navigate('/login-seeker')}
-            className="text-primary font-medium px-4 py-2 hover:opacity-80 transition-opacity cursor-pointer bg-none border-none"
+      {/* TopNavBar - use authenticated nav if logged in */}
+      {user ? (
+        <TopNavBar currentPage="jobs" />
+      ) : (
+        <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md shadow-sm flex justify-between items-center px-8 py-4 max-w-full">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 text-primary font-bold text-lg hover:opacity-80 transition-opacity"
           >
-            Đăng nhập
+            <span className="material-symbols-outlined">arrow_back</span>
+            Career Authority
           </button>
-          <button 
-            onClick={() => navigate('/register-seeker')}
-            className="bg-primary text-on-primary px-6 py-2 rounded-md font-bold hover:opacity-90 transition-opacity cursor-pointer border-none"
-          >
-            Tham gia ngay
-          </button>
-        </div>
-      </nav>
+          <div className="hidden md:flex gap-8 items-center">
+            <a className="text-on-surface-variant font-medium hover:text-primary transition-colors" href="#forecast">Dự báo</a>
+            <a className="text-on-surface-variant font-medium hover:text-primary transition-colors" href="#market">Thị trường</a>
+            <a className="text-primary font-bold border-b-2 border-primary" href="#jobs">Công ty</a>
+            <a className="text-on-surface-variant font-medium hover:text-primary transition-colors" href="#about">Về chúng tôi</a>
+          </div>
+          <div className="flex gap-4 items-center">
+            <button 
+              onClick={() => navigate('/login-seeker')}
+              className="text-primary font-medium px-4 py-2 hover:opacity-80 transition-opacity cursor-pointer bg-none border-none"
+            >
+              Đăng nhập
+            </button>
+            <button 
+              onClick={() => navigate('/register-seeker')}
+              className="bg-primary text-on-primary px-6 py-2 rounded-md font-bold hover:opacity-90 transition-opacity cursor-pointer border-none"
+            >
+              Tham gia ngay
+            </button>
+          </div>
+        </nav>
+      )}
 
       <main className="pt-24 pb-20 px-4 md:px-12 max-w-7xl mx-auto">
         {/* Hero Header Section */}
@@ -142,9 +213,9 @@ const JobDetailPage = () => {
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-on-surface mb-2">
-                  {job.job_title}
+                  {job.title}
                 </h1>
-                <p className="text-xl text-primary font-medium">{job.company_name}</p>
+                <p className="text-xl text-primary font-medium">{job.company}</p>
               </div>
             </div>
 
@@ -155,11 +226,7 @@ const JobDetailPage = () => {
               </div>
               <div className="bg-surface-container-low px-4 py-2 rounded-full flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary" style={{ fontSize: '20px' }}>location_on</span>
-                <span className="text-sm font-semibold">{job.job_address || 'Chưa cập nhật'}</span>
-              </div>
-              <div className="bg-tertiary-fixed px-4 py-2 rounded-full flex items-center gap-2">
-                <span className="material-symbols-outlined text-tertiary" style={{ fontSize: '20px' }}>workspace_premium</span>
-                <span className="text-sm font-bold text-tertiary">Độ phù hợp: 98%</span>
+                <span className="text-sm font-semibold">{job.location || 'Chưa cập nhật'}</span>
               </div>
             </div>
           </div>
@@ -180,17 +247,6 @@ const JobDetailPage = () => {
                 <span className="material-symbols-outlined">share</span> Chia sẻ
               </button>
             </div>
-
-            {/* Forecast Summary Mini-Card */}
-            <div className="mt-4 p-6 bg-surface-container rounded-2xl border-l-4 border-tertiary">
-              <h4 className="font-bold text-on-surface mb-2">Thị hiếu thị trường</h4>
-              <p className="text-sm text-on-surface-variant mb-4 leading-relaxed">
-                Vị trí này đang có nhu cầu tăng <span className="text-tertiary font-bold">14%</span> trong quý tới.
-              </p>
-              <div className="h-1.5 w-full bg-surface-container-high rounded-full overflow-hidden">
-                <div className="h-full bg-tertiary w-3/4"></div>
-              </div>
-            </div>
           </div>
         </section>
 
@@ -204,7 +260,7 @@ const JobDetailPage = () => {
                 MỤC TIÊU CÔNG VIỆC
               </h2>
               <div className="space-y-4 text-on-surface-variant leading-relaxed text-lg text-justify job-description">
-                <p>{formatText(job.job_description)}</p>
+                <p>{formatText(job.description)}</p>
               </div>
             </article>
 
@@ -214,15 +270,16 @@ const JobDetailPage = () => {
                 YÊU CẦU CÔNG VIỆC
               </h2>
               <div className="space-y-4 text-on-surface-variant text-lg text-justify job-requirement">
-                <p>{formatText(job.job_requirement)}</p>
+                <p>{formatText(job.requirement)}</p>
               </div>
             </article>
 
             {/* Job Info */}
             <article>
               <h2 className="text-2xl font-bold text-on-surface mb-6 border-b border-outline-variant/20 pb-4">
-                Thông tin bổ sung
+                Phúc lợi
               </h2>
+              {job.benefits}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="p-6 bg-surface-container-low rounded-xl">
                   <span className="material-symbols-outlined text-primary mb-3" style={{ fontSize: '32px', display: 'block' }}>
@@ -236,21 +293,21 @@ const JobDetailPage = () => {
                     work
                   </span>
                   <h4 className="font-bold text-on-surface mb-1">Loại hợp đồng</h4>
-                  <p className="text-sm text-on-surface-variant">{job.employment_type || 'Chưa cập nhật'}</p>
+                  <p className="text-sm text-on-surface-variant">{job.employmentType || 'Chưa cập nhật'}</p>
                 </div>
                 <div className="p-6 bg-surface-container-low rounded-xl">
                   <span className="material-symbols-outlined text-primary mb-3" style={{ fontSize: '32px', display: 'block' }}>
                     school
                   </span>
                   <h4 className="font-bold text-on-surface mb-1">Kinh nghiệm yêu cầu</h4>
-                  <p className="text-sm text-on-surface-variant">{job.job_experience_required || 'Chưa cập nhật'}</p>
+                  <p className="text-sm text-on-surface-variant">{job.exp_min && job.exp_max ? `${job.exp_min} - ${job.exp_max} năm` : 'Chưa cập nhật'}</p>
                 </div>
                 <div className="p-6 bg-surface-container-low rounded-xl">
                   <span className="material-symbols-outlined text-primary mb-3" style={{ fontSize: '32px', display: 'block' }}>
                     category
                   </span>
                   <h4 className="font-bold text-on-surface mb-1">Chức năng công việc</h4>
-                  <p className="text-sm text-on-surface-variant">{job.job_function || 'Chưa cập nhật'}</p>
+                  <p className="text-sm text-on-surface-variant">{job.jobFunction || 'Chưa cập nhật'}</p>
                 </div>
               </div>
             </article>
@@ -258,53 +315,47 @@ const JobDetailPage = () => {
 
           {/* Right Column: Competition Analysis */}
           <div className="lg:col-span-4 space-y-8">
-            {/* Competition Analysis */}
-            <div className="bg-on-background p-8 rounded-3xl text-white">
-              <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                <span className="material-symbols-outlined">analytics</span>
-                Cạnh tranh dự kiến
-              </h3>
-              <div className="space-y-8">
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="opacity-80">Số lượng ứng tuyển</span>
-                    <span className="font-bold">Cao</span>
-                  </div>
-                  <div className="h-2 w-full bg-white/10 rounded-full">
-                    <div className="h-full bg-white w-[75%] rounded-full"></div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-white/5 p-4 rounded-2xl">
-                    <div className="text-2xl font-bold">--</div>
-                    <div className="text-xs opacity-60 uppercase tracking-widest">Ứng viên</div>
-                  </div>
-                  <div className="bg-white/5 p-4 rounded-2xl">
-                    <div className="text-2xl font-bold text-tertiary">Top 5%</div>
-                    <div className="text-xs opacity-60 uppercase tracking-widest">Xếp hạng của bạn</div>
-                  </div>
-                </div>
-                <div className="p-4 bg-white/10 rounded-2xl border border-white/20">
-                  <p className="text-sm leading-relaxed italic">
-                    "Hồ sơ của bạn phù hợp với vị trí này. Hãy ứng tuyển ngay để tăng cơ hội được công ty liên hệ!"
-                  </p>
-                </div>
-              </div>
-            </div>
-
             {/* Location Card */}
             <div className="bg-surface-container-low rounded-3xl overflow-hidden">
-              <div className="h-48 bg-surface-dim relative flex items-center justify-center group">
-                <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: '64px' }}>
-                  map
-                </span>
-                <div className="absolute inset-0 bg-primary/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="bg-white px-4 py-2 rounded-full text-xs font-bold shadow-lg">Xem bản đồ</span>
-                </div>
+              <div className="h-48 bg-surface-dim relative">
+                {mapLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-sm text-on-surface-variant">Đang tải bản đồ...</span>
+                  </div>
+                )}
+
+                {!mapLoading && mapCoords && (
+                  <>
+                    <iframe
+                      title="Bản đồ vị trí công việc"
+                      src={buildMapEmbedUrl(mapCoords)}
+                      className="w-full h-full border-0"
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
+                    <a
+                      href={buildMapOpenUrl(mapCoords)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="absolute top-3 right-3 bg-white/95 px-3 py-1.5 rounded-full text-xs font-bold shadow"
+                    >
+                      Xem bản đồ
+                    </a>
+                  </>
+                )}
+
+                {!mapLoading && !mapCoords && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                    <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: '48px' }}>
+                      map
+                    </span>
+                    <span className="text-xs text-on-surface-variant">Không tìm thấy tọa độ cho địa chỉ này</span>
+                  </div>
+                )}
               </div>
               <div className="p-6">
-                <h4 className="font-bold mb-1">{job.job_address || 'Chưa cập nhật'}</h4>
-                <p className="text-xs text-on-surface-variant">{job.company_name}</p>
+                <h4 className="font-bold mb-1">{job.job_detail_address || 'Chưa cập nhật'}</h4>
+                <p className="text-xs text-on-surface-variant">{job.company}</p>
               </div>
             </div>
           </div>

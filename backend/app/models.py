@@ -8,6 +8,7 @@ class User(db.Model):
     username = db.Column(db.String(50))
     email = db.Column(db.String(100))
     password = db.Column(db.String(32))
+    recommendations = db.Column(db.Text)
 
 class InforUser(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -36,6 +37,7 @@ class Job(db.Model):
     salary_min = db.Column(db.String(50))
     salary_max = db.Column(db.String(50))
     job_address = db.Column(db.String(300))
+    job_detail_address = db.Column(db.Text)
     deadline = db.Column(db.DateTime)
     exp_min = db.Column(db.String(50))
     exp_max = db.Column(db.String(50))

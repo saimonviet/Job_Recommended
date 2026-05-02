@@ -1,14 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const Experience = () => {
   const currentUser = JSON.parse(localStorage.getItem('user')) || {};
   const storageKey = `experiences_${currentUser.username || currentUser.email || currentUser.id || 'guest'}`;
 
-  
   const savedExperiences = localStorage.getItem(storageKey);
-  const [experiences, setExperiences] = useState(
-    savedExperiences ? JSON.parse(savedExperiences) : []
-  );
+  const [experiences, setExperiences] = useState(savedExperiences ? JSON.parse(savedExperiences) : []);
   const [isEditing, setIsEditing] = useState(false);
   const [newExp, setNewExp] = useState({
     company: '',
@@ -19,38 +16,41 @@ const Experience = () => {
     skills: [],
   });
 
+  useEffect(() => {
+    console.log('[Experience] storageKey:', storageKey);
+    console.log('[Experience] savedExperiences:', experiences);
+  }, [storageKey, experiences]);
+
   const handleAddExperience = () => {
-    if (newExp.company && newExp.position) {
-      const newExperience = { ...newExp, id: Date.now() };
-      const updatedExperiences = [...experiences, newExperience];
-      setExperiences(updatedExperiences);
-      // Lưu vào localStorage
-      localStorage.setItem(storageKey, JSON.stringify(updatedExperiences));
-      setNewExp({
-        company: '',
-        position: '',
-        startDate: '',
-        endDate: '',
-        description: '',
-        skills: [],
-      });
-    }
+    if (!newExp.company || !newExp.position) return;
+
+    const newExperience = { ...newExp, id: Date.now() };
+    const updatedExperiences = [...experiences, newExperience];
+    setExperiences(updatedExperiences);
+    localStorage.setItem(storageKey, JSON.stringify(updatedExperiences));
+    setNewExp({
+      company: '',
+      position: '',
+      startDate: '',
+      endDate: '',
+      description: '',
+      skills: [],
+    });
   };
 
   const handleDeleteExperience = (id) => {
-    const updatedExperiences = experiences.filter(exp => exp.id !== id);
+    const updatedExperiences = experiences.filter((exp) => exp.id !== id);
     setExperiences(updatedExperiences);
-    // Lưu vào localStorage
     localStorage.setItem(storageKey, JSON.stringify(updatedExperiences));
   };
 
   const formatDate = (dateString) => {
     if (!dateString || dateString === 'Hiện tại') return dateString;
-    const parts = dateString.split('-'); // YYYY-MM-DD
+    const parts = dateString.split('-');
     const year = parts[0];
     const month = parts[1];
     const day = parts[2];
-    return `${day}/${month}/${year}`; // DD/MM/YYYY
+    return `${day}/${month}/${year}`;
   };
 
   return (
@@ -70,7 +70,6 @@ const Experience = () => {
       </header>
 
       <div className="space-y-6">
-        {/* Experience List */}
         {experiences.map((exp) => (
           <div key={exp.id} className="bg-surface-container-lowest p-8 rounded-xl">
             <div className="flex justify-between items-start mb-4">
@@ -97,10 +96,7 @@ const Experience = () => {
             {exp.skills && exp.skills.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {exp.skills.map((skill, idx) => (
-                  <span
-                    key={idx}
-                    className="bg-primary-fixed text-primary px-3 py-1 rounded-full text-sm font-medium"
-                  >
+                  <span key={idx} className="bg-primary-fixed text-primary px-3 py-1 rounded-full text-sm font-medium">
                     {skill}
                   </span>
                 ))}
@@ -109,7 +105,6 @@ const Experience = () => {
           </div>
         ))}
 
-        {/* Add New Experience */}
         {isEditing && (
           <div className="bg-surface-container-lowest p-8 rounded-xl border-2 border-dashed border-outline-variant/30">
             <h3 className="text-xl font-bold text-on-surface mb-6">Thêm kinh nghiệm mới</h3>
@@ -143,11 +138,7 @@ const Experience = () => {
                 <input
                   type="date"
                   value={newExp.startDate || ''}
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      setNewExp({ ...newExp, startDate: e.target.value });
-                    }
-                  }}
+                  onChange={(e) => setNewExp({ ...newExp, startDate: e.target.value })}
                   className="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-lg px-4 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10"
                 />
               </div>
@@ -157,11 +148,7 @@ const Experience = () => {
                   <input
                     type="date"
                     value={newExp.endDate && newExp.endDate !== 'Hiện tại' ? newExp.endDate : ''}
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        setNewExp({ ...newExp, endDate: e.target.value });
-                      }
-                    }}
+                    onChange={(e) => setNewExp({ ...newExp, endDate: e.target.value })}
                     className="flex-1 bg-surface-container-low border-2 border-outline-variant/20 rounded-lg px-4 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10"
                   />
                   <label className="flex items-center gap-2 px-4 py-2 bg-surface-container-low border-2 border-outline-variant/20 rounded-lg cursor-pointer hover:bg-surface-variant transition-colors">
@@ -228,7 +215,6 @@ const Experience = () => {
               onClick={handleAddExperience}
               className="w-full bg-gradient-to-br from-[#00488d] to-[#0066cc] text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all"
             >
-              {/* <span className="material-symbols-outlined text-sm inline-block mr-2">add</span> */}
               Thêm kinh nghiệm
             </button>
           </div>

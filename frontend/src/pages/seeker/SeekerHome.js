@@ -640,7 +640,7 @@ const SeekerHome = () => {
         </section>
 
         {/* Insights Call to Action */}
-        <section className="mt-32 px-8 max-w-7xl mx-auto">
+        {/* <section className="mt-32 px-8 max-w-7xl mx-auto">
           <div className="bg-primary rounded-2xl p-12 flex flex-col md:flex-row items-center justify-between gap-12 text-on-primary relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary-container/20 rounded-full blur-3xl -mr-20 -mt-20"></div>
             <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary-container/10 rounded-full blur-3xl -ml-40 -mb-40"></div>
@@ -668,7 +668,7 @@ const SeekerHome = () => {
               </div>
             </div>
           </div>
-        </section>
+        </section> */}
       </main>
 
       {/* Footer */}

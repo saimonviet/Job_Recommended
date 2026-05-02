@@ -71,6 +71,7 @@ def import_jobs_from_excel(excel_file):
                         salary_min=get_optional(row, 'salary_min'),
                         salary_max=get_optional(row, 'salary_max'),
                         job_address=get_optional(row, 'province'),
+                        job_detail_address=get_optional(row, 'job_detail_address'),
                         deadline=deadline,
                         exp_min = get_optional(row, 'exp_min'),
                         exp_max = get_optional(row, 'exp_max'),
