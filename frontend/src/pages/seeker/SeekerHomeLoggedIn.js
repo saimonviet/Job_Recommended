@@ -91,6 +91,7 @@ const SeekerHomeLoggedIn = () => {
   const [filterSalary, setFilterSalary] = useState('');
   const [filterExperience, setFilterExperience] = useState('');
   const [filterIndustry, setFilterIndustry] = useState('');
+  const [savedJobIds, setSavedJobIds] = useState([]);
 
   useEffect(() => {
     const user = localStorage.getItem('user');
@@ -103,6 +104,7 @@ const SeekerHomeLoggedIn = () => {
     const currentUser = JSON.parse(user);
     loadLatestJobs();
     loadDashboard(currentUser);
+    loadSavedJobsFromAPI(currentUser);
   }, [navigate]);
 
   const loadLatestJobs = async () => {
@@ -150,6 +152,35 @@ const SeekerHomeLoggedIn = () => {
     } finally {
       setProfileLoading(false);
       setLoadingRecommendations(false);
+    }
+  };
+
+  const loadSavedJobsFromAPI = async (user) => {
+    try {
+      const response = await API.get(`/user/${user.id}/saved-jobs`);
+      setSavedJobIds(response.data.saved_job_ids || []);
+    } catch (error) {
+      console.error('Failed to load saved jobs:', error);
+      setSavedJobIds([]);
+    }
+  };
+
+  const toggleSaveJob = async (e, jobId) => {
+    e.stopPropagation();
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    try {
+      if (savedJobIds.includes(jobId)) {
+        // Remove from saved
+        await API.delete(`/user/${user.id}/saved-jobs/${jobId}`);
+        setSavedJobIds(prevIds => prevIds.filter(id => id !== jobId));
+      } else {
+        // Add to saved
+        await API.post(`/user/${user.id}/saved-jobs/${jobId}`);
+        setSavedJobIds(prevIds => [...prevIds, jobId]);
+      }
+    } catch (error) {
+      console.error('Failed to toggle saved job:', error);
     }
   };
 
@@ -518,13 +549,9 @@ const SeekerHomeLoggedIn = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <section className="lg:col-span-8 space-y-6">
             <div className="flex justify-between items-end">
-              <h2 className="text-2xl font-bold tracking-tight text-on-surface">Danh sách việc làm mới nhất</h2>
-              <a
-                href="#"
-                className="text-[#00488d] dark:text-[#005fb8] font-semibold text-sm flex items-center gap-1 hover:underline"
-              >
-                Xem thêm <span className="material-symbols-outlined text-sm">keyboard_double_arrow_right</span>
-              </a>
+              <h2 className="text-2xl font-bold tracking-tight text-on-surface">
+                Danh sách việc làm mới nhất
+              </h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -534,7 +561,7 @@ const SeekerHomeLoggedIn = () => {
                   displayJobs.map((job) => (
                     <div
                       key={job.id}
-                      className="bg-surface-container-lowest p-6 rounded-xl transition-all hover:shadow-[0_20px_40px_rgba(25,28,33,0.06)] group cursor-pointer"
+                      className="bg-surface-container-lowest p-6 rounded-xl transition-all hover:shadow-[0_20px_40px_rgba(25,28,33,0.06)] group cursor-pointer relative"
                       onClick={() => navigate(`/jobs/${job.id}`)}
                     >
                       <div className="flex gap-4 mb-4">
@@ -547,6 +574,17 @@ const SeekerHomeLoggedIn = () => {
                           </h3>
                           <p className="text-sm text-on-surface-variant">{job.company}</p>
                         </div>
+                        <button
+                          onClick={(e) => toggleSaveJob(e, job.id)}
+                          className="flex-shrink-0 mt-0 transition-transform hover:scale-110"
+                          title={savedJobIds.includes(job.id) ? 'Bỏ lưu công việc' : 'Lưu công việc'}
+                        >
+                          <img
+                            src={savedJobIds.includes(job.id) ? '/assets/star2.png' : '/assets/star1.png'}
+                            alt="Save job"
+                            className="w-6 h-6"
+                          />
+                        </button>
                       </div>
                       <p className="text-sm text-on-surface-variant mb-2">{job.location}</p>
                       {job.detail_address && (

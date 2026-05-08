@@ -145,6 +145,21 @@ def _ensure_user_recommendations_column():
         connection.execute(text('ALTER TABLE `user` ADD COLUMN recommendations LONGTEXT NULL'))
 
 
+def _ensure_user_saved_jobs_column():
+    inspector = inspect(db.engine)
+
+    try:
+        columns = {column['name'] for column in inspector.get_columns('user')}
+    except Exception:
+        return
+
+    if 'saved_jobs' in columns:
+        return
+
+    with db.engine.begin() as connection:
+        connection.execute(text('ALTER TABLE `user` ADD COLUMN saved_jobs LONGTEXT NULL'))
+
+
 def _get_recommendation_model():
     global _recommendation_model
 
@@ -670,3 +685,112 @@ def get_user_profile(user_id):
 @main.route('/uploads/<path:filename>', methods=['GET'])
 def uploaded_avatar(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
+
+
+@main.route('/user/<int:user_id>/saved-jobs', methods=['GET'])
+def get_saved_jobs(user_id):
+    """Lấy danh sách công việc đã lưu của người dùng"""
+    _ensure_user_saved_jobs_column()
+    
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    saved_job_ids = []
+    if user.saved_jobs:
+        try:
+            saved_job_ids = json.loads(user.saved_jobs)
+            if not isinstance(saved_job_ids, list):
+                saved_job_ids = []
+        except (TypeError, ValueError):
+            saved_job_ids = []
+
+    # Fetch job details for all saved jobs
+    saved_jobs = []
+    if saved_job_ids:
+        jobs = Job.query.filter(Job.id.in_(saved_job_ids)).all()
+        for job in jobs:
+            saved_jobs.append(_serialize_job(job))
+
+    return jsonify({
+        "saved_jobs": saved_jobs,
+        "saved_job_ids": saved_job_ids,
+    })
+
+
+@main.route('/user/<int:user_id>/saved-jobs/<int:job_id>', methods=['POST'])
+def save_job(user_id, job_id):
+    """Lưu công việc cho người dùng"""
+    _ensure_user_saved_jobs_column()
+    
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    job = Job.query.get(job_id)
+    if not job:
+        return jsonify({"error": "Job not found"}), 404
+
+    # Get current saved jobs
+    saved_job_ids = []
+    if user.saved_jobs:
+        try:
+            saved_job_ids = json.loads(user.saved_jobs)
+            if not isinstance(saved_job_ids, list):
+                saved_job_ids = []
+        except (TypeError, ValueError):
+            saved_job_ids = []
+
+    # Add job ID if not already saved
+    if job_id not in saved_job_ids:
+        saved_job_ids.append(job_id)
+        user.saved_jobs = json.dumps(saved_job_ids, ensure_ascii=False)
+
+        try:
+            db.session.commit()
+            return jsonify({
+                "message": "Job saved successfully",
+                "saved_job_ids": saved_job_ids,
+            })
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"error": str(e)}), 500
+    
+    return jsonify({"message": "Job already saved"}), 200
+
+
+@main.route('/user/<int:user_id>/saved-jobs/<int:job_id>', methods=['DELETE'])
+def unsave_job(user_id, job_id):
+    """Bỏ lưu công việc của người dùng"""
+    _ensure_user_saved_jobs_column()
+    
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    # Get current saved jobs
+    saved_job_ids = []
+    if user.saved_jobs:
+        try:
+            saved_job_ids = json.loads(user.saved_jobs)
+            if not isinstance(saved_job_ids, list):
+                saved_job_ids = []
+        except (TypeError, ValueError):
+            saved_job_ids = []
+
+    # Remove job ID if exists
+    if job_id in saved_job_ids:
+        saved_job_ids.remove(job_id)
+        user.saved_jobs = json.dumps(saved_job_ids, ensure_ascii=False)
+
+        try:
+            db.session.commit()
+            return jsonify({
+                "message": "Job removed from saved",
+                "saved_job_ids": saved_job_ids,
+            })
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"error": str(e)}), 500
+    
+    return jsonify({"message": "Job not in saved list"}), 200

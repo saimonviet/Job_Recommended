@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SeekerHome from "./pages/seeker/SeekerHome";
 import SeekerHomeLoggedIn from "./pages/seeker/SeekerHomeLoggedIn";
+import SavedJobsPage from "./pages/seeker/SavedJobsPage";
 import UserProfile from "./pages/seeker/UserProfile";
 import JobDetailPage from "./pages/seeker/JobDetailPage";
 import EmployerHome from "./pages/employer/EmployerHome";
@@ -28,6 +29,7 @@ function App() {
       <Routes>
         <Route path="/" element={<SeekerHome />} />
         <Route path="/seeker/home" element={<SeekerHomeLoggedIn />} />
+        <Route path="/seeker/saved-jobs" element={<SavedJobsPage />} />
         <Route path="/seeker/profile" element={<UserProfile />} />
         <Route path="/seeker/profile/:tab" element={<UserProfile />} />
         <Route path="/jobs/:jobId" element={<JobDetailPage />} />

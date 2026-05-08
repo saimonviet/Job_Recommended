@@ -9,6 +9,7 @@ class User(db.Model):
     email = db.Column(db.String(100))
     password = db.Column(db.String(32))
     recommendations = db.Column(db.Text)
+    saved_jobs = db.Column(db.Text)  # JSON array of job IDs
 
 class InforUser(db.Model):
     id = db.Column(db.Integer, primary_key=True)
