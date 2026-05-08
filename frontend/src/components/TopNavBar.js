@@ -25,7 +25,7 @@ const TopNavBar = ({ currentPage = 'home' }) => {
         {/* Navigation Links */}
         <div className="hidden md:flex items-center gap-8 font-manrope tracking-tight font-bold">
           <a
-            className={`pb-1 transition-all duration-200 ease-in-out ${
+            className={`inline-flex items-center pb-1 transition-all duration-200 ease-in-out ${
               currentPage === 'home'
                 ? 'text-[#00488d] dark:text-[#005fb8] border-b-2 border-[#00488d]'
                 : 'text-[#c2c6d4] hover:text-[#00488d]'
@@ -39,24 +39,49 @@ const TopNavBar = ({ currentPage = 'home' }) => {
             Việc làm
           </a>
           <a
-            className="text-[#c2c6d4] hover:text-[#00488d] transition-colors"
+            className={`inline-flex items-center pb-1 transition-all duration-200 ease-in-out ${
+              currentPage === 'companies'
+                ? 'text-[#00488d] dark:text-[#005fb8] border-b-2 border-[#00488d]'
+                : 'text-[#c2c6d4] hover:text-[#00488d]'
+            }`}
             href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/seeker/companies');
+            }}
+          >
+            Công ty
+          </a>
+          <a
+            className={`inline-flex items-center pb-1 transition-all duration-200 ease-in-out ${
+              currentPage === 'applications'
+                ? 'text-[#00488d] dark:text-[#005fb8] border-b-2 border-[#00488d]'
+                : 'text-[#c2c6d4] hover:text-[#00488d]'
+            }`}
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/seeker/applications');
+            }}
           >
             Ứng tuyển
           </a>
-          <button
-            type="button"
-            className={`transition-colors ${
+          <a
+            className={`inline-flex items-center pb-1 transition-all duration-200 ease-in-out ${
               currentPage === 'saved'
                 ? 'text-[#00488d] dark:text-[#005fb8] border-b-2 border-[#00488d]'
                 : 'text-[#c2c6d4] hover:text-[#00488d]'
             }`}
-            onClick={() => navigate('/seeker/saved-jobs')}
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/seeker/saved-jobs');
+            }}
           >
             Công việc đã lưu
-          </button>
+          </a>
           <a
-            className={`pb-1 transition-all duration-200 ease-in-out ${
+            className={`inline-flex items-center pb-1 transition-all duration-200 ease-in-out ${
               currentPage === 'profile'
                 ? 'text-[#00488d] dark:text-[#005fb8] border-b-2 border-[#00488d]'
                 : 'text-[#c2c6d4] hover:text-[#00488d]'

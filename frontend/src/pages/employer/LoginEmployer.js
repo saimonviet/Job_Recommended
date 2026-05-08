@@ -53,6 +53,14 @@ const LoginEmployer = () => {
       `}</style>
 
       <div className="min-h-screen flex items-center justify-center p-4 bg-surface">
+        <button 
+          onClick={() => navigate('/employer')}
+          className="fixed top-4 left-4 p-2 hover:bg-surface-container rounded-full transition-colors z-50"
+          title="Quay lại"
+        >
+          <span className="material-symbols-outlined text-on-surface text-lg">arrow_back</span>
+        </button>
+
         <div className="w-full max-w-6xl grid md:grid-cols-2 bg-surface-container-lowest rounded-xl overflow-hidden shadow-[0_20px_40px_rgba(25,28,33,0.06)]">
           {/* Left Panel (AI Features) */}
           <div className="hidden md:flex flex-col justify-center p-12 hero-gradient text-on-primary relative overflow-hidden">

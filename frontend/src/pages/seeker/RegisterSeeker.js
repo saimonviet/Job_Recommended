@@ -78,6 +78,14 @@ const RegisterSeeker = () => {
       `}</style>
 
       <div className="min-h-screen flex items-center justify-center p-6 md:p-12 relative overflow-hidden bg-white">
+        <button 
+          onClick={() => navigate('/')}
+          className="fixed top-4 left-4 p-2 hover:bg-surface-container rounded-full transition-colors z-50"
+          title="Quay lại"
+        >
+          <span className="material-symbols-outlined text-on-surface text-lg">arrow_back</span>
+        </button>
+
         {/* Abstract Background Elements */}
         <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-blue-50 rounded-bl-full -z-10 opacity-50"></div>
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-100/20 rounded-tr-full -z-10"></div>
@@ -259,19 +267,7 @@ const RegisterSeeker = () => {
         </div>
       </div>
 
-      {/* Footer Component */}
-      <footer className="flex flex-col md:flex-row justify-between items-center px-12 py-12 gap-8 bg-gray-50 font-body text-xs uppercase tracking-widest border-t">
-        <div className="text-lg font-black text-on-surface">Career Authority</div>
-        <div className="flex flex-wrap justify-center gap-6">
-          <a className="text-gray-500 hover:underline transition-all opacity-80 hover:opacity-100" href="#privacy">Chính sách Bảo mật</a>
-          <a className="text-gray-500 hover:underline transition-all opacity-80 hover:opacity-100" href="#terms">Điều khoản Dịch vụ</a>
-          <a className="text-gray-500 hover:underline transition-all opacity-80 hover:opacity-100" href="#support">Hỗ trợ khách hàng</a>
-          <a className="text-gray-500 hover:underline transition-all opacity-80 hover:opacity-100" href="#method">Phương pháp AI</a>
-        </div>
-        <div className="text-gray-500 normal-case text-center md:text-right">
-          © 2024 The Predictive Career Authority. Bảo lưu mọi quyền.
-        </div>
-      </footer>
+   
     </>
   );
 };

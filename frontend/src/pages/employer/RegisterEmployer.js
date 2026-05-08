@@ -49,6 +49,14 @@ const RegisterEmployer = () => {
       `}</style>
 
       <div className="bg-surface-container text-on-surface min-h-screen flex items-center justify-center p-4">
+        <button 
+          onClick={() => navigate('/employer')}
+          className="fixed top-4 left-4 p-2 hover:bg-surface-container rounded-full transition-colors z-50"
+          title="Quay lại"
+        >
+          <span className="material-symbols-outlined text-on-surface text-lg">arrow_back</span>
+        </button>
+
         <div className="w-full max-w-6xl bg-surface-container-lowest rounded-2xl shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] overflow-hidden">
           <div className="grid grid-cols-1 lg:grid-cols-12">
             {/* Branding/Value Proposition Section */}

@@ -24,10 +24,18 @@ const EmployerHome = () => {
               Career Authority
             </span>
             <div className="hidden md:flex gap-6 items-center">
-              <a className="text-slate-600 hover:text-blue-600 transition-colors font-medium cursor-pointer">Giải pháp</a>
-              <a className="text-slate-600 hover:text-blue-600 transition-colors font-medium cursor-pointer">Bảng giá</a>
-              <a className="text-slate-600 hover:text-blue-600 transition-colors font-medium cursor-pointer">Tài nguyên</a>
-              
+              <button 
+                onClick={() => navigate('/')}
+                className="text-slate-600 hover:text-blue-600 transition-colors font-medium cursor-pointer bg-none border-none p-0"
+              >
+                Công việc
+              </button>
+              <button 
+                onClick={() => navigate('/company')}
+                className="text-slate-600 hover:text-blue-600 transition-colors font-medium cursor-pointer bg-none border-none p-0"
+              >
+                Công ty
+              </button>
             </div>
           </div>
           <div className="flex items-center gap-4">
