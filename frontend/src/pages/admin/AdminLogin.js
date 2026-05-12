@@ -149,7 +149,7 @@ function AdminLogin() {
         {/* Footer */}
         <div className="mt-12 text-center">
           <p className="text-xs text-gray-500 opacity-60 font-medium">
-            © 2024 The Predictive Career Authority. <br className="md:hidden" />
+            © The Predictive Career Authority. <br className="md:hidden" />
             Nền tảng Quản trị Chiến lược Nhân sự.
           </p>
         </div>

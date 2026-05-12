@@ -57,6 +57,14 @@ const LoginSeeker = () => {
       `}</style>
 
       <div className="bg-surface font-body text-on-surface min-h-screen flex items-center justify-center p-6">
+        <button 
+          onClick={() => navigate('/')}
+          className="fixed top-4 left-4 p-2 hover:bg-surface-container rounded-full transition-colors z-50"
+          title="Quay lại"
+        >
+          <span className="material-symbols-outlined text-on-surface text-lg">arrow_back</span>
+        </button>
+
         <div className="w-full max-w-[1200px] grid grid-cols-1 md:grid-cols-12 overflow-hidden rounded-xl shadow-[0_20px_40px_rgba(25,28,33,0.06)] bg-surface-container-lowest">
           {/* Branding & Visual Side */}
           <div className="hidden md:flex md:col-span-5 bg-auth-gradient p-12 flex-col justify-between relative overflow-hidden">

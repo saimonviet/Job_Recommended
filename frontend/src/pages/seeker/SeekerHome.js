@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import GuestTopNavBar from '../../components/GuestTopNavBar';
 import '../../styles/seeker-home.css';
 
 const SeekerHome = () => {
@@ -304,35 +305,7 @@ const SeekerHome = () => {
       `}</style>
 
       {/* TopNavBar */}
-      <nav className="fixed top-0 w-full z-50 glass-nav shadow-sm flex justify-between items-center px-8 py-4 max-w-full font-manrope tracking-tight bg-white/80 backdrop-blur-md">
-        <div className="text-2xl font-bold text-primary">Career Authority</div>
-        <div className="hidden md:flex items-center gap-8">
-          <a className="text-primary font-bold border-b-2 border-primary transition-colors" href="#forecast">Dự báo</a>
-          <a className="text-on-surface-variant font-medium hover:text-primary-container transition-colors" href="#market">Phân tích thị trường</a>
-          <a className="text-on-surface-variant font-medium hover:text-primary-container transition-colors" href="#companies">Công ty</a>
-          <a className="text-on-surface-variant font-medium hover:text-primary-container transition-colors" href="#about">Về chúng tôi</a>
-          <button 
-            onClick={() => navigate('/employer')}
-            className="text-on-surface-variant font-medium hover:text-primary-container transition-colors border-l border-outline-variant/30 pl-8 ml-4 cursor-pointer bg-none border-none p-0"
-          >
-            Dành cho Nhà tuyển dụng
-          </button>
-        </div>
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={() => navigate('/login-seeker')}
-            className="text-primary font-medium px-4 py-2 transition-transform scale-95 active:scale-100 cursor-pointer bg-none border-none"
-          >
-            Đăng nhập
-          </button>
-          <button 
-            onClick={() => navigate('/register-seeker')}
-            className="bg-primary text-on-primary px-6 py-2 rounded-xl font-bold shadow-sm transition-transform scale-95 active:scale-100 cursor-pointer border-none"
-          >
-            Tham gia ngay
-          </button>
-        </div>
-      </nav>
+      <GuestTopNavBar currentPage="home" />
 
       <main className="pt-24 pb-20">
         {/* Hero & Search Section */}
@@ -638,37 +611,6 @@ const SeekerHome = () => {
             </button>
           </div>
         </section>
-
-        {/* Insights Call to Action */}
-        {/* <section className="mt-32 px-8 max-w-7xl mx-auto">
-          <div className="bg-primary rounded-2xl p-12 flex flex-col md:flex-row items-center justify-between gap-12 text-on-primary relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary-container/20 rounded-full blur-3xl -mr-20 -mt-20"></div>
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary-container/10 rounded-full blur-3xl -ml-40 -mb-40"></div>
-            <div className="max-w-xl relative z-10">
-              <h2 className="text-4xl font-extrabold tracking-tight mb-4">Mở khóa Dự báo Nghề nghiệp Cá nhân hóa của Bạn</h2>
-              <p className="text-primary-container text-lg mb-8">Nhận những phân tích sâu sắc về việc kỹ năng nào sẽ tăng giá trị thị trường của bạn hơn 30% trong 18 tháng tới.</p>
-              <div className="flex flex-wrap gap-4">
-                <button className="bg-white text-primary px-8 py-4 rounded-xl font-bold shadow-lg transition-transform hover:scale-105">Nhận Kiểm định Miễn phí</button>
-                <button className="border border-primary-container text-on-primary px-8 py-4 rounded-xl font-bold transition-all hover:bg-primary-container/20">Tìm hiểu Phương pháp AI</button>
-              </div>
-            </div>
-            <div className="relative z-10 w-full md:w-1/3">
-              <div className="bg-surface-container-lowest/10 backdrop-blur-md p-6 rounded-xl border border-white/10">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-tertiary"></div>
-                  <div>
-                    <p className="text-xs uppercase font-bold tracking-widest opacity-60">Điểm nghề nghiệp</p>
-                    <p className="text-2xl font-black">885 / 1000</p>
-                  </div>
-                </div>
-                <div className="w-full bg-white/20 h-2 rounded-full mb-4">
-                  <div className="bg-tertiary w-[88%] h-full rounded-full"></div>
-                </div>
-                <p className="text-sm italic opacity-80">"Bạn nằm trong top 5% ứng viên cho các vai trò Kỹ thuật Dự báo."</p>
-              </div>
-            </div>
-          </div>
-        </section> */}
       </main>
 
       {/* Footer */}

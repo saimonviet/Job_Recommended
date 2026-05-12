@@ -1,0 +1,317 @@
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import TopNavBar from '../../components/TopNavBar';
+import API from '../../services/api';
+
+const createJobLogo = (seed) => `https://api.dicebear.com/7.x/icons/svg?seed=${encodeURIComponent(seed || 'job')}`;
+
+const SeekerSavedJobsPage = () => {
+  const navigate = useNavigate();
+  const [savedJobs, setSavedJobs] = useState([]);
+  const [savedJobIds, setSavedJobIds] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    const user = localStorage.getItem('user');
+    if (!user) {
+      navigate('/login-seeker');
+      return;
+    }
+
+    const currentUser = JSON.parse(user);
+    loadSavedJobs(currentUser);
+  }, [navigate]);
+
+  const loadSavedJobs = async (user) => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await API.get(`/user/${user.id}/saved-jobs`);
+      setSavedJobs(response.data?.saved_jobs || []);
+      setSavedJobIds(response.data?.saved_job_ids || []);
+    } catch (err) {
+      console.error('Failed to load saved jobs:', err);
+      setError('Không tải được danh sách công việc đã lưu.');
+      setSavedJobs([]);
+      setSavedJobIds([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUnsave = async (e, jobId) => {
+    e.stopPropagation();
+
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) return;
+
+    try {
+      await API.delete(`/user/${user.id}/saved-jobs/${jobId}`);
+      setSavedJobs((prev) => prev.filter((job) => job.id !== jobId));
+      setSavedJobIds((prev) => prev.filter((id) => id !== jobId));
+    } catch (err) {
+      console.error('Failed to unsave job:', err);
+      setError('Không thể bỏ lưu công việc này.');
+    }
+  };
+
+  const getFilteredJobs = () => {
+    const query = search.trim().toLowerCase();
+    let filtered = savedJobs;
+
+    if (query) {
+      filtered = filtered.filter((job) =>
+        [job.title, job.company, job.location, job.jobFunction, job.industries]
+          .filter(Boolean)
+          .some((field) => String(field).toLowerCase().includes(query))
+      );
+    }
+
+    if (filterStatus === 'all') return filtered;
+    if (filterStatus === 'active') return filtered.filter(job => job.status === 'active' || job.status === 'normal');
+    if (filterStatus === 'expiring') return filtered.filter(job => job.status === 'expiring');
+    return filtered;
+  };
+
+  const getStatusBadge = (job) => {
+    if (job.matchScore) {
+      return (
+        <span className="px-3 py-1 bg-tertiary/10 text-tertiary text-xs font-bold rounded-full uppercase tracking-widest">
+          {job.matchScore}% Match
+        </span>
+      );
+    } else if (job.status === 'expiring') {
+      return (
+        <span className="px-3 py-1 bg-error/10 text-error text-xs font-bold rounded-full uppercase tracking-widest">
+          Sắp hết hạn
+        </span>
+      );
+    }
+    return null;
+  };
+
+  const getDeadlineText = (deadline, status) => {
+    if (status === 'expiring') {
+      return <span className="text-sm font-semibold text-error">Còn {deadline} ngày</span>;
+    }
+    return <span className="text-sm font-semibold text-on-surface-variant">Còn {deadline} ngày</span>;
+  };
+
+  const filteredJobs = getFilteredJobs();
+
+  return (
+    <div className="min-h-screen">
+      <TopNavBar currentPage="saved" />
+
+      <div className="flex min-h-screen pt-16">
+        <main className="flex-1 p-8 lg:p-12 max-w-7xl mx-auto w-full">
+          {/* Header Section */}
+          <header className="mb-12">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div>
+                <h1 className="text-4xl lg:text-5xl font-extrabold font-headline tracking-tighter text-primary mb-2">
+                  Việc làm đã lưu
+                </h1>
+                <p className="text-on-surface-variant font-medium flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-tertiary"></span>
+                  Bạn có <span className="text-primary font-bold">{savedJobs.length}</span> vị trí đang theo dõi
+                </p>
+              </div>
+              {/* Quick Filters */}
+              <div className="flex gap-2 p-1.5 bg-surface-container rounded-xl">
+                <button
+                  onClick={() => setFilterStatus('all')}
+                  className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
+                    filterStatus === 'all'
+                      ? 'bg-primary text-on-primary shadow-sm'
+                      : 'text-on-surface-variant hover:bg-surface-container-high'
+                  }`}
+                >
+                  Tất cả
+                </button>
+                <button
+                  onClick={() => setFilterStatus('active')}
+                  className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
+                    filterStatus === 'active'
+                      ? 'bg-primary text-on-primary shadow-sm'
+                      : 'text-on-surface-variant hover:bg-surface-container-high'
+                  }`}
+                >
+                  Còn hạn
+                </button>
+                <button
+                  onClick={() => setFilterStatus('expiring')}
+                  className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
+                    filterStatus === 'expiring'
+                      ? 'bg-primary text-on-primary shadow-sm'
+                      : 'text-on-surface-variant hover:bg-surface-container-high'
+                  }`}
+                >
+                  Sắp hết hạn
+                </button>
+              </div>
+            </div>
+          </header>
+
+          {/* Jobs Grid */}
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+            {/* Main Listing Column */}
+            <div className="xl:col-span-8 space-y-6">
+              {loading ? (
+                <div className="space-y-6">
+                  {Array.from({ length: 3 }).map((_, index) => (
+                    <div key={index} className="bg-surface-container-lowest p-6 rounded-xl animate-pulse">
+                      <div className="flex gap-4 mb-4">
+                        <div className="w-16 h-16 rounded-lg bg-surface-container-low" />
+                        <div className="flex-1">
+                          <div className="h-6 bg-surface-container-low rounded w-3/4 mb-2" />
+                          <div className="h-4 bg-surface-container-low rounded w-1/2" />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="h-4 bg-surface-container-low rounded" />
+                        <div className="h-4 bg-surface-container-low rounded w-5/6" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : error ? (
+                <div className="bg-error/10 border border-error/20 p-6 rounded-xl text-error text-center">
+                  <p>{error}</p>
+                </div>
+              ) : filteredJobs.length > 0 ? (
+                filteredJobs.map((job) => (
+                  <div
+                    key={job.id}
+                    onClick={() => navigate(`/jobs/${job.id}`)}
+                    className="bg-surface-container-lowest p-6 rounded-xl transition-shadow hover:shadow-[0_20px_40px_rgba(25,28,33,0.06)] group cursor-pointer border border-outline-variant/10"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex gap-4">
+                        <div className="w-16 h-16 rounded-lg bg-surface-container-low flex items-center justify-center overflow-hidden flex-shrink-0">
+                          <img
+                            alt={`${job.company} Logo`}
+                            className="w-12 h-12 object-contain"
+                            src={job.logo || createJobLogo(job.company || job.title)}
+                          />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold font-headline text-on-surface group-hover:text-primary transition-colors">
+                            {job.title}
+                          </h3>
+                          <p className="text-on-surface-variant font-medium">
+                            {job.company} • {job.location}
+                          </p>
+                        </div>
+                      </div>
+                      {getStatusBadge(job)}
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 py-4 border-y border-outline-variant/10">
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest text-on-surface-variant mb-1 font-bold">
+                          Mức lương
+                        </p>
+                        <p className="text-sm font-semibold text-primary">{job.salary || 'Thoả thuận'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest text-on-surface-variant mb-1 font-bold">
+                          Loại công việc
+                        </p>
+                        <p className="text-sm font-semibold text-on-surface">{job.employmentType || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest text-on-surface-variant mb-1 font-bold">
+                          Chức năng
+                        </p>
+                        <p className="text-sm font-semibold text-on-surface">{job.jobFunction || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest text-on-surface-variant mb-1 font-bold">
+                          Ngành
+                        </p>
+                        <p className="text-sm font-semibold text-on-surface">{job.industries || 'N/A'}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <button
+                        onClick={(e) => handleUnsave(e, job.id)}
+                        className="text-on-surface-variant hover:text-error text-sm font-bold flex items-center gap-2 transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-lg">bookmark_remove</span>
+                        Bỏ lưu
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/jobs/${job.id}`);
+                        }}
+                        className="px-8 py-3 bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-lg font-bold text-sm shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
+                      >
+                        Ứng tuyển ngay
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="bg-surface-container-lowest p-12 rounded-xl text-center border border-outline-variant/10">
+                  <span className="material-symbols-outlined text-6xl text-on-surface-variant mb-4 inline-block">
+                    bookmark
+                  </span>
+                  <h3 className="text-xl font-bold text-on-surface mb-2">Chưa có công việc đã lưu</h3>
+                  <p className="text-on-surface-variant mb-6">Hãy lưu những công việc bạn quan tâm để theo dõi dễ dàng hơn.</p>
+                  <button
+                    onClick={() => navigate('/seeker/home')}
+                    className="px-6 py-3 bg-primary text-on-primary rounded-lg font-bold text-sm hover:opacity-90 transition-opacity"
+                  >
+                    Khám phá công việc
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Sidebar Column */}
+            <div className="xl:col-span-4 space-y-8">
+              
+
+              {/* Tips Section */}
+              <div className="bg-surface-container-low p-6 rounded-xl">
+                <h4 className="text-sm font-bold uppercase tracking-widest text-on-surface-variant mb-4">Gợi ý tối ưu</h4>
+                <ul className="space-y-4">
+                  <li className="flex gap-3">
+                    <div className="mt-1 w-5 h-5 rounded-full bg-tertiary-container/20 flex items-center justify-center text-tertiary flex-shrink-0">
+                      <span
+                        className="material-symbols-outlined text-[14px]"
+                        style={{ fontVariationSettings: "'FILL' 1" }}
+                      >
+                        lightbulb
+                      </span>
+                    </div>
+                    <p className="text-sm text-on-surface-variant">
+                      Cập nhật CV với từ khóa <b>"PyTorch"</b> để tăng tỉ lệ match lên 5% cho các việc làm đã lưu.
+                    </p>
+                  </li>
+                  <li className="flex gap-3">
+                    <div className="mt-1 w-5 h-5 rounded-full bg-primary-container/20 flex items-center justify-center text-primary flex-shrink-0">
+                      <span className="material-symbols-outlined text-[14px]">timer</span>
+                    </div>
+                    <p className="text-sm text-on-surface-variant">
+                      Bạn nên ứng tuyển vào <b>các công ty lớn</b> trong 24h tới để đứng đầu danh sách chờ.
+                    </p>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+};
+
+export default SeekerSavedJobsPage;

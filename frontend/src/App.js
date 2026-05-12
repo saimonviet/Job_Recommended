@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SeekerHome from "./pages/seeker/SeekerHome";
 import SeekerHomeLoggedIn from "./pages/seeker/SeekerHomeLoggedIn";
-import SavedJobsPage from "./pages/seeker/SavedJobsPage";
+import SeekerSavedJobsPage from "./pages/seeker/SeekerSavedJobsPage";
 import UserProfile from "./pages/seeker/UserProfile";
 import JobDetailPage from "./pages/seeker/JobDetailPage";
 import EmployerHome from "./pages/employer/EmployerHome";
@@ -22,25 +22,38 @@ import EmployerCreatePost from "./pages/employer/EmployerCreatePost";
 import EmployerCandidates from "./pages/employer/EmployerCandidates";
 import EmployerAnalytics from "./pages/employer/EmployerAnalytics";
 import EmployerSettings from "./pages/employer/EmployerSettings";
+import SeekerCompany from "./pages/seeker/SeekerCompany";
+import SeekerCompanies from "./pages/seeker/SeekerCompanies";
+import SeekerCompanyDetail from "./pages/seeker/SeekerCompanyDetail";
+import SeekerApplications from "./pages/seeker/SeekerApplications";
+import SeekerAbout from "./pages/seeker/SeekerAbout";
 
 function App() {
   return (
     <Router>
       <Routes>
+        {/* Guest Routes */}
         <Route path="/" element={<SeekerHome />} />
-        <Route path="/seeker/home" element={<SeekerHomeLoggedIn />} />
-        <Route path="/seeker/saved-jobs" element={<SavedJobsPage />} />
-        <Route path="/seeker/profile" element={<UserProfile />} />
-        <Route path="/seeker/profile/:tab" element={<UserProfile />} />
-        <Route path="/jobs/:jobId" element={<JobDetailPage />} />
         <Route path="/employer" element={<EmployerHome />} />
         <Route path="/login-seeker" element={<LoginSeeker />} />
         <Route path="/register-seeker" element={<RegisterSeeker />} />
+        <Route path="/jobs/:jobId" element={<JobDetailPage />} />
+        <Route path="/company" element={<SeekerCompany />} />
+        <Route path="/about" element={<SeekerAbout />} />
+
+        {/* Seeker Routes */}
+        <Route path="/seeker/home" element={<SeekerHomeLoggedIn />} />
+        <Route path="/seeker/saved-jobs" element={<SeekerSavedJobsPage />} />
+        <Route path="/seeker/profile" element={<UserProfile />} />
+        <Route path="/seeker/profile/:tab" element={<UserProfile />} />
+        <Route path="/seeker/companies" element={<SeekerCompanies />} />
+        <Route path="/seeker/companies/:companyId" element={<SeekerCompanyDetail />} />
         <Route path="/login-employer" element={<LoginEmployer />} />
         <Route path="/register-employer" element={<RegisterEmployer />} />
+        <Route path="/seeker/applications" element={<SeekerApplications />} />
 
         {/* Admin Routes */}
-        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/jobs" element={<AdminJobs />} />
