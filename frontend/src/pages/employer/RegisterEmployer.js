@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import API from '../../services/api';
 
 const RegisterEmployer = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -22,10 +25,44 @@ const RegisterEmployer = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Implement registration API call here
-    console.log('Employer registration attempt:', formData);
+    setLoading(true);
+    setError('');
+
+    if (!formData.agreeTerms) {
+      setError('Vui lòng đồng ý với Điều khoản Dịch vụ');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await API.post('/auth/employer/register', {
+        username: formData.companyName,
+        email: formData.email,
+        password: formData.password,
+        company_name: formData.companyName,
+        company_address: formData.address,
+        company_size: formData.companySize,
+        contact_name: formData.contactName,
+        contact_phone: formData.contactPhone,
+      });
+
+      if (response.data.token) {
+        const user = {
+          ...response.data.user,
+          token: response.data.token,
+          access_token: response.data.token,
+        };
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('token', response.data.token);
+        alert('Đăng ký thành công! Vui lòng kiểm tra email để xác nhận tài khoản.');
+        navigate('/employer/dashboard');
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || 'Đăng ký thất bại. Vui lòng thử lại.');
+      setLoading(false);
+    }
   };
 
   return (
@@ -125,6 +162,12 @@ const RegisterEmployer = () => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
+                  {error && (
+                    <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-md text-sm">
+                      {error}
+                    </div>
+                  )}
+                  
                   {/* Login Information */}
                   <div className="space-y-5">
                     <h3 className="text-sm font-bold text-primary uppercase tracking-widest border-b border-outline-variant/30 pb-2">1. Thông tin đăng nhập</h3>
@@ -134,10 +177,11 @@ const RegisterEmployer = () => {
                         <input 
                           type="email"
                           name="email"
-                          className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm"
+                          className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm disabled:opacity-50"
                           placeholder="name@company.com"
                           value={formData.email}
                           onChange={handleChange}
+                          disabled={loading}
                           required
                         />
                       </div>
@@ -146,10 +190,11 @@ const RegisterEmployer = () => {
                         <input 
                           type="password"
                           name="password"
-                          className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm"
+                          className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm disabled:opacity-50"
                           placeholder="••••••••"
                           value={formData.password}
                           onChange={handleChange}
+                          disabled={loading}
                           required
                         />
                       </div>
@@ -164,10 +209,11 @@ const RegisterEmployer = () => {
                       <input 
                         type="text"
                         name="companyName"
-                        className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm"
+                        className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm disabled:opacity-50"
                         placeholder="Ví dụ: Công ty Cổ phần Công nghệ Toàn cầu"
                         value={formData.companyName}
                         onChange={handleChange}
+                        disabled={loading}
                         required
                       />
                     </div>
@@ -177,10 +223,11 @@ const RegisterEmployer = () => {
                         <input 
                           type="text"
                           name="address"
-                          className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm"
+                          className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm disabled:opacity-50"
                           placeholder="Số nhà, tên đường, Quận/Huyện, Tỉnh/TP"
                           value={formData.address}
                           onChange={handleChange}
+                          disabled={loading}
                           required
                         />
                       </div>
@@ -188,9 +235,10 @@ const RegisterEmployer = () => {
                         <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider pl-1">Quy mô nhân viên</label>
                         <select 
                           name="companySize"
-                          className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm"
+                          className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm disabled:opacity-50"
                           value={formData.companySize}
                           onChange={handleChange}
+                          disabled={loading}
                           required
                         >
                           <option value="">Chọn quy mô</option>
@@ -213,10 +261,11 @@ const RegisterEmployer = () => {
                         <input 
                           type="text"
                           name="contactName"
-                          className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm"
+                          className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm disabled:opacity-50"
                           placeholder="Ví dụ: Nguyễn Văn A"
                           value={formData.contactName}
                           onChange={handleChange}
+                          disabled={loading}
                           required
                         />
                       </div>
@@ -225,10 +274,11 @@ const RegisterEmployer = () => {
                         <input 
                           type="tel"
                           name="contactPhone"
-                          className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm"
+                          className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm disabled:opacity-50"
                           placeholder="Ví dụ: 0901234567"
                           value={formData.contactPhone}
                           onChange={handleChange}
+                          disabled={loading}
                           required
                         />
                       </div>
@@ -240,9 +290,10 @@ const RegisterEmployer = () => {
                       type="checkbox"
                       id="terms"
                       name="agreeTerms"
-                      className="mt-1 rounded border-outline-variant text-primary focus:ring-primary"
+                      className="mt-1 rounded border-outline-variant text-primary focus:ring-primary disabled:opacity-50"
                       checked={formData.agreeTerms}
                       onChange={handleChange}
+                      disabled={loading}
                       required
                     />
                     <label htmlFor="terms" className="text-xs text-on-surface-variant leading-relaxed">
@@ -252,9 +303,10 @@ const RegisterEmployer = () => {
 
                   <button 
                     type="submit"
-                    className="w-full py-4 bg-gradient-to-r from-primary to-primary-container text-on-primary font-headline font-bold rounded-md shadow-md hover:shadow-lg hover:opacity-90 transition-all duration-300 transform hover:-translate-y-0.5"
+                    disabled={loading}
+                    className="w-full py-4 bg-gradient-to-r from-primary to-primary-container text-on-primary font-headline font-bold rounded-md shadow-md hover:shadow-lg hover:opacity-90 transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   >
-                    Đăng ký tài khoản doanh nghiệp
+                    {loading ? 'ĐANG ĐĂNG KÝ...' : 'Đăng ký tài khoản doanh nghiệp'}
                   </button>
                 </form>
 

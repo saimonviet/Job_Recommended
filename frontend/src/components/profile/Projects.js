@@ -1,40 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '../../services/api';
 
 const Projects = () => {
-  const [projects, setProjects] = useState([
-    {
-      id: 1,
-      title: 'Trung tâm Thương mại Nexus',
-      description: 'Thiết kế hệ thống kiến trúc bền vững cho tổ hợp văn phòng hạng A rộng 50,000m2.',
-      image: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=500&h=300&fit=crop',
-      year: '2023 - 2024',
-      role: 'Lead Architect',
-      featured: true,
-    },
-    {
-      id: 2,
-      title: 'Biệt thự Urban Oasis',
-      description: 'Giải pháp nhà ở thông minh với hệ thống thu nước mưa và điều hòa không khí tự nhiên.',
-      image: 'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=500&h=300&fit=crop',
-      year: '2022 - 2023',
-      role: 'Senior Designer',
-      featured: false,
-    },
-    {
-      id: 3,
-      title: 'Văn phòng sáng tạo',
-      description: 'Không gian làm việc hiện đại với tính linh hoạt cao cho các startup công nghệ.',
-      image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=500&h=300&fit=crop',
-      year: '2021 - 2022',
-      role: 'Design Lead',
-      featured: false,
-    },
-  ]);
-
+  const [projects, setProjects] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
 
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const data = await api.request('/seeker/profile');
+        if (data.target) {
+          setProjects(JSON.parse(data.target));
+        }
+      } catch (error) {
+        console.error('Failed to fetch projects:', error);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  const handleSave = async (updatedProjects) => {
+    try {
+      await api.request('/seeker/profile', {
+        method: 'POST',
+        body: JSON.stringify({ target: JSON.stringify(updatedProjects) }),
+      });
+    } catch (error) {
+      console.error('Failed to save projects:', error);
+      alert('Lưu thông tin thất bại.');
+    }
+  };
+
   const handleDeleteProject = (id) => {
-    setProjects(projects.filter(p => p.id !== id));
+    const updatedProjects = projects.filter(p => p.id !== id);
+    setProjects(updatedProjects);
+    handleSave(updatedProjects);
   };
 
   return (

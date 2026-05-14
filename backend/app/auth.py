@@ -1,17 +1,9 @@
-"""
-auth.py — JWT helpers + role decorators
 
-Cài đặt: pip install PyJWT bcrypt
-Thêm vào config:
-    SECRET_KEY = "your-secret-key-change-in-production"
-    JWT_EXPIRY_HOURS = 24
-"""
-
-import jwt
 import bcrypt
+import hashlib
 from functools import wraps
-from datetime import datetime, timedelta
 from flask import request, jsonify, current_app
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from .models import User, Employer
 
 
@@ -27,6 +19,8 @@ def hash_password(raw_password: str) -> str:
 def check_password(raw_password: str, hashed: str) -> bool:
     """So sánh mật khẩu nhập vào với hash trong DB."""
     try:
+        if isinstance(hashed, str) and len(hashed) == 64:
+            return hashlib.sha256(raw_password.encode('utf-8')).hexdigest() == hashed
         return bcrypt.checkpw(raw_password.encode('utf-8'), hashed.encode('utf-8'))
     except Exception:
         return False
@@ -40,28 +34,30 @@ def _secret() -> str:
     return current_app.config.get('SECRET_KEY', 'change-me')
 
 
+def _serializer() -> URLSafeTimedSerializer:
+    return URLSafeTimedSerializer(_secret(), salt='auth-token')
+
+
 def generate_token(subject_id: int, role: str) -> str:
     """
-    Tạo JWT.
+    Tạo token đăng nhập có ký số.
     role: 'seeker' | 'employer' | 'admin'
     """
     expiry_hours = current_app.config.get('JWT_EXPIRY_HOURS', 24)
     payload = {
         'sub': subject_id,
         'role': role,
-        'iat': datetime.utcnow(),
-        'exp': datetime.utcnow() + timedelta(hours=expiry_hours),
+        'exp_seconds': expiry_hours * 3600,
     }
-    return jwt.encode(payload, _secret(), algorithm='HS256')
+    return _serializer().dumps(payload)
 
 
 def decode_token(token: str) -> dict | None:
-    """Giải mã JWT. Trả về payload dict hoặc None nếu không hợp lệ."""
+    """Giải mã token. Trả về payload dict hoặc None nếu không hợp lệ."""
     try:
-        return jwt.decode(token, _secret(), algorithms=['HS256'])
-    except jwt.ExpiredSignatureError:
-        return None
-    except jwt.InvalidTokenError:
+        payload = _serializer().loads(token, max_age=current_app.config.get('JWT_EXPIRY_HOURS', 24) * 3600)
+        return payload if isinstance(payload, dict) else None
+    except (BadSignature, SignatureExpired):
         return None
 
 

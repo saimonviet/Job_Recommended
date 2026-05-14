@@ -16,28 +16,20 @@ const LoginSeeker = () => {
       return;
     }
 
-    API.get('/users')
+    API.post('/auth/seeker/login', { email, password })
       .then((res) => {
-        const matchedUser = (res.data || []).find((u) => u.email === email || u.username === email);
-
-        if (!matchedUser) {
-          alert('Không tìm thấy tài khoản, vui lòng đăng ký trước');
-          return;
-        }
-
         const user = {
-          id: matchedUser.id,
-          username: matchedUser.username,
-          email: matchedUser.email,
-          token: 'demo_token_' + Date.now(),
+          ...res.data.user,
+          token: res.data.token,
+          access_token: res.data.token,
         };
 
         localStorage.setItem('user', JSON.stringify(user));
-        localStorage.setItem('token', user.token);
+        localStorage.setItem('token', res.data.token);
         navigate('/seeker/home');
       })
-      .catch(() => {
-        alert('Không thể kết nối đến máy chủ');
+      .catch((error) => {
+        alert(error.message || 'Không thể đăng nhập');
       });
   };
 

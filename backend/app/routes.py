@@ -3,275 +3,351 @@ import json
 import hashlib
 import re
 import unicodedata
-
-from flask import Blueprint, request, jsonify, send_from_directory
-from .models import db, User, Job, InforUser
+import logging
+import traceback
+import time
 from datetime import datetime
-from werkzeug.utils import secure_filename
-from sqlalchemy import inspect, text
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
+import numpy as np
+import pandas as pd
+from sqlalchemy import inspect, text
+from flask import Blueprint, request, jsonify, send_from_directory
+from werkzeug.utils import secure_filename
+from .models import db, User, Job, InforUser
+import pickle
+
+# ---> Pipeline khớp model_train.ipynb (Model 1: HeteroSAGE encoder + MLP decoder)
+
+# Artifact paths (preprocessors, tfidf, model)
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+_PREPROCESSORS_PATH = os.path.join(BASE_DIR, 'preprocessors.pkl')
+_TFIDF_PATH = os.path.join(BASE_DIR, 'tfidf.pkl')
+MODEL_PATH = os.path.join(BASE_DIR, 'best_model1.pt')
+
+# Cache singletons
+_prep = None
+_tfidf = None
+_recommendation_model = None
 
 main = Blueprint('main', __name__)
+logger = logging.getLogger(__name__)
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'instance', 'uploads')
-MODEL_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'best_model.pt')
-_recommendation_model = None
+
+def _load_artifacts():
+    global _prep, _tfidf
+    if _prep is None or _tfidf is None:
+        try:
+            with open(_PREPROCESSORS_PATH, 'rb') as f:
+                _prep = pickle.load(f)
+        except Exception:
+            _prep = {}
+        try:
+            with open(_TFIDF_PATH, 'rb') as f:
+                _tfidf = pickle.load(f)
+        except Exception:
+            _tfidf = None
+    return _prep, _tfidf
+
+
+# --- Model classes (match notebook) ---
+from torch_geometric.data import HeteroData
+from torch_geometric.nn import SAGEConv, HeteroConv
+
+class GNNEncoder(nn.Module):
+    def __init__(self, hidden_channels: int = 128, out_channels: int = 64, dropout: float = 0.3):
+        super().__init__()
+        self.dropout = dropout
+        self.proj = nn.ModuleDict({
+            'user': nn.Linear(267, hidden_channels),
+            'job':  nn.Linear(265, hidden_channels),
+        })
+        self.conv1 = HeteroConv({
+            ('user', 'applies',     'job'):  SAGEConv((-1, -1), hidden_channels),
+            ('job',  'rev_applies', 'user'): SAGEConv((-1, -1), hidden_channels),
+        }, aggr='mean')
+        self.conv2 = HeteroConv({
+            ('user', 'applies',     'job'):  SAGEConv((-1, -1), out_channels),
+            ('job',  'rev_applies', 'user'): SAGEConv((-1, -1), out_channels),
+        }, aggr='mean')
+        self.out_proj = nn.ModuleDict({
+            'user': nn.Linear(hidden_channels, out_channels),
+            'job':  nn.Linear(hidden_channels, out_channels),
+        })
+
+    def forward(self, x_dict, edge_index_dict):
+        proj_dict = {k: F.relu(self.proj[k](v)) for k, v in x_dict.items()}
+        conv1_out = self.conv1(x_dict, edge_index_dict)
+        x_dict_1 = {}
+        for k in proj_dict:
+            if k in conv1_out and conv1_out[k] is not None:
+                x_dict_1[k] = F.relu(conv1_out[k])
+            else:
+                x_dict_1[k] = proj_dict[k]
+        x_dict_1 = {k: F.dropout(v, p=self.dropout, training=self.training) for k, v in x_dict_1.items()}
+        conv2_out = self.conv2(x_dict_1, edge_index_dict)
+        x_dict_2 = {}
+        for k in x_dict_1:
+            if k in conv2_out and conv2_out[k] is not None:
+                x_dict_2[k] = conv2_out[k]
+            else:
+                x_dict_2[k] = self.out_proj[k](x_dict_1[k])
+        return x_dict_2
+
+
+class EdgePredictor(nn.Module):
+    def __init__(self, in_channels: int = 64):
+        super().__init__()
+        self.lin = nn.Sequential(
+            nn.Linear(in_channels * 2, in_channels),
+            nn.ReLU(),
+            nn.Linear(in_channels, 1),
+        )
+
+    def forward(self, z_user, z_job, edge_label_index):
+        u = z_user[edge_label_index[0]]
+        j = z_job[edge_label_index[1]]
+        return self.lin(torch.cat([u, j], dim=-1)).squeeze(-1)
 
 
 class RecommendationScorer(nn.Module):
-    def __init__(self):
+    def __init__(self, hidden_channels: int = 128, out_channels: int = 64, dropout: float = 0.3):
         super().__init__()
-        self.encoder = nn.Module()
-        self.encoder.proj = nn.Module()
-        self.encoder.proj.user = nn.Linear(267, 128)
-        self.encoder.proj.job = nn.Linear(265, 128)
-        self.encoder.out_proj = nn.Module()
-        self.encoder.out_proj.user = nn.Linear(128, 64)
-        self.encoder.out_proj.job = nn.Linear(128, 64)
-        self.decoder = nn.Module()
-        self.decoder.lin = nn.Sequential(
-            nn.Linear(128, 64),
-            nn.ReLU(),
-            nn.Linear(64, 1),
-        )
-
-
-def _normalize_text(value):
-    if value is None:
-        return ''
-
-    text = unicodedata.normalize('NFKD', str(value).lower())
-    text = text.encode('ascii', 'ignore').decode('ascii')
-    return re.sub(r'[^a-z0-9]+', ' ', text).strip()
-
-
-def _build_feature_vector(dimension, values, salt):
-    vector = torch.zeros(dimension, dtype=torch.float32)
-
-    for value in values:
-        normalized = _normalize_text(value)
-        if not normalized:
-            continue
-
-        tokens = [normalized]
-        tokens.extend(normalized.split())
-
-        for token in tokens:
-            digest = hashlib.sha1(f'{salt}:{token}'.encode('utf-8')).hexdigest()
-            vector[int(digest, 16) % dimension] += 1.0
-
-    norm = torch.linalg.norm(vector)
-    if norm > 0:
-        vector = vector / norm
-
-    return vector
-
-
-def _format_salary(job):
-    salary_min = (job.salary_min or '').strip()
-    salary_max = (job.salary_max or '').strip()
-
-    if salary_min and salary_max:
-        return f'{salary_min} - {salary_max}'
-    return salary_min or salary_max or 'Thoả thuận'
-
-
-def _job_logo_seed(job):
-    return job.company_name or job.job_title or job.job_id or str(job.id)
-
-
-def _serialize_job(job, score=None):
-    payload = {
-        'id': job.id,
-        'title': job.job_title,
-        'company': job.company_name,
-        'location': job.job_address,
-        'job_detail_address': job.job_detail_address,
-        'benefits': job.benefits,
-        'salary': _format_salary(job),
-        'logo': f"https://api.dicebear.com/7.x/icons/svg?seed={_normalize_text(_job_logo_seed(job)).replace(' ', '-') or job.id}",
-        'deadline': job.deadline.isoformat() if job.deadline else None,
-        'employmentType': job.employment_type,
-        'jobFunction': job.job_function,
-        'industries': job.industries,
-        'description': job.job_description,
-        'requirement': job.job_requirement,
-    }
-
-    if score is not None:
-        payload['matchScore'] = round(float(score), 2)
-
-    return payload
-
-
-def _deserialize_recommendations_cache(cached_value):
-    if not cached_value:
-        return None
-
-    try:
-        recommendations = json.loads(cached_value)
-    except (TypeError, ValueError):
-        return None
-
-    return recommendations if isinstance(recommendations, list) else None
-
-
-def _save_recommendations_cache(user, recommendations):
-    user.recommendations = json.dumps(recommendations, ensure_ascii=False)
-
-    try:
-        db.session.commit()
-    except Exception:
-        db.session.rollback()
-
-
-def _clear_recommendations_cache(user):
-    user.recommendations = None
-
-
-def _ensure_user_recommendations_column():
-    inspector = inspect(db.engine)
-
-    try:
-        columns = {column['name'] for column in inspector.get_columns('user')}
-    except Exception:
-        return
-
-    if 'recommendations' in columns:
-        return
-
-    with db.engine.begin() as connection:
-        connection.execute(text('ALTER TABLE `user` ADD COLUMN recommendations LONGTEXT NULL'))
-
-
-def _ensure_user_saved_jobs_column():
-    inspector = inspect(db.engine)
-
-    try:
-        columns = {column['name'] for column in inspector.get_columns('user')}
-    except Exception:
-        return
-
-    if 'saved_jobs' in columns:
-        return
-
-    with db.engine.begin() as connection:
-        connection.execute(text('ALTER TABLE `user` ADD COLUMN saved_jobs LONGTEXT NULL'))
+        self.encoder = GNNEncoder(hidden_channels, out_channels, dropout)
+        self.decoder = EdgePredictor(out_channels)
 
 
 def _get_recommendation_model():
     global _recommendation_model
-
     if _recommendation_model is not None:
         return _recommendation_model
-
-    try:
-        # Prefer a safe weights-only load when possible (prevents arbitrary code execution).
-        state_dict = torch.load(MODEL_PATH, map_location='cpu', weights_only=True)
-    except Exception as e:
-        # If weights-only loading fails (e.g. UnpicklingError due to UninitializedParameter),
-        # fall back to a regular torch.load. This may execute pickled code, so only do this
-        # for trusted checkpoint files (the project stores the checkpoint locally).
-        try:
-            print(f"Warning: weights_only load failed ({e}). Retrying without weights_only...")
-            state_dict = torch.load(MODEL_PATH, map_location='cpu')
-        except Exception:
-            # Re-raise the original error if fallback also fails.
-            raise
-
     model = RecommendationScorer()
-    model.load_state_dict(state_dict, strict=False)
+    try:
+        state = torch.load(MODEL_PATH, map_location='cpu')
+        model.load_state_dict(state, strict=False)
+    except Exception:
+        # Try loading as state_dict or fallback
+        try:
+            model.load_state_dict(torch.load(MODEL_PATH, map_location='cpu'), strict=False)
+        except Exception:
+            logger.warning(f"[_get_recommendation_model] Không thể load {MODEL_PATH}")
     model.eval()
     _recommendation_model = model
     return _recommendation_model
 
 
-def _score_job_for_user(user, infor, job):
-    user_features = _build_feature_vector(
-        267,
-        [
-            user.username,
-            user.email,
-            infor.industry if infor else None,
-            infor.desired_job if infor else None,
-            infor.workplace_desired if infor else None,
-            infor.desired_salary if infor else None,
-            infor.gender if infor else None,
-            infor.marriage if infor else None,
-            infor.age if infor and infor.age is not None else None,
-            infor.target if infor else None,
-            infor.skills if infor else None,
-            infor.degree if infor else None,
-            infor.exp_min if infor else None,
-            infor.exp_max if infor else None,
-        ],
-        'user',
-    )
+def _build_user_feat(user, infor):
+    # ensure artifacts loaded
+    global _prep, _tfidf
+    _prep, _tfidf = _load_artifacts()
+    # text
+    user_text = ' '.join(filter(None, [
+        infor.skills if infor else '',
+        infor.target if infor else '',
+        infor.desired_job if infor else '',
+        infor.industry if infor else '',
+    ]))
+    text_emb = _tfidf.transform([user_text]).toarray().astype(np.float32) if _tfidf is not None else np.zeros((1,256), dtype=np.float32)
+    # numerical
+    age = float(infor.age or 0) if infor else 0.0
+    exp_min = float(infor.exp_min or 0) if infor else 0.0
+    exp_max = float(infor.exp_max or 0) if infor else 0.0
+    sal_str = (infor.desired_salary or '') if infor else ''
+    nums = [float(x) for x in re.findall(r'\d+\.?\d*', sal_str)]
+    salary_min = nums[0] if nums else 0.0
+    salary_max = nums[1] if len(nums) > 1 else salary_min * 1.2 or 0.0
+    _user_input = [[age, exp_min, exp_max, salary_min, salary_max]]
+    cols_user = getattr(_prep.get('scaler_user', None), 'feature_names_in_', None) if _prep else None
+    if cols_user is not None:
+        user_df = pd.DataFrame(_user_input, columns=cols_user)
+        num = _prep['scaler_user'].transform(user_df).astype(np.float32)
+    else:
+        num = _prep['scaler_user'].transform(_user_input).astype(np.float32) if _prep and 'scaler_user' in _prep else np.array(_user_input, dtype=np.float32)
+    province = (infor.workplace_desired if infor else '')
+    cat = np.array([[
+        _safe_encode(_prep['le_gender'], infor.gender if infor else None),
+        _safe_encode(_prep['le_degree'], _extract_degree(infor.degree if infor else None)),
+        _safe_encode(_prep['le_marr'], infor.marriage if infor else None),
+        _safe_encode(_prep['le_ind'], infor.industry if infor else None),
+        _safe_encode(_prep['le_prov'], province),
+        _parse_salary_type(sal_str),
+    ]], dtype=np.float32)
+    X_user = np.hstack([num, cat, text_emb])
+    return torch.tensor(X_user, dtype=torch.float32).squeeze(0)
 
-    job_features = _build_feature_vector(
-        265,
-        [
-            job.job_id,
-            job.job_title,
-            job.company_name,
-            job.salary_min,
-            job.salary_max,
-            job.job_address,
-            job.exp_min,
-            job.exp_max,
-            job.benefits,
-            job.employment_type,
-            job.job_function,
-            job.industries,
-            job.job_description,
-            job.job_requirement,
-        ],
-        'job',
-    )
 
-    model = _get_recommendation_model()
+def _extract_degree(text):
+    if not text:
+        return 'other'
+    t = str(text).lower()
+    if any(k in t for k in ['thạc sĩ', 'master']):     return 'master'
+    if any(k in t for k in ['tiến sĩ', 'phd']):        return 'phd'
+    if any(k in t for k in ['đại học', 'university']): return 'university'
+    if any(k in t for k in ['cao đẳng', 'college']):   return 'college'
+    if any(k in t for k in ['trung cấp', 'dạy nghề']): return 'vocational'
+    if any(k in t for k in ['thpt', 'trung học']):     return 'highschool'
+    return 'other'
+
+
+def _safe_encode(le, val, default='Khác'):
+    try:
+        return int(le.transform([val or default])[0])
+    except Exception:
+        return 0
+
+
+def _parse_salary_type(salary_str):
+    if not salary_str or 'thoả' in str(salary_str).lower() or 'thoả thuận' in str(salary_str).lower():
+        return 3
+    return 1
+
+
+def _build_job_feat(job):
+    global _prep, _tfidf
+    _prep, _tfidf = _load_artifacts()
+    job_text = ' '.join(filter(None, [
+        job.job_title, job.job_description, job.job_requirement, job.industries, job.job_function, job.employment_type
+    ]))
+    text_emb = _tfidf.transform([job_text]).toarray().astype(np.float32) if _tfidf is not None else np.zeros((1,256), dtype=np.float32)
+    nums_min = [float(x) for x in re.findall(r'\d+\.?\d*', str(job.salary_min or ''))]
+    nums_max = [float(x) for x in re.findall(r'\d+\.?\d*', str(job.salary_max or ''))]
+    salary_min = nums_min[0] if nums_min else 0.0
+    salary_max = nums_max[0] if nums_max else salary_min * 1.2 or 0.0
+    exp_min = float(job.exp_min or 0)
+    exp_max = float(job.exp_max or 0)
+    _job_input = [[salary_min, salary_max, exp_min, exp_max]]
+    cols_job = getattr(_prep.get('scaler_job', None), 'feature_names_in_', None) if _prep else None
+    if cols_job is not None:
+        job_df = pd.DataFrame(_job_input, columns=cols_job)
+        num = _prep['scaler_job'].transform(job_df).astype(np.float32)
+    else:
+        num = _prep['scaler_job'].transform(_job_input).astype(np.float32) if _prep and 'scaler_job' in _prep else np.array(_job_input, dtype=np.float32)
+    province = getattr(job, 'job_address', '')
+    cat = np.array([[
+        _parse_salary_type(job.salary_min),
+        _safe_encode(_prep['le_emp'], job.employment_type),
+        _safe_encode(_prep['le_func'], job.job_function),
+        _safe_encode(_prep['le_ind'], job.industries),
+        _safe_encode(_prep['le_prov'], province),
+    ]], dtype=np.float32)
+    X_job = np.hstack([num, cat, text_emb])
+    return torch.tensor(X_job, dtype=torch.float32).squeeze(0)
+
+
+def _score_jobs_via_subgraph(user, infor, jobs):
+    """
+    Build a tiny subgraph with 1 user and K jobs, run encoder and decoder like notebook.
+    Returns numpy array shape (K,) with scores in [0,1].
+    """
+    from torch_geometric.data import HeteroData
+
+    # 1. User feature (267,)
+    user_feat = _build_user_feat(user, infor)
+
+    # 2. Job feature matrix (K, 265)
+    job_feats = [_build_job_feat(job) for job in jobs]
+    K = len(job_feats)
+
+    job_features_tensor = torch.stack(job_feats)       # (K, 265)
+    user_features_tensor = user_feat.unsqueeze(0)      # (1, 267)
+
+    # 3. Build subgraph
+    data = HeteroData()
+    data['user'].x = user_features_tensor
+    data['job'].x  = job_features_tensor
+    data['user', 'applies', 'job'].edge_index = torch.stack([
+        torch.zeros(K, dtype=torch.long),
+        torch.arange(K, dtype=torch.long),
+    ])
+    data['job', 'rev_applies', 'user'].edge_index = torch.stack([
+        torch.arange(K, dtype=torch.long),
+        torch.zeros(K, dtype=torch.long),
+    ])
+
+    rec_model = _get_recommendation_model()
     with torch.no_grad():
-        user_embedding = torch.relu(model.encoder.proj.user(user_features.unsqueeze(0)))
-        user_embedding = torch.relu(model.encoder.out_proj.user(user_embedding))
-        job_embedding = torch.relu(model.encoder.proj.job(job_features.unsqueeze(0)))
-        job_embedding = torch.relu(model.encoder.out_proj.job(job_embedding))
-        pair_embedding = torch.cat([user_embedding, job_embedding], dim=-1)
-        raw_score = model.decoder.lin(pair_embedding).squeeze().item()
+        z_dict = rec_model.encoder(data.x_dict, data.edge_index_dict)
+        z_user = z_dict['user']  # (1, 64)
+        z_job  = z_dict['job']   # (K, 64)
+        edge_label_index = torch.stack([
+            torch.zeros(K, dtype=torch.long),
+            torch.arange(K, dtype=torch.long),
+        ])
+        scores = rec_model.decoder(z_user, z_job, edge_label_index).sigmoid()
+        try:
+            scores_np = scores.cpu().numpy().flatten()
+            logger.debug(f"[_score_jobs_via_subgraph] z_user_norm={float(z_user.norm().item()):.6e}, z_job_norms_mean={float(z_job.norm(dim=1).mean().item()):.6e}")
+            logger.debug(f"[_score_jobs_via_subgraph] scores_stats min={scores_np.min():.6e}, max={scores_np.max():.6e}, mean={scores_np.mean():.6e}")
+        except Exception:
+            logger.exception("[_score_jobs_via_subgraph] Failed debug stats")
 
-    return 100.0 * torch.sigmoid(torch.tensor(raw_score)).item()
+    return scores.cpu().numpy()
 
 
+# ---------------------------------------------------------------------------
+# User / profile helpers
+# ---------------------------------------------------------------------------
 def _get_user_context(user_id):
     user = User.query.get(user_id)
     if not user:
         return None, None
-
-    infor = InforUser.query.filter_by(username=user.username).first()
+    infor = _get_infor_for_user(user)
     return user, infor
 
+def _get_infor_for_user(user):
+    if not user:
+        return None
+    infor = None
+    if user.id is not None:
+        infor = InforUser.query.filter_by(user_id=user.id).first()
+    if not infor and user.username:
+        infor = InforUser.query.filter_by(username=user.username).first()
+    if infor and user.id and not infor.user_id:
+        infor.user_id = user.id
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+    return infor
+
 def _get_profile_missing_fields(infor):
-    # Keep completion criteria aligned with the 2-step onboarding UX:
-    # 1) Personal intent (location + desired job), 2) experience range.
     if not infor:
         return ['location', 'desired_job', 'experience']
-
-    missing_fields = []
+    missing = []
     if not (infor.workplace_desired or '').strip():
-        missing_fields.append('location')
+        missing.append('location')
     if not (infor.desired_job or '').strip():
-        missing_fields.append('desired_job')
+        missing.append('desired_job')
+    if not (infor.experience or '').strip():
+        missing.append('experience')
+    return missing
 
-    has_experience_range = (infor.exp_min or '').strip() and (infor.exp_max or '').strip()
-    if not has_experience_range:
-        missing_fields.append('experience')
-
-    return missing_fields
-
+def _profile_debug_snapshot(infor):
+    if not infor:
+        return {"exists": False}
+    return {
+        "exists": True,
+        "user_id": infor.user_id,
+        "username": infor.username,
+        "workplace_desired": infor.workplace_desired,
+        "desired_job": infor.desired_job,
+        "experience": infor.experience,
+        "exp_min": infor.exp_min,
+        "exp_max": infor.exp_max,
+        "skills": infor.skills,
+        "age": infor.age,
+        "gender": infor.gender,
+        "degree": infor.degree,
+        "marriage": infor.marriage,
+        "avatar_path": infor.avatar_path,
+        "phone": infor.phone,
+        "target": infor.target,
+    }
 
 def _is_profile_complete(infor):
     return len(_get_profile_missing_fields(infor)) == 0
-
 
 def _save_avatar_file(avatar_file, username):
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -282,384 +358,211 @@ def _save_avatar_file(avatar_file, username):
     avatar_file.save(file_path)
     return f"/uploads/{filename}"
 
-
 def _find_or_create_infor_by_username(username, user_id=None):
-    infor = InforUser.query.filter_by(username=username).first()
+    infor = None
+    if user_id:
+        infor = InforUser.query.filter_by(user_id=user_id).first()
+    if not infor:
+        infor = InforUser.query.filter_by(username=username).first()
     if not infor:
         infor = InforUser(username=username, user_id=user_id)
         db.session.add(infor)
-    elif user_id and not infor.user_id:
-        infor.user_id = user_id
+    else:
+        if user_id and not infor.user_id:
+            infor.user_id = user_id
+        if username and not (infor.username or '').strip():
+            infor.username = username
     return infor
-
 
 def _extract_experience_range_and_skills(experiences):
     years = []
     skills = []
-
     for i, exp in enumerate(experiences):
         start_date = exp.get('startDate')
-        end_date = exp.get('endDate')
-        print(f"[_extract_experience_range_and_skills] Experience {i}: startDate={start_date}, endDate={end_date}")
+        end_date   = exp.get('endDate')
+        logger.debug(f"[_extract_experience_range_and_skills] exp {i}: start={start_date}, end={end_date}")
 
         if isinstance(start_date, str) and len(start_date) >= 4 and start_date[:4].isdigit():
-            year = int(start_date[:4])
-            print(f"[_extract_experience_range_and_skills] Added year from startDate: {year}")
-            years.append(year)
+            years.append(int(start_date[:4]))
 
         if end_date == 'Hiện tại':
-            year = datetime.now().year
-            print(f"[_extract_experience_range_and_skills] Added current year (Hiện tại): {year}")
-            years.append(year)
+            years.append(datetime.now().year)
         elif isinstance(end_date, str) and len(end_date) >= 4 and end_date[:4].isdigit():
-            year = int(end_date[:4])
-            print(f"[_extract_experience_range_and_skills] Added year from endDate: {year}")
-            years.append(year)
+            years.append(int(end_date[:4]))
 
-        exp_skills = exp.get('skills') or []
-        if isinstance(exp_skills, list):
-            for skill in exp_skills:
-                if isinstance(skill, str) and skill.strip():
-                    skills.append(skill.strip())
+        for skill in (exp.get('skills') or []):
+            if isinstance(skill, str) and skill.strip():
+                skills.append(skill.strip())
 
     unique_skills = list(dict.fromkeys(skills))
     exp_min = str(min(years)) if years else None
     exp_max = str(max(years)) if years else None
-    print(f"[_extract_experience_range_and_skills] Final result: exp_min={exp_min}, exp_max={exp_max}, skills={unique_skills}")
     return exp_min, exp_max, unique_skills
 
+def _normalize_text(value):
+    if value is None:
+        return ''
+    text = unicodedata.normalize('NFKD', str(value).lower())
+    text = text.encode('ascii', 'ignore').decode('ascii')
+    return re.sub(r'[^a-z0-9]+', ' ', text).strip()
 
-@main.route('/register', methods=['POST'])
-def register_seeker():
-    data = request.get_json(silent=True) or {}
-    username = (data.get('username') or data.get('email') or '').strip()
-    email = (data.get('email') or '').strip()
-    raw_password = data.get('password')
-    password = hashlib.md5(raw_password.encode('utf-8')).hexdigest() if raw_password else ''
+def _format_salary(job):
+    salary_min = (getattr(job, 'salary_min', '') or '').strip() if isinstance(getattr(job, 'salary_min', ''), str) else getattr(job, 'salary_min', '')
+    salary_max = (getattr(job, 'salary_max', '') or '').strip() if isinstance(getattr(job, 'salary_max', ''), str) else getattr(job, 'salary_max', '')
+    if salary_min and salary_max:
+        return f'{salary_min} - {salary_max}'
+    return salary_min or salary_max or 'Thoả thuận'
 
-    if not username or not email or not password:
-        return jsonify({"message": "Thiếu thông tin đăng ký"}), 400
+def _job_logo_seed(job):
+    return getattr(job, 'company_name', None) or getattr(job, 'job_title', None) or getattr(job, 'job_id', None) or str(getattr(job, 'id', ''))
 
-    existing_user = User.query.filter_by(username=username).first()
-    if existing_user:
-        return jsonify({"message": "Tài khoản đã tồn tại"}), 409
+def _serialize_job(job, score=None):
+    payload = {
+        'id': job.id,
+        'title': job.job_title,
+        'company': job.company_name,
+        'location': job.job_address,
+        'job_detail_address': getattr(job, 'job_detail_address', None),
+        'benefits': getattr(job, 'benefits', None),
+        'salary': _format_salary(job),
+        'logo': f"https://api.dicebear.com/7.x/icons/svg?seed={_normalize_text(_job_logo_seed(job)).replace(' ', '-') or job.id}",
+        'deadline': job.deadline.isoformat() if job.deadline else None,
+        'employmentType': getattr(job, 'employment_type', None),
+        'jobFunction': getattr(job, 'job_function', None),
+        'industries': getattr(job, 'industries', None),
+        'description': getattr(job, 'job_description', None),
+        'requirement': getattr(job, 'job_requirement', None),
+    }
+    if score is not None:
+        payload['matchScore'] = round(float(score), 2)
+    return payload
 
-    user = User(username=username, email=email, password=password)
-    db.session.add(user)
-    db.session.flush()
+def _deserialize_recommendations_cache(cached_value):
+    if not cached_value:
+        return None
+    try:
+        recommendations = json.loads(cached_value)
+    except (TypeError, ValueError):
+        return None
+    return recommendations if isinstance(recommendations, list) else None
 
-    _find_or_create_infor_by_username(username=username, user_id=user.id)
-    db.session.commit()
+def _save_recommendations_cache(user, recommendations):
+    user.recommendations = json.dumps(recommendations, ensure_ascii=False)
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
 
-    return jsonify({
-        "message": "Đăng ký thành công",
-        "user": {
-            "id": user.id,
-            "username": user.username,
-            "email": user.email,
-        }
-    }), 201
+def _clear_recommendations_cache(user):
+    user.recommendations = None
 
-# CREATE
-@main.route('/users', methods=['POST'])
-def create_user():
-    data = request.get_json(silent=True) or {}
-    raw_password = data.get('password')
-    password = hashlib.md5(raw_password.encode('utf-8')).hexdigest() if raw_password else None
-    user = User(username=data['username'], email=data['email'], password=password)
-    db.session.add(user)
-    db.session.flush()
-    _find_or_create_infor_by_username(username=data['username'], user_id=user.id)
-    db.session.commit()
-    return jsonify({
-        "message": "User created",
-        "user": {
-            "id": user.id,
-            "username": user.username,
-            "email": user.email,
-        }
-    })
-
-# READ
+# ---------------------------------------------------------------------------
+# Routes — users (legacy public GET only)
+# ---------------------------------------------------------------------------
 @main.route('/users', methods=['GET'])
 def get_users():
     users = User.query.all()
-    return jsonify([
-        {"id": u.id, "username": u.username, "email": u.email}
-        for u in users
-    ])
+    return jsonify([{"id": u.id, "username": u.username, "email": u.email} for u in users])
 
+# ---------------------------------------------------------------------------
+# Routes — jobs
+# ---------------------------------------------------------------------------
 @main.route('/jobs', methods=['GET'])
 def get_jobs():
-    """Lấy danh sách công việc với phân trang và bộ lọc"""
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 12, type=int)
-    search = request.args.get('search', '', type=str)
-    location = request.args.get('location', '', type=str)
-    salary_min = request.args.get('salary_min', None)
-    salary_max = request.args.get('salary_max', None)
+    page            = request.args.get('page', 1, type=int)
+    per_page        = request.args.get('per_page', 12, type=int)
+    search          = request.args.get('search', '', type=str)
+    location        = request.args.get('location', '', type=str)
+    salary_min      = request.args.get('salary_min', None)
+    salary_max      = request.args.get('salary_max', None)
     employment_type = request.args.get('employment_type', '', type=str)
-    industries = request.args.get('industries', '', type=str)
-    exp_min = request.args.get('exp_min', None)
+    industries      = request.args.get('industries', '', type=str)
+    exp_min         = request.args.get('exp_min', None)
 
     query = Job.query.order_by(Job.deadline.desc(), Job.id.desc())
 
     if search:
         query = query.filter(
-            (Job.job_title.ilike(f'%{search}%')) |
-            (Job.company_name.ilike(f'%{search}%'))
+            (Job.job_title.ilike(f'%{search}%')) | (Job.company_name.ilike(f'%{search}%'))
         )
-
     if location:
         query = query.filter(Job.job_address.ilike(f'%{location}%'))
-
     if salary_min:
         try:
-            salary_min = int(salary_min)
-            query = query.filter(Job.salary_min >= salary_min)
+            query = query.filter(Job.salary_min >= int(salary_min))
         except (ValueError, TypeError):
             pass
-
     if salary_max:
         try:
-            salary_max = int(salary_max)
-            query = query.filter(Job.salary_max <= salary_max)
+            query = query.filter(Job.salary_max <= int(salary_max))
         except (ValueError, TypeError):
             pass
-
     if employment_type:
         query = query.filter(Job.employment_type.ilike(f'%{employment_type}%'))
-
     if industries:
-        # tokenize the incoming industries string and broaden matching across
-        # the industries column, job title and description to be more resilient
-        # to formatting/diacritics differences from the source data.
-        tokens = [t.strip() for t in re.split(r"\W+", industries) if t.strip()]
+        tokens = [t.strip() for t in re.split(r'\W+', industries) if t.strip()]
         for tok in tokens:
-            pattern = f"%{tok}%"
+            pattern = f'%{tok}%'
             query = query.filter(
-                (Job.industries.ilike(pattern)) |
-                (Job.job_title.ilike(pattern)) |
-                (Job.job_description.ilike(pattern))
+                Job.industries.ilike(pattern) |
+                Job.job_title.ilike(pattern) |
+                Job.job_description.ilike(pattern)
             )
-
     if exp_min:
         try:
-            exp_min = int(exp_min)
-            query = query.filter(Job.exp_min <= exp_min)
+            query = query.filter(Job.exp_min <= int(exp_min))
         except (ValueError, TypeError):
             pass
 
     pagination = query.paginate(page=page, per_page=per_page)
-
     jobs = [{
-        "id": job.id,
-        "job_id": job.job_id,
-        "job_title": job.job_title,
-        "company_name": job.company_name,
-        "salary_min": job.salary_min,
-        "salary_max": job.salary_max,
-        "job_address": job.job_address,
+        "id": job.id, "job_id": job.job_id, "job_title": job.job_title,
+        "company_name": job.company_name, "salary_min": job.salary_min,
+        "salary_max": job.salary_max, "job_address": job.job_address,
         "deadline": job.deadline.isoformat() if job.deadline else None,
-        "exp_min": job.exp_min,
-        "exp_max": job.exp_max,
-        "benefits": job.benefits,
-        "employment_type": job.employment_type,
-        "job_function": job.job_function,
-        "industries": job.industries,
-        "job_description": job.job_description,
+        "exp_min": job.exp_min, "exp_max": job.exp_max, "benefits": job.benefits,
+        "employment_type": job.employment_type, "job_function": job.job_function,
+        "industries": job.industries, "job_description": job.job_description,
         "job_requirement": job.job_requirement,
     } for job in pagination.items]
 
     return jsonify({
-        "jobs": jobs,
-        "total": pagination.total,
-        "pages": pagination.pages,
-        "current_page": page,
+        "jobs": jobs, "total": pagination.total,
+        "pages": pagination.pages, "current_page": page,
     })
-
-
-@main.route('/recommendations', methods=['GET'])
-def get_recommendations():
-    """Dự đoán 5 công việc phù hợp nhất cho người dùng hiện tại."""
-    user_id = request.args.get('user_id', type=int)
-    if not user_id:
-        return jsonify({"error": "user_id is required"}), 400
-
-    user, infor = _get_user_context(user_id)
-    if not user:
-        return jsonify({"error": "User not found"}), 404
-
-    missing_fields = _get_profile_missing_fields(infor)
-    if missing_fields:
-        return jsonify({
-            "profile_complete": False,
-            "profile_missing_fields": missing_fields,
-            "recommendations": [],
-            "message": "Profile incomplete",
-        }), 200
-
-    cached_recommendations = _deserialize_recommendations_cache(user.recommendations)
-    if cached_recommendations is not None:
-        return jsonify({
-            "profile_complete": True,
-            "user": {
-                "id": user.id,
-                "username": user.username,
-                "email": user.email,
-            },
-            "recommendations": cached_recommendations,
-            "total_jobs_considered": 0,
-            "cached": True,
-        })
-
-    jobs = Job.query.order_by(Job.id.desc()).all()
-    if not jobs:
-        return jsonify({"profile_complete": True, "recommendations": []})
-
-    scored_jobs = []
-    for job in jobs:
-        try:
-            score = _score_job_for_user(user, infor, job)
-        except Exception:
-            score = 0.0
-        scored_jobs.append((score, job))
-
-    scored_jobs.sort(key=lambda item: item[0], reverse=True)
-    recommendations = [_serialize_job(job, score=score) for score, job in scored_jobs[:5]]
-
-    _save_recommendations_cache(user, recommendations)
-
-    return jsonify({
-        "profile_complete": True,
-        "user": {
-            "id": user.id,
-            "username": user.username,
-            "email": user.email,
-        },
-        "recommendations": recommendations,
-        "total_jobs_considered": len(jobs),
-    })
-
 
 @main.route('/jobs/<int:job_id>', methods=['GET'])
 def get_job(job_id):
-    """Lấy chi tiết một công việc"""
     job = Job.query.get(job_id)
     if not job:
         return jsonify({"error": "Job not found"}), 404
-
     return jsonify({
         **_serialize_job(job),
-        "job_id": job.job_id,
-        "salary_min": job.salary_min,
-        "salary_max": job.salary_max,
-        "exp_min": job.exp_min,
-        "exp_max": job.exp_max,
-        "benefits": job.benefits,
+        "job_id": job.job_id, "salary_min": job.salary_min, "salary_max": job.salary_max,
+        "exp_min": job.exp_min, "exp_max": job.exp_max, "benefits": job.benefits,
     })
 
+# Recommendations endpoint moved to routes_seeker.py: GET /seeker/recommendations
 
-# USER PROFILE ENDPOINTS
-@main.route('/user-profile/<int:user_id>', methods=['POST'])
-def save_user_profile(user_id):
-    """Lưu thông tin hồ sơ vào bảng infor_user, map bằng username"""
-    data = request.form.to_dict() if request.form else (request.get_json(silent=True) or {})
-
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({"error": "User not found"}), 404
-
-    infor = _find_or_create_infor_by_username(username=user.username, user_id=user.id)
-    db.session.flush()
-
-    avatar_file = request.files.get('avatar')
-    if avatar_file and avatar_file.filename:
-        infor.avatar_path = _save_avatar_file(avatar_file, user.username)
-
-    if 'phone' in data:
-        infor.phone = (data.get('phone') or '').strip() or None
-    if 'location' in data or 'workplace_desired' in data:
-        infor.workplace_desired = (data.get('workplace_desired') or data.get('location') or '').strip() or None
-    if 'position' in data or 'desired_job' in data:
-        infor.desired_job = (data.get('desired_job') or data.get('position') or '').strip() or None
-    if 'bio' in data or 'target' in data:
-        infor.target = (data.get('target') or data.get('bio') or '').strip() or None
-
-    if 'age' in data:
-        age_val = (data.get('age') or '').strip()
-        try:
-            infor.age = int(age_val) if age_val else None
-        except Exception:
-            infor.age = None
-    if 'gender' in data:
-        infor.gender = (data.get('gender') or '').strip() or None
-    if 'marriage' in data:
-        infor.marriage = (data.get('marriage') or '').strip() or None
-    if 'degree' in data:
-        infor.degree = (data.get('degree') or '').strip() or None
-
-    experiences = data.get('experiences')
-    print(f"[save_user_profile] Raw experiences from request: {experiences}")
-    print(f"[save_user_profile] Type of experiences: {type(experiences)}")
-    
-    if isinstance(experiences, str):
-        try:
-            experiences = json.loads(experiences)
-        except Exception as e:
-            print(f"[save_user_profile] Failed to parse experiences JSON: {e}")
-            experiences = []
-    
-    print(f"[save_user_profile] Parsed experiences: {experiences}")
-    print(f"[save_user_profile] Experiences is list: {isinstance(experiences, list)}")
-    
-    if isinstance(experiences, list):
-        print(f"[save_user_profile] Processing {len(experiences)} experience entries")
-        exp_min, exp_max, exp_skills = _extract_experience_range_and_skills(experiences)
-        print(f"[save_user_profile] Extracted exp_min={exp_min}, exp_max={exp_max}, skills={exp_skills}")
-        infor.exp_min = exp_min
-        infor.exp_max = exp_max
-        print(f"[save_user_profile] After assignment: infor.exp_min={infor.exp_min}, infor.exp_max={infor.exp_max}")
-        if exp_skills:
-            merged = []
-            if infor.skills:
-                merged.extend([s.strip() for s in infor.skills.split(',') if s.strip()])
-            merged.extend(exp_skills)
-            infor.skills = ', '.join(list(dict.fromkeys(merged)))
-
-    try:
-        db.session.commit()
-        _clear_recommendations_cache(user)
-        db.session.commit()
-        return jsonify({"message": "Profile saved successfully", "username": user.username}), 200
-
-    except Exception as e:
-        db.session.rollback()
-        print(f"[save_user_profile] Database error: {str(e)}")
-        return jsonify({"error": f"Failed to save profile: {str(e)}"}), 500
-    
-        # Final verification - query the database to confirm what was saved
-    print(f"[save_user_profile] Final verification - querying database...")
-    saved_infor = InforUser.query.filter_by(username=user.username).first()
-    if saved_infor:
-        print(f"[save_user_profile] SAVED TO DB: exp_min={saved_infor.exp_min}, exp_max={saved_infor.exp_max}, skills={saved_infor.skills}")
-    else:
-        print(f"[save_user_profile] ERROR: Could not find saved infor in database")
-
+# ---------------------------------------------------------------------------
+# Routes — user profile
+# ---------------------------------------------------------------------------
 @main.route('/user-profile/<int:user_id>', methods=['GET'])
 def get_user_profile(user_id):
-    """Lấy thông tin hồ sơ từ infor_user, map bằng username"""
     user = User.query.get(user_id)
     if not user:
         return jsonify({"error": "User not found"}), 404
 
-    infor = InforUser.query.filter_by(username=user.username).first()
+    infor = _get_infor_for_user(user)
     if not infor:
         return jsonify({"error": "User profile not found"}), 404
 
-    print(f"[get_user_profile] infor.exp_min={infor.exp_min}, infor.exp_max={infor.exp_max}, infor.skills={infor.skills}")
     missing_fields = _get_profile_missing_fields(infor)
-    print(f"[get_user_profile] missing_fields={missing_fields}")
+
+    try:
+        experience_value = json.loads(infor.experience) if infor.experience else []
+    except Exception:
+        experience_value = infor.experience
 
     return jsonify({
         "fullName": user.username,
@@ -668,6 +571,7 @@ def get_user_profile(user_id):
         "phone": infor.phone,
         "location": infor.workplace_desired,
         "bio": infor.target,
+        "experience": experience_value,
         "position": infor.desired_job,
         "skills": infor.skills,
         "exp_min": infor.exp_min,
@@ -681,116 +585,13 @@ def get_user_profile(user_id):
         "profile_missing_fields": missing_fields,
     })
 
-
+# ---------------------------------------------------------------------------
+# Routes — uploads / saved jobs
+# ---------------------------------------------------------------------------
 @main.route('/uploads/<path:filename>', methods=['GET'])
 def uploaded_avatar(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
 
+# Saved-jobs routes moved to routes_seeker.py: /seeker/saved-jobs (GET, POST, DELETE)
 
-@main.route('/user/<int:user_id>/saved-jobs', methods=['GET'])
-def get_saved_jobs(user_id):
-    """Lấy danh sách công việc đã lưu của người dùng"""
-    _ensure_user_saved_jobs_column()
-    
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({"error": "User not found"}), 404
-
-    saved_job_ids = []
-    if user.saved_jobs:
-        try:
-            saved_job_ids = json.loads(user.saved_jobs)
-            if not isinstance(saved_job_ids, list):
-                saved_job_ids = []
-        except (TypeError, ValueError):
-            saved_job_ids = []
-
-    # Fetch job details for all saved jobs
-    saved_jobs = []
-    if saved_job_ids:
-        jobs = Job.query.filter(Job.id.in_(saved_job_ids)).all()
-        for job in jobs:
-            saved_jobs.append(_serialize_job(job))
-
-    return jsonify({
-        "saved_jobs": saved_jobs,
-        "saved_job_ids": saved_job_ids,
-    })
-
-
-@main.route('/user/<int:user_id>/saved-jobs/<int:job_id>', methods=['POST'])
-def save_job(user_id, job_id):
-    """Lưu công việc cho người dùng"""
-    _ensure_user_saved_jobs_column()
-    
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({"error": "User not found"}), 404
-
-    job = Job.query.get(job_id)
-    if not job:
-        return jsonify({"error": "Job not found"}), 404
-
-    # Get current saved jobs
-    saved_job_ids = []
-    if user.saved_jobs:
-        try:
-            saved_job_ids = json.loads(user.saved_jobs)
-            if not isinstance(saved_job_ids, list):
-                saved_job_ids = []
-        except (TypeError, ValueError):
-            saved_job_ids = []
-
-    # Add job ID if not already saved
-    if job_id not in saved_job_ids:
-        saved_job_ids.append(job_id)
-        user.saved_jobs = json.dumps(saved_job_ids, ensure_ascii=False)
-
-        try:
-            db.session.commit()
-            return jsonify({
-                "message": "Job saved successfully",
-                "saved_job_ids": saved_job_ids,
-            })
-        except Exception as e:
-            db.session.rollback()
-            return jsonify({"error": str(e)}), 500
-    
-    return jsonify({"message": "Job already saved"}), 200
-
-
-@main.route('/user/<int:user_id>/saved-jobs/<int:job_id>', methods=['DELETE'])
-def unsave_job(user_id, job_id):
-    """Bỏ lưu công việc của người dùng"""
-    _ensure_user_saved_jobs_column()
-    
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({"error": "User not found"}), 404
-
-    # Get current saved jobs
-    saved_job_ids = []
-    if user.saved_jobs:
-        try:
-            saved_job_ids = json.loads(user.saved_jobs)
-            if not isinstance(saved_job_ids, list):
-                saved_job_ids = []
-        except (TypeError, ValueError):
-            saved_job_ids = []
-
-    # Remove job ID if exists
-    if job_id in saved_job_ids:
-        saved_job_ids.remove(job_id)
-        user.saved_jobs = json.dumps(saved_job_ids, ensure_ascii=False)
-
-        try:
-            db.session.commit()
-            return jsonify({
-                "message": "Job removed from saved",
-                "saved_job_ids": saved_job_ids,
-            })
-        except Exception as e:
-            db.session.rollback()
-            return jsonify({"error": str(e)}), 500
-    
-    return jsonify({"message": "Job not in saved list"}), 200
+# Admin routes moved to routes_admin.py: /admin/embedding-status

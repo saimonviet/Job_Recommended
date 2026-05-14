@@ -34,10 +34,12 @@ class InforUser(db.Model):
     marriage = db.Column(db.String(100))
     age = db.Column(db.Integer)
     target = db.Column(db.Text)
+    experience = db.Column(db.Text)
     skills = db.Column(db.Text)
     degree = db.Column(db.Text)
     exp_min = db.Column(db.String(50))
     exp_max = db.Column(db.String(50))
+    user_embedding = db.Column(db.Text)  # JSON-encoded embedding vector
 
 
 class Employer(db.Model):
@@ -79,6 +81,7 @@ class Job(db.Model):
     job_requirement = db.Column(db.Text)
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    job_embedding = db.Column(db.Text)  # JSON-encoded embedding vector
 
     applications = db.relationship('Application', backref='job', lazy='dynamic')
 

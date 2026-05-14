@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import api from '../../services/api';
 
 const Experience = () => {
-  const currentUser = JSON.parse(localStorage.getItem('user')) || {};
-  const storageKey = `experiences_${currentUser.username || currentUser.email || currentUser.id || 'guest'}`;
-
-  const savedExperiences = localStorage.getItem(storageKey);
-  const [experiences, setExperiences] = useState(savedExperiences ? JSON.parse(savedExperiences) : []);
+  const [experiences, setExperiences] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [newExp, setNewExp] = useState({
     company: '',
@@ -17,9 +14,31 @@ const Experience = () => {
   });
 
   useEffect(() => {
-    console.log('[Experience] storageKey:', storageKey);
-    console.log('[Experience] savedExperiences:', experiences);
-  }, [storageKey, experiences]);
+    const fetchExperiences = async () => {
+      try {
+        const data = await api.request('/seeker/profile');
+        if (data.skills) {
+          setExperiences(JSON.parse(data.skills));
+        }
+      } catch (error) {
+        console.error('Failed to fetch experiences:', error);
+      }
+    };
+
+    fetchExperiences();
+  }, []);
+
+  const handleSave = async (updatedExperiences) => {
+    try {
+      await api.request('/seeker/profile', {
+        method: 'POST',
+        body: JSON.stringify({ skills: JSON.stringify(updatedExperiences) }),
+      });
+    } catch (error) {
+      console.error('Failed to save experiences:', error);
+      alert('Lưu thông tin thất bại.');
+    }
+  };
 
   const handleAddExperience = () => {
     if (!newExp.company || !newExp.position) return;
@@ -27,7 +46,7 @@ const Experience = () => {
     const newExperience = { ...newExp, id: Date.now() };
     const updatedExperiences = [...experiences, newExperience];
     setExperiences(updatedExperiences);
-    localStorage.setItem(storageKey, JSON.stringify(updatedExperiences));
+    handleSave(updatedExperiences);
     setNewExp({
       company: '',
       position: '',
@@ -41,7 +60,7 @@ const Experience = () => {
   const handleDeleteExperience = (id) => {
     const updatedExperiences = experiences.filter((exp) => exp.id !== id);
     setExperiences(updatedExperiences);
-    localStorage.setItem(storageKey, JSON.stringify(updatedExperiences));
+    handleSave(updatedExperiences);
   };
 
   const formatDate = (dateString) => {

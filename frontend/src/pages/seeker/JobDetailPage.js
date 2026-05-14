@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import api from '../../services/api';
 import TopNavBar from '../../components/TopNavBar';
 
 const JobDetailPage = () => {
@@ -9,6 +10,7 @@ const JobDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
+  const [isSaved, setIsSaved] = useState(false);
   const [mapCoords, setMapCoords] = useState(null);
   const [mapLoading, setMapLoading] = useState(false);
 
@@ -25,6 +27,31 @@ const JobDetailPage = () => {
       }
     }
   }, []);
+
+  useEffect(() => {
+    if (user && job) {
+        setIsSaved(user.saved_jobs && user.saved_jobs.includes(job.id));
+    }
+  }, [user, job]);
+
+  const handleSaveToggle = async () => {
+    if (!user) {
+        navigate('/login-seeker');
+        return;
+    }
+
+    try {
+        if (isSaved) {
+            await api.unsaveJob(jobId);
+            setIsSaved(false);
+        } else {
+            await api.saveJob(jobId);
+            setIsSaved(true);
+        }
+    } catch (error) {
+        console.error('Error saving/unsaving job:', error);
+    }
+  };
 
   // Fetch job data from API
   useEffect(() => {
@@ -240,8 +267,16 @@ const JobDetailPage = () => {
               Ứng tuyển ngay
             </button>
             <div className="flex gap-4">
-              <button className="flex-1 bg-surface-container-high py-3 rounded-xl flex items-center justify-center gap-2 font-semibold text-on-surface-variant hover:bg-surface-container-highest transition-colors">
-                <span className="material-symbols-outlined">bookmark</span> Lưu
+              <button 
+                onClick={handleSaveToggle}
+                className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-2 font-semibold transition-colors ${
+                    isSaved 
+                        ? 'bg-primary text-on-primary' 
+                        : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest'
+                }`}
+              >
+                <span className="material-symbols-outlined">{isSaved ? 'bookmark_added' : 'bookmark'}</span> 
+                {isSaved ? 'Đã lưu' : 'Lưu'}
               </button>
               <button className="flex-1 bg-surface-container-high py-3 rounded-xl flex items-center justify-center gap-2 font-semibold text-on-surface-variant hover:bg-surface-container-highest transition-colors">
                 <span className="material-symbols-outlined">share</span> Chia sẻ

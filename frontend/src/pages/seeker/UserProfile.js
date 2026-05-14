@@ -4,7 +4,6 @@ import TopNavBar from '../../components/TopNavBar';
 import SideNavBar from '../../components/SideNavBar';
 import PersonalInfo from '../../components/profile/PersonalInfo';
 import Experience from '../../components/profile/Experience';
-import Skills from '../../components/profile/Skills';
 import Projects from '../../components/profile/Projects';
 import Settings from '../../components/profile/Settings';
 
@@ -29,8 +28,6 @@ const UserProfile = () => {
         return <PersonalInfo />;
       case 'experience':
         return <Experience />;
-      // case 'skills':
-      //   return <Skills />;
       case 'projects':
         return <Projects />;
       case 'settings':

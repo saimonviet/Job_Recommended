@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../services/api';
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -8,40 +9,81 @@ const Settings = () => {
     recruiterContact: true,
     newsAndUpdates: false,
     profileVisibility: 'public',
+  });
+  const [password, setPassword] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   });
 
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const data = await api.request('/seeker/profile');
+        if (data.degree) {
+          setSettings(JSON.parse(data.degree));
+        }
+      } catch (error) {
+        console.error('Failed to fetch settings:', error);
+      }
+    };
+
+    fetchSettings();
+  }, []);
+
+  const handleSaveSettings = async (updatedSettings) => {
+    try {
+      await api.request('/seeker/profile', {
+        method: 'POST',
+        body: JSON.stringify({ degree: JSON.stringify(updatedSettings) }),
+      });
+    } catch (error) {
+      console.error('Failed to save settings:', error);
+      alert('Lưu cài đặt thất bại.');
+    }
+  };
+
   const handleToggle = (key) => {
-    setSettings(prev => ({ ...prev, [key]: !prev[key] }));
+    const updatedSettings = { ...settings, [key]: !settings[key] };
+    setSettings(updatedSettings);
+    handleSaveSettings(updatedSettings);
   };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setSettings(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
+    const updatedSettings = { ...settings, [name]: type === 'checkbox' ? checked : value };
+    setSettings(updatedSettings);
+    handleSaveSettings(updatedSettings);
   };
 
-  const handlePasswordChange = () => {
-    if (settings.newPassword === settings.confirmPassword && settings.newPassword) {
+  const handlePasswordChange = async () => {
+    if (password.newPassword !== password.confirmPassword || !password.newPassword) {
+      alert('Mật khẩu mới không khớp hoặc bỏ trống!');
+      return;
+    }
+
+    try {
+      await api.request('/auth/change-password', {
+        method: 'POST',
+        body: JSON.stringify({
+          current_password: password.currentPassword,
+          new_password: password.newPassword,
+        }),
+      });
       alert('Mật khẩu được cập nhật thành công!');
-      setSettings(prev => ({
-        ...prev,
+      setPassword({
         currentPassword: '',
         newPassword: '',
         confirmPassword: '',
-      }));
-    } else {
-      alert('Mật khẩu mới không khớp!');
+      });
+    } catch (error) {
+      console.error('Failed to change password:', error);
+      alert('Thay đổi mật khẩu thất bại.');
     }
   };
 
   const handleLogout = () => {
     localStorage.removeItem('user');
-    localStorage.removeItem('token');
     navigate('/login-seeker');
   };
 

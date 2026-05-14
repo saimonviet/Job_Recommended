@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import API from '../../services/api';
+import api from '../../services/api';
 
 const provinces_list = [
   'Hà Nội', 'Hồ Chí Minh', 'Đà Nẵng', 'Hải Phòng', 'Cần Thơ',
@@ -21,9 +21,7 @@ const PersonalInfo = () => {
   const [user] = useState(JSON.parse(localStorage.getItem('user')) || { name: 'Nguyễn Văn A' });
   const fileInputRef = useRef(null);
   const [avatarFile, setAvatarFile] = useState(null);
-  const experienceStorageKey = `experiences_${user.username || user.email || user.id || 'guest'}`;
   const [formData, setFormData] = useState({
-    // Fields that match the InforUser model
     phone: '',
     workplace_desired: '',
     desired_job: '',
@@ -37,12 +35,9 @@ const PersonalInfo = () => {
   const [avatarPreview, setAvatarPreview] = useState('https://api.dicebear.com/7.x/avataaars/svg?seed=Felix');
 
   useEffect(() => {
-    const userId = user.id;
-    if (!userId) return;
-
-    API.get(`/user-profile/${userId}`)
-      .then((res) => {
-        const data = res.data || {};
+    const fetchProfile = async () => {
+      try {
+        const data = await api.request('/seeker/profile');
         setFormData((prev) => ({
           ...prev,
           phone: data.phone || prev.phone || '',
@@ -55,13 +50,15 @@ const PersonalInfo = () => {
           degree: data.degree || prev.degree || '',
         }));
         if (data.avatar_path) {
-          setAvatarPreview(`${API.defaults.baseURL}${data.avatar_path}`);
+          setAvatarPreview(`http://127.0.0.1:5000${data.avatar_path}`);
         }
-      })
-      .catch(() => {
-        // Keep local defaults if profile has not been created yet
-      });
-  }, [user.id]);
+      } catch (error) {
+        console.error('Failed to fetch profile:', error);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -81,53 +78,31 @@ const PersonalInfo = () => {
     setAvatarPreview(previewUrl);
   };
 
-  const handleSave = () => {
-    const user = JSON.parse(localStorage.getItem('user')) || {};
-    const userId = user.id;
+  const handleSave = async () => {
+    const data = new FormData();
     
-    if (!userId) {
-      alert('Vui lòng đăng nhập trước');
-      return;
-    }
-
-    // Lấy experiences từ localStorage
-    const experiences = JSON.parse(localStorage.getItem(experienceStorageKey)) || [];
-    console.log('[PersonalInfo] Experiences from localStorage:', experiences);
-    console.log('[PersonalInfo] Experiences count:', experiences.length);
-    console.log('[PersonalInfo] localStorage key used:', experienceStorageKey);
-    console.log('[PersonalInfo] User object:', user);
-    console.log('[PersonalInfo] Sending experiences to backend:', JSON.stringify(experiences));
-
-    const formDataToSave = new FormData();
-    // Append only fields defined in InforUser model
-    formDataToSave.append('phone', formData.phone);
-    formDataToSave.append('workplace_desired', formData.workplace_desired);
-    formDataToSave.append('desired_job', formData.desired_job);
-    formDataToSave.append('target', formData.target);
-    formDataToSave.append('age', formData.age);
-    formDataToSave.append('gender', formData.gender);
-    formDataToSave.append('marriage', formData.marriage);
-    formDataToSave.append('degree', formData.degree);
-    formDataToSave.append('experiences', JSON.stringify(experiences));
+    Object.keys(formData).forEach(key => {
+        data.append(key, formData[key]);
+    });
 
     if (avatarFile) {
-      formDataToSave.append('avatar', avatarFile);
+        data.append('avatar', avatarFile);
     }
 
-    API.post(`/user-profile/${userId}`, formDataToSave)
-    .then(res => res.data)
-    .then(data => {
-      if (data.message) {
-        alert('Lưu thông tin thành công!');
-        setAvatarFile(null);
+    try {
+        await api.request('/seeker/profile', {
+            method: 'POST',
+            body: data,
+            headers: {
+                'Content-Type': null, // Let browser set content type for FormData
+            },
+        });
         setIsEditing(false);
-      }
-    })
-    .catch(err => {
-      console.error('Error:', err);
-      const errorMsg = err.response?.data?.error || err.message || 'Không thể lưu vào database';
-      alert(errorMsg);
-    });
+        alert('Lưu thông tin thành công!');
+    } catch (error) {
+        console.error('Failed to save profile:', error);
+        alert('Lưu thông tin thất bại.');
+    }
   };
 
   return (

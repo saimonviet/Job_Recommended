@@ -140,7 +140,7 @@ const SeekerHomeLoggedIn = () => {
         return;
       }
 
-      const recommendationResponse = await API.get('/recommendations', { params: { user_id: user.id } });
+      const recommendationResponse = await API.get('/seeker/recommendations');
       const recommendedJobs = (recommendationResponse.data?.recommendations || []).map(toRecommendedJob);
 
       setRecommendations(recommendedJobs);
@@ -663,9 +663,23 @@ const SeekerHomeLoggedIn = () => {
 
               <div className="space-y-4">
                 {profileLoading || loadingRecommendations ? (
-                  <div className="p-4 rounded-lg animate-pulse bg-white/40">
-                    <div className="h-3 w-3/4 rounded bg-surface-container-low mb-3" />
-                    <div className="h-3 w-1/2 rounded bg-surface-container-low" />
+                  <div className="flex flex-col items-center justify-center py-12 px-4">
+                    <div className="relative w-16 h-16 mb-4">
+                      <div className="absolute inset-0 rounded-full border-4 border-[#00488d]/20"></div>
+                      <div 
+                        className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#00488d] border-r-[#00488d]"
+                        style={{
+                          animation: 'spin 1s linear infinite'
+                        }}
+                      ></div>
+                    </div>
+                    <p className="text-sm text-on-surface-variant animate-pulse">Đang tải đề xuất từ mô hình AI...</p>
+                    <style>{`
+                      @keyframes spin {
+                        from { transform: rotate(0deg); }
+                        to { transform: rotate(360deg); }
+                      }
+                    `}</style>
                   </div>
                 ) : !profileComplete ? (
                   <div className="bg-white p-4 rounded-lg">

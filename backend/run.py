@@ -33,12 +33,14 @@ from app.config import Config
 # Legacy routes (job listing, GNN, user-profile, saved-jobs cũ)
 from app.routes import (
     main,
-    _ensure_user_recommendations_column,
-    _ensure_user_saved_jobs_column,
+    # _ensure_user_recommendations_column,
+    # _ensure_user_saved_jobs_column,
+    # _ensure_infor_experience_column,
+    # _ensure_job_embedding_column,
+    # _ensure_and_cache_all_job_embeddings,
     _get_recommendation_model,
 )
 
-# Các blueprint mới
 from app.routes_auth import auth_bp
 from app.routes_seeker import seeker_bp
 from app.routes_employer import employer_bp
@@ -51,7 +53,7 @@ def create_app(config_object=Config):
 
     # Extensions
     db.init_app(app)
-    CORS(app, resources={r"/*": {"origins": "*"}})
+    CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
 
     # Đăng ký blueprint
     app.register_blueprint(main)           # /jobs, /recommendations, /user-profile, ...
@@ -62,8 +64,10 @@ def create_app(config_object=Config):
 
     with app.app_context():
         db.create_all()                    # Tạo bảng mới (Employer, Application)
-        _ensure_user_recommendations_column()
-        _ensure_user_saved_jobs_column()
+        # _ensure_user_recommendations_column()
+        # _ensure_user_saved_jobs_column()
+        # _ensure_infor_experience_column()
+        # _ensure_job_embedding_column()
         _get_recommendation_model()
 
     return app
