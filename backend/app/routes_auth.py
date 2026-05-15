@@ -50,7 +50,7 @@ def seeker_register():
     db.session.add(user)
     db.session.flush()
 
-    infor = InforUser(user_id=user.id, username=username)
+    infor = InforUser(id=user.id, username=username)
     db.session.add(infor)
     db.session.commit()
 

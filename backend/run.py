@@ -1,28 +1,3 @@
-"""
-run.py — Khởi động Flask app, đăng ký tất cả blueprint
-
-Cấu trúc thư mục đề xuất:
-    project/
-    ├── app/
-    │   ├── __init__.py
-    │   ├── models.py
-    │   ├── auth.py
-    │   ├── config.py
-    │   ├── routes.py              (job listing, GNN recommendations, legacy)
-    │   ├── routes_auth.py         (register / login seeker & employer)
-    │   ├── routes_seeker.py       (apply, profile, saved jobs)
-    │   ├── routes_employer.py     (CRUD job, xem ứng viên)
-    │   └── routes_admin.py        (quản trị toàn hệ thống)
-    ├── instance/
-    │   ├── uploads/               (avatar seeker)
-    │   ├── logos/                 (logo employer)
-    │   └── cvs/                   (CV ứng viên)
-    ├── best_model.pt
-    └── run.py
-
-Cài đặt thêm:
-    pip install PyJWT bcrypt flask-cors flask-sqlalchemy
-"""
 
 from flask import Flask
 from flask_cors import CORS

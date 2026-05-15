@@ -236,54 +236,130 @@ def _build_job_feat(job):
     return torch.tensor(X_job, dtype=torch.float32).squeeze(0)
 
 
-def _score_jobs_via_subgraph(user, infor, jobs):
+# def _score_jobs_via_subgraph(user, infor, jobs):
+#     """
+#     Build a tiny subgraph with 1 user and K jobs, run encoder and decoder like notebook.
+#     Returns numpy array shape (K,) with scores in [0,1].
+#     """
+#     from torch_geometric.data import HeteroData
+
+#     # 1. User feature (267,)
+#     user_feat = _build_user_feat(user, infor)
+
+#     # 2. Job feature matrix (K, 265)
+#     job_feats = [_build_job_feat(job) for job in jobs]
+#     K = len(job_feats)
+
+#     job_features_tensor = torch.stack(job_feats)       # (K, 265)
+#     user_features_tensor = user_feat.unsqueeze(0)      # (1, 267)
+
+#     # 3. Build subgraph
+#     data = HeteroData()
+#     data['user'].x = user_features_tensor
+#     data['job'].x  = job_features_tensor
+#     data['user', 'applies', 'job'].edge_index = torch.stack([
+#         torch.zeros(K, dtype=torch.long),
+#         torch.arange(K, dtype=torch.long),
+#     ])
+#     data['job', 'rev_applies', 'user'].edge_index = torch.stack([
+#         torch.arange(K, dtype=torch.long),
+#         torch.zeros(K, dtype=torch.long),
+#     ])
+
+#     rec_model = _get_recommendation_model()
+#     with torch.no_grad():
+#         z_dict = rec_model.encoder(data.x_dict, data.edge_index_dict)
+#         z_user = z_dict['user']  # (1, 64)
+#         z_job  = z_dict['job']   # (K, 64)
+#         edge_label_index = torch.stack([
+#             torch.zeros(K, dtype=torch.long),
+#             torch.arange(K, dtype=torch.long),
+#         ])
+#         scores = rec_model.decoder(z_user, z_job, edge_label_index).sigmoid()
+#         try:
+#             scores_np = scores.cpu().numpy().flatten()
+#             logger.debug(f"[_score_jobs_via_subgraph] z_user_norm={float(z_user.norm().item()):.6e}, z_job_norms_mean={float(z_job.norm(dim=1).mean().item()):.6e}")
+#             logger.debug(f"[_score_jobs_via_subgraph] scores_stats min={scores_np.min():.6e}, max={scores_np.max():.6e}, mean={scores_np.mean():.6e}")
+#         except Exception:
+#             logger.exception("[_score_jobs_via_subgraph] Failed debug stats")
+
+#     return scores.cpu().numpy()
+
+
+def _score_jobs_via_embeddings(user_emb, job_embs):
     """
-    Build a tiny subgraph with 1 user and K jobs, run encoder and decoder like notebook.
-    Returns numpy array shape (K,) with scores in [0,1].
+    Score jobs using provided embeddings only (no encoder run).
+
+    Parameters
+    - user_emb: torch.Tensor or numpy array with shape (64,) or (1,64)
+    - job_embs: torch.Tensor or numpy array with shape (K,64)
+
+    Returns
+    - numpy array shape (K,) with scores in [0,1]
     """
-    from torch_geometric.data import HeteroData
+    model = _get_recommendation_model()
+    try:
+        # convert inputs to torch tensors
+        if isinstance(user_emb, np.ndarray):
+            z_user = torch.tensor(user_emb, dtype=torch.float32)
+        else:
+            z_user = user_emb
+        if isinstance(job_embs, np.ndarray):
+            z_job = torch.tensor(job_embs, dtype=torch.float32)
+        else:
+            z_job = job_embs
 
-    # 1. User feature (267,)
-    user_feat = _build_user_feat(user, infor)
+        if not torch.is_tensor(z_user):
+            z_user = torch.tensor(z_user, dtype=torch.float32)
+        if not torch.is_tensor(z_job):
+            z_job = torch.tensor(z_job, dtype=torch.float32)
 
-    # 2. Job feature matrix (K, 265)
-    job_feats = [_build_job_feat(job) for job in jobs]
-    K = len(job_feats)
+        if z_user.dim() == 1:
+            z_user = z_user.unsqueeze(0)
+        if z_job.dim() == 1:
+            z_job = z_job.unsqueeze(0)
 
-    job_features_tensor = torch.stack(job_feats)       # (K, 265)
-    user_features_tensor = user_feat.unsqueeze(0)      # (1, 267)
-
-    # 3. Build subgraph
-    data = HeteroData()
-    data['user'].x = user_features_tensor
-    data['job'].x  = job_features_tensor
-    data['user', 'applies', 'job'].edge_index = torch.stack([
-        torch.zeros(K, dtype=torch.long),
-        torch.arange(K, dtype=torch.long),
-    ])
-    data['job', 'rev_applies', 'user'].edge_index = torch.stack([
-        torch.arange(K, dtype=torch.long),
-        torch.zeros(K, dtype=torch.long),
-    ])
-
-    rec_model = _get_recommendation_model()
-    with torch.no_grad():
-        z_dict = rec_model.encoder(data.x_dict, data.edge_index_dict)
-        z_user = z_dict['user']  # (1, 64)
-        z_job  = z_dict['job']   # (K, 64)
+        K = z_job.size(0)
         edge_label_index = torch.stack([
             torch.zeros(K, dtype=torch.long),
             torch.arange(K, dtype=torch.long),
         ])
-        scores = rec_model.decoder(z_user, z_job, edge_label_index).sigmoid()
-        try:
-            scores_np = scores.cpu().numpy().flatten()
-            logger.debug(f"[_score_jobs_via_subgraph] z_user_norm={float(z_user.norm().item()):.6e}, z_job_norms_mean={float(z_job.norm(dim=1).mean().item()):.6e}")
-            logger.debug(f"[_score_jobs_via_subgraph] scores_stats min={scores_np.min():.6e}, max={scores_np.max():.6e}, mean={scores_np.mean():.6e}")
-        except Exception:
-            logger.exception("[_score_jobs_via_subgraph] Failed debug stats")
 
-    return scores.cpu().numpy()
+        with torch.no_grad():
+            scores = model.decoder(z_user, z_job, edge_label_index).sigmoid()
+            scores_np = scores.cpu().numpy().flatten()
+            try:
+                logger.debug(f"[_score_jobs_via_embeddings] scores_stats min={scores_np.min():.6e}, max={scores_np.max():.6e}, mean={scores_np.mean():.6e}")
+            except Exception:
+                pass
+            return scores_np
+
+    except Exception:
+        logger.exception("[_score_jobs_via_embeddings] Failed to compute scores using decoder, falling back to cosine similarity")
+        # Fallback: cosine similarity between embeddings -> map [-1,1] to [0,1]
+        try:
+            if torch.is_tensor(user_emb):
+                u = user_emb.cpu().numpy()
+            else:
+                u = np.array(user_emb)
+            if torch.is_tensor(job_embs):
+                j = job_embs.cpu().numpy()
+            else:
+                j = np.array(job_embs)
+            if u.ndim == 1:
+                u = u.reshape(1, -1)
+            if j.ndim == 1:
+                j = j.reshape(1, -1)
+            u_norm = np.linalg.norm(u, axis=1, keepdims=True) + 1e-12
+            j_norm = np.linalg.norm(j, axis=1, keepdims=True) + 1e-12
+            dots = (j @ u.T).flatten()
+            sims = dots / (j_norm.flatten() * u_norm.flatten())
+            sims = np.clip(sims, -1.0, 1.0)
+            return ((sims + 1.0) / 2.0).astype(float)
+        except Exception:
+            logger.exception("[_score_jobs_via_embeddings] Fallback cosine similarity also failed")
+            return np.zeros((0,), dtype=float)
+
 
 
 # ---------------------------------------------------------------------------
@@ -301,15 +377,10 @@ def _get_infor_for_user(user):
         return None
     infor = None
     if user.id is not None:
-        infor = InforUser.query.filter_by(user_id=user.id).first()
+        infor = InforUser.query.get(user.id)
     if not infor and user.username:
         infor = InforUser.query.filter_by(username=user.username).first()
-    if infor and user.id and not infor.user_id:
-        infor.user_id = user.id
-        try:
-            db.session.commit()
-        except Exception:
-            db.session.rollback()
+    # Do not attempt to set non-existent `user_id` field; prefer id matching.
     return infor
 
 def _get_profile_missing_fields(infor):
@@ -329,7 +400,7 @@ def _profile_debug_snapshot(infor):
         return {"exists": False}
     return {
         "exists": True,
-        "user_id": infor.user_id,
+        "id": infor.id,
         "username": infor.username,
         "workplace_desired": infor.workplace_desired,
         "desired_job": infor.desired_job,
@@ -361,15 +432,15 @@ def _save_avatar_file(avatar_file, username):
 def _find_or_create_infor_by_username(username, user_id=None):
     infor = None
     if user_id:
-        infor = InforUser.query.filter_by(user_id=user_id).first()
+        infor = InforUser.query.get(user_id)
     if not infor:
         infor = InforUser.query.filter_by(username=username).first()
     if not infor:
-        infor = InforUser(username=username, user_id=user_id)
+        # Create a new InforUser; do not set primary key here.
+        infor = InforUser(username=username)
         db.session.add(infor)
     else:
-        if user_id and not infor.user_id:
-            infor.user_id = user_id
+        # If an infor exists and user_id provided but different, leave as-is.
         if username and not (infor.username or '').strip():
             infor.username = username
     return infor

@@ -1,41 +1,34 @@
-"""
-Script to import job_text_emb.npy and user_text_emb.npy into the database.
-
-Usage (from repository root):
-    python import_db/import_embeddings.py --jobs path/to/job_text_emb.npy \
-        --users path/to/user_text_emb.npy
-
-Optional mapping CSVs can be provided to map embedding rows to DB ids:
-    --job-mapping job_ids.csv   (one column 'job_id' or headerless list)
-    --user-mapping user_ids.csv (one column 'user_id')
-
-The script writes JSON-encoded embeddings into `Job.job_embedding` and
-`InforUser.user_embedding` (existing columns). It assumes the Flask app
-factory is `backend/run.py:create_app()` and uses SQLAlchemy models in
-`backend/app/models.py`.
-"""
-
 import argparse
-import io
 import json
 import numpy as np
 import csv
+
+
 import os
 import sys
+from flask import Flask
 
-# Ensure project root is on sys.path so `backend` package can be imported when
-# this script is executed from the `import_db` directory.
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if ROOT not in sys.path:
-    sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'backend'))
 
-# Also add backend folder so that backend/run.py can import from app.models
-BACKEND = os.path.join(ROOT, 'backend')
-if BACKEND not in sys.path:
-    sys.path.insert(0, BACKEND)
-
-from run import create_app
 from app.models import db, Job, InforUser
+from app.config import Config  # type: ignore
+
+
+def _build_db_app():
+    app = Flask(__name__)
+    try:
+        app.config.from_object(Config)
+    except Exception:
+        pass
+
+    if not app.config.get('SQLALCHEMY_DATABASE_URI'):
+        app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL') or 'sqlite:///data.db'
+
+    if 'SQLALCHEMY_TRACK_MODIFICATIONS' not in app.config:
+        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    db.init_app(app)
+    return app
 
 BATCH = 500
 
@@ -90,13 +83,12 @@ def import_user_embeddings(app, emb_path, mapping_path=None):
 
     with app.app_context():
         if mapping_path:
-            user_ids = load_ids_from_csv(mapping_path)
-            assert len(user_ids) == embs.shape[0], "Mapping length and embeddings rows mismatch"
-            infors = [InforUser.query.filter_by(user_id=uid).first() for uid in user_ids]
-        else:
-            # Align by user.id ascending -> InforUser.user_id ascending
-            infors = InforUser.query.order_by(InforUser.user_id).all()
-            assert len(infors) == embs.shape[0], f"InforUser count ({len(infors)}) != embeddings rows ({embs.shape[0]})"
+            print("⚠️  Lưu ý: mapping_path bị bỏ qua vì InforUser không có user_id nữa")
+            print("   Sử dụng thứ tự id của InforUser để match embeddings")
+        
+        # Align by InforUser.id ascending
+        infors = InforUser.query.order_by(InforUser.id).all()
+        assert len(infors) == embs.shape[0], f"InforUser count ({len(infors)}) != embeddings rows ({embs.shape[0]})"
 
         for i, (infor, emb) in enumerate(zip(infors, embs)):
             if infor is None:
@@ -111,27 +103,25 @@ def import_user_embeddings(app, emb_path, mapping_path=None):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Import job/user embeddings into DB')
-    parser.add_argument('--jobs', help='Path to job_text_emb.npy')
-    parser.add_argument('--users', help='Path to user_text_emb.npy')
-    parser.add_argument('--job-mapping', help='CSV file with job_id per row (optional)')
-    parser.add_argument('--user-mapping', help='CSV file with user_id per row (optional)')
-    parser.add_argument('--backend-path', help='Path to backend folder (default: .)', default='.')
-    args = parser.parse_args()
+    app = _build_db_app()
+    with app.app_context():
+        parser = argparse.ArgumentParser(description='Import job/user embeddings into DB')
+        parser.add_argument('--jobs', help='Path to job_text_emb.npy')
+        parser.add_argument('--users', help='Path to user_text_emb.npy')
+        parser.add_argument('--job-mapping', help='CSV file with job_id per row (optional)')
+        parser.add_argument('--user-mapping', help='CSV file with user_id per row (optional)')
+        parser.add_argument('--backend-path', help='Path to backend folder (default: .)', default='.')
+        args = parser.parse_args()   
 
-    # Ensure we are in repository root so run.create_app imports work
-    app = create_app()
+        if args.jobs:
+            if not os.path.exists(args.jobs):
+                raise SystemExit(f"Jobs file not found: {args.jobs}")
+            import_job_embeddings(app, args.jobs, args.job_mapping)
 
-    if args.jobs:
-        if not os.path.exists(args.jobs):
-            raise SystemExit(f"Jobs file not found: {args.jobs}")
-        import_job_embeddings(app, args.jobs, args.job_mapping)
-
-    if args.users:
-        if not os.path.exists(args.users):
-            raise SystemExit(f"Users file not found: {args.users}")
-        import_user_embeddings(app, args.users, args.user_mapping)
-
+        if args.users:
+            if not os.path.exists(args.users):
+                raise SystemExit(f"Users file not found: {args.users}")
+            import_user_embeddings(app, args.users, args.user_mapping)
 
 if __name__ == '__main__':
     main()

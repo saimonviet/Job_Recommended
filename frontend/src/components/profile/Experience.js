@@ -3,6 +3,8 @@ import api from '../../services/api';
 
 const Experience = () => {
   const [experiences, setExperiences] = useState([]);
+  const [activeTab, setActiveTab] = useState('experience');
+  const [skills, setSkills] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [newExp, setNewExp] = useState({
     company: '',
@@ -14,18 +16,25 @@ const Experience = () => {
   });
 
   useEffect(() => {
-    const fetchExperiences = async () => {
+    const fetchData = async () => {
       try {
         const data = await api.request('/seeker/profile');
+        if (data.experience) {
+          try {
+            setExperiences(JSON.parse(data.experience));
+          } catch {
+            setExperiences([]);
+          }
+        }
         if (data.skills) {
-          setExperiences(JSON.parse(data.skills));
+          setSkills(data.skills);
         }
       } catch (error) {
         console.error('Failed to fetch experiences:', error);
       }
     };
 
-    fetchExperiences();
+    fetchData();
   }, []);
 
   const handleSave = async (updatedExperiences) => {
@@ -33,6 +42,7 @@ const Experience = () => {
       await api.request('/seeker/profile', {
         method: 'POST',
         body: JSON.stringify({ skills: JSON.stringify(updatedExperiences) }),
+        body: JSON.stringify({ experience: JSON.stringify(updatedExperiences) }),
       });
     } catch (error) {
       console.error('Failed to save experiences:', error);
@@ -242,5 +252,33 @@ const Experience = () => {
     </div>
   );
 };
+
+  const parseSkills = (skillsText) => {
+    if (!skillsText) return [];
+    return skillsText
+      .split('\n')
+      .map(line => {
+        const trimmed = line.trim();
+        // Check if line starts with capital letter or dash
+        if (trimmed && /^[A-Z\-]/.test(trimmed)) {
+          // Remove leading dash and trim
+          return trimmed.replace(/^\-\s*/, '').trim();
+        }
+        return null;
+      })
+      .filter(skill => skill !== null && skill.length > 0);
+  };
+
+  const handleSkillsSave = async (updatedSkills) => {
+    try {
+      await api.request('/seeker/profile', {
+        method: 'POST',
+        body: JSON.stringify({ skills: updatedSkills }),
+      });
+    } catch (error) {
+      console.error('Failed to save skills:', error);
+      alert('Lưu thông tin thất bại.');
+    }
+  };
 
 export default Experience;

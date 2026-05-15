@@ -130,7 +130,7 @@ def get_user(user_id):
     if not user:
         return jsonify({"error": "Không tìm thấy user"}), 404
 
-    infor = InforUser.query.filter_by(user_id=user.id).first()
+    infor = InforUser.query.get(user.id)
     applications = Application.query.filter_by(user_id=user.id).order_by(
         Application.applied_at.desc()
     ).limit(10).all()
@@ -201,7 +201,7 @@ def delete_user(user_id):
     if user.role == 'admin':
         return jsonify({"error": "Không thể xóa tài khoản admin"}), 403
 
-    InforUser.query.filter_by(user_id=user.id).delete()
+    InforUser.query.filter_by(id=user.id).delete()
     Application.query.filter_by(user_id=user.id).delete()
     db.session.delete(user)
     try:

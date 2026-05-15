@@ -25,7 +25,8 @@ from .models import db, User, InforUser, Job, Application
 from .auth import seeker_required, login_required
 from .routes import (
     _get_user_context, _get_profile_missing_fields, 
-    _score_jobs_via_subgraph, _deserialize_recommendations_cache,
+   _deserialize_recommendations_cache,
+    _score_jobs_via_embeddings,
     _save_recommendations_cache, _serialize_job
 )
 
@@ -190,12 +191,11 @@ def withdraw_application(app_id):
 @seeker_bp.route('/profile', methods=['GET'])
 @seeker_required
 def get_profile():
-    """Lấy hồ sơ seeker."""
     user = User.query.get(request.current_user_id)
     if not user:
         return jsonify({"error": "Không tìm thấy user"}), 404
 
-    infor = InforUser.query.filter_by(user_id=user.id).first()
+    infor = InforUser.query.get(user.id)
     if not infor:
         return jsonify({"error": "Chưa có hồ sơ"}), 404
 
@@ -229,9 +229,9 @@ def save_profile():
     if not user:
         return jsonify({"error": "Không tìm thấy user"}), 404
 
-    infor = InforUser.query.filter_by(user_id=user.id).first()
+    infor = InforUser.query.get(user.id)
     if not infor:
-        infor = InforUser(user_id=user.id, username=user.username)
+        infor = InforUser(id=user.id, username=user.username)
         db.session.add(infor)
         db.session.flush()
 
@@ -453,7 +453,8 @@ def get_recommendations():
         all_scored = []
         for i in range(0, len(jobs), BATCH_SIZE):
             batch = jobs[i:i + BATCH_SIZE]
-            batch_scores = _score_jobs_via_subgraph(user, infor, batch)
+            # batch_scores = _score_jobs_via_subgraph(user, infor, batch)
+            batch_scores = _score_jobs_via_embeddings(user, infor, batch)
             all_scored.extend(zip(batch_scores.tolist(), batch))
             logger.debug(
                 f"[seeker/recommendations][{request_tag}] Progress: {min(i+BATCH_SIZE, len(jobs))}/{len(jobs)} jobs scored"

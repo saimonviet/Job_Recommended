@@ -33,7 +33,7 @@ UPLOAD_FOLDER_CVS = os.path.join(
 
 def _serialize_application(app: Application, include_job=False) -> dict:
     user = User.query.get(app.user_id)
-    infor = InforUser.query.filter_by(user_id=app.user_id).first()
+    infor = InforUser.query.get(app.user_id)
     result = {
         "id": app.id,
         "user_id": app.user_id,

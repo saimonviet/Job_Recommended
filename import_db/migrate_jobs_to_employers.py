@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Migration script: create `employer` rows from distinct `job.company_name`/`job_address`,
+Migration script: create `employer` rows from distinct `job.company_name`/`job_detail_address`,
 backup `job` table to CSV, then set `job.employer_id` accordingly.
 
 Usage: python migrate_jobs_to_employers.py
@@ -48,27 +48,27 @@ def _build_unique_placeholder_email(company_name, address, used_emails):
         counter += 1
 
 
-def backup_jobs(csv_path):
-    with app.app_context():
-        jobs = Job.query.order_by(Job.id).all()
+# def backup_jobs(csv_path):
+#     with app.app_context():
+#         jobs = Job.query.order_by(Job.id).all()
 
-        with open(csv_path, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.writer(f)
-            # Header
-            writer.writerow([
-                'id', 'job_id', 'employer_id', 'job_title', 'company_name', 'salary_min', 'salary_max',
-                'job_address', 'job_detail_address', 'deadline', 'exp_min', 'exp_max', 'benefits',
-                'employment_type', 'job_function', 'industries', 'job_description', 'job_requirement',
-                'is_active', 'created_at'
-            ])
+#         with open(csv_path, 'w', newline='', encoding='utf-8') as f:
+#             writer = csv.writer(f)
+#             # Header
+#             writer.writerow([
+#                 'id', 'job_id', 'employer_id', 'job_title', 'company_name', 'salary_min', 'salary_max',
+#                 'job_detail_address', 'job_detail_address', 'deadline', 'exp_min', 'exp_max', 'benefits',
+#                 'employment_type', 'job_function', 'industries', 'job_description', 'job_requirement',
+#                 'is_active', 'created_at'
+#             ])
 
-            for j in jobs:
-                writer.writerow([
-                    j.id, j.job_id, j.employer_id, j.job_title, j.company_name, j.salary_min, j.salary_max,
-                    j.job_address, j.job_detail_address, j.deadline.isoformat() if j.deadline else None,
-                    j.exp_min, j.exp_max, j.benefits, j.employment_type, j.job_function, j.industries,
-                    j.job_description, j.job_requirement, j.is_active, j.created_at.isoformat() if j.created_at else None,
-                ])
+#             for j in jobs:
+#                 writer.writerow([
+#                     j.id, j.job_id, j.employer_id, j.job_title, j.company_name, j.salary_min, j.salary_max,
+#                     j.job_detail_address, j.job_detail_address, j.deadline.isoformat() if j.deadline else None,
+#                     j.exp_min, j.exp_max, j.benefits, j.employment_type, j.job_function, j.industries,
+#                     j.job_description, j.job_requirement, j.is_active, j.created_at.isoformat() if j.created_at else None,
+#                 ])
 
 
 def migrate():
@@ -76,12 +76,12 @@ def migrate():
         base_dir = os.path.dirname(os.path.abspath(__file__))
         backup_path = os.path.join(base_dir, 'backup_jobs_before_migration.csv')
 
-        print(f"Backing up job table to: {backup_path}")
-        backup_jobs(backup_path)
+        # print(f"Backing up job table to: {backup_path}")
+        # backup_jobs(backup_path)
 
-        # Build a map of (company_name, job_address) -> employer
-        print("Scanning distinct company_name/job_address from job table...")
-        distinct = db.session.query(Job.company_name, Job.job_address).distinct().all()
+        # Build a map of (company_name, job_detail_address) -> employer
+        print("Scanning distinct company_name/job_detail_address from job table...")
+        distinct = db.session.query(Job.company_name, Job.job_detail_address).distinct().all()
 
         created = 0
 
@@ -97,12 +97,12 @@ def migrate():
                 by_exact[(name_key, addr_key)] = e
                 by_name.setdefault(name_key, e)
 
-        for company_name, job_address in distinct:
+        for company_name, job_detail_address in distinct:
             if not company_name or str(company_name).strip() == '':
                 continue
 
             company_name_clean = str(company_name).strip()
-            addr = str(job_address).strip() if job_address else None
+            addr = str(job_detail_address).strip() if job_detail_address else None
 
             employer = by_exact.get((company_name_clean, addr)) or by_name.get(company_name_clean)
 
@@ -152,7 +152,7 @@ def migrate():
 
             for job in batch:
                 name = job.company_name.strip() if job.company_name else ''
-                addr = job.job_address.strip() if job.job_address else None
+                addr = job.job_detail_address.strip() if job.job_detail_address else None
                 emp_id = lookup.get((name, addr)) or lookup.get((name, None))
                 if emp_id:
                     job.employer_id = emp_id

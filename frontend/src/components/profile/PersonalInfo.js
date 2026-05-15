@@ -25,11 +25,17 @@ const PersonalInfo = () => {
     phone: '',
     workplace_desired: '',
     desired_job: '',
+    desired_salary: '',
     target: '',
     age: '',
     gender: '',
     marriage: '',
     degree: '',
+    industry: '',
+    experience: '',
+    skills: '',
+    exp_min: '',
+    exp_max: '',
   });
   const [isEditing, setIsEditing] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState('https://api.dicebear.com/7.x/avataaars/svg?seed=Felix');
@@ -43,11 +49,17 @@ const PersonalInfo = () => {
           phone: data.phone || prev.phone || '',
           workplace_desired: data.workplace_desired || data.location || prev.workplace_desired || '',
           desired_job: data.desired_job || data.position || prev.desired_job || '',
+          desired_salary: data.desired_salary || prev.desired_salary || '',
           target: data.target || data.bio || prev.target || '',
           age: data.age || prev.age || '',
           gender: data.gender || prev.gender || '',
           marriage: data.marriage || prev.marriage || '',
           degree: data.degree || prev.degree || '',
+          industry: data.industry || prev.industry || '',
+          experience: data.experience || prev.experience || '',
+          skills: data.skills || prev.skills || '',
+          exp_min: data.exp_min || prev.exp_min || '',
+          exp_max: data.exp_max || prev.exp_max || '',
         }));
         if (data.avatar_path) {
           setAvatarPreview(`http://127.0.0.1:5000${data.avatar_path}`);
@@ -225,6 +237,58 @@ const PersonalInfo = () => {
                   <p className="text-on-surface font-semibold">{formData.desired_job}</p>
                 )}
               </div>
+
+              <div>
+                <label className="block text-xs font-bold text-on-surface-variant mb-2 uppercase tracking-wider">Ngành nghề</label>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    name="industry"
+                    value={formData.industry}
+                    onChange={handleChange}
+                    className="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-lg px-4 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                  />
+                ) : (
+                  <p className="text-on-surface font-semibold">{formData.industry}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+
+              <div>
+                <label className="block text-xs font-bold text-on-surface-variant mb-2 uppercase tracking-wider">Mức lương mong muốn</label>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    name="desired_salary"
+                    value={formData.desired_salary}
+                    onChange={handleChange}
+                    className="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-lg px-4 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                  />
+                ) : (
+                  <p className="text-on-surface font-semibold">{formData.desired_salary}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-on-surface-variant mb-2 uppercase tracking-wider">Kỹ năng</label>
+                {isEditing ? (
+                  <textarea
+                    name="skills"
+                    value={formData.skills}
+                    onChange={handleChange}
+                    rows="3"
+                    className="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-lg px-4 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all resize-none"
+                  />
+                ) : (
+                  <p className="text-on-surface">{formData.skills}</p>
+                )}
+              </div>
+
             </div>
 
             {/* Age / Gender / Marriage / Degree */}
