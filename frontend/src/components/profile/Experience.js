@@ -41,7 +41,7 @@ const Experience = () => {
     try {
       await api.request('/seeker/profile', {
         method: 'POST',
-        body: JSON.stringify({ skills: JSON.stringify(updatedExperiences) }),
+        // body: JSON.stringify({ skills: JSON.stringify(updatedExperiences) }),
         body: JSON.stringify({ experience: JSON.stringify(updatedExperiences) }),
       });
     } catch (error) {
