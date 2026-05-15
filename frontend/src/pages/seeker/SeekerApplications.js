@@ -190,12 +190,7 @@ const SeekerApplications = () => {
                       </div>
                     </div>
                     <div className="flex md:flex-col justify-end gap-2">
-                      <button
-                        onClick={() => handleMessageClick(app.id)}
-                        className="bg-primary text-on-primary px-4 py-2 rounded-md text-sm font-semibold hover:bg-primary-container transition-colors"
-                      >
-                        Nhắn tin
-                      </button>
+                      
                       <button
                         onClick={() => handleDetailClick(app.id)}
                         className="text-primary hover:bg-surface-container-low px-4 py-2 rounded-md text-sm font-semibold transition-colors"
@@ -272,27 +267,6 @@ const SeekerApplications = () => {
               <button className="w-full bg-surface-container-lowest text-primary font-bold py-3 rounded-md hover:bg-surface-bright transition-all active:scale-95">
                 Cập nhật hồ sơ ngay
               </button>
-            </div>
-
-            {/* Personal Forecast Preview */}
-            <div className="bg-surface-container p-6 rounded-xl border border-outline-variant/10">
-              <h4 className="font-headline font-bold text-lg text-primary mb-2">Dự báo sự nghiệp</h4>
-              <p className="text-xs text-on-surface-variant mb-6 uppercase tracking-widest">Xu hướng thị trường Q4/2023</p>
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="p-2 bg-tertiary-container/10 rounded-lg">
-                    <span className="material-symbols-outlined text-tertiary">trending_up</span>
-                  </div>
-                  <div>
-                    <div className="text-sm font-bold text-on-surface">Nhu cầu tăng 12%</div>
-                    <div className="text-xs text-on-surface-variant">Lĩnh vực AI & Data Science</div>
-                  </div>
-                </div>
-              </div>
-              <a className="inline-flex items-center gap-2 text-primary text-sm font-bold mt-6 hover:underline cursor-pointer">
-                Xem báo cáo chi tiết
-                <span className="material-symbols-outlined text-sm">arrow_forward</span>
-              </a>
             </div>
           </aside>
         </div>

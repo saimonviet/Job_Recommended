@@ -98,13 +98,8 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-/* Focus states for accessibility */
-button:focus,
-a:focus,
-input:focus {
-  outline: 2px solid var(--clr-primary);
-  outline-offset: 2px;
-}
+
+
 
 /* Scroll bar styling */
 ::-webkit-scrollbar {

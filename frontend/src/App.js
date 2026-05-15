@@ -40,6 +40,8 @@ function App() {
         <Route path="/jobs/:jobId" element={<JobDetailPage />} />
         <Route path="/company" element={<SeekerCompany />} />
         <Route path="/about" element={<SeekerAbout />} />
+        <Route path="/login-employer" element={<LoginEmployer />} />
+        <Route path="/register-employer" element={<RegisterEmployer />} />
 
         {/* Seeker Routes */}
         <Route path="/seeker/home" element={<SeekerHomeLoggedIn />} />
@@ -48,8 +50,6 @@ function App() {
         <Route path="/seeker/profile/:tab" element={<UserProfile />} />
         <Route path="/seeker/companies" element={<SeekerCompanies />} />
         <Route path="/seeker/companies/:companyId" element={<SeekerCompanyDetail />} />
-        <Route path="/login-employer" element={<LoginEmployer />} />
-        <Route path="/register-employer" element={<RegisterEmployer />} />
         <Route path="/seeker/applications" element={<SeekerApplications />} />
 
         {/* Admin Routes */}
@@ -61,7 +61,6 @@ function App() {
         <Route path="/admin/settings" element={<AdminSettings />} />
 
         {/* Employer Routes */}
-        <Route path="/employer/login" element={<LoginEmployer />} />
         <Route path="/employer/dashboard" element={<EmployerDashboard />} />
         <Route path="/employer/jobs" element={<EmployerJobs />} />
         <Route path="/employer/post" element={<EmployerCreatePost />} />

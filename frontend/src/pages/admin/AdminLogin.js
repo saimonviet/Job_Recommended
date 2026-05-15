@@ -73,7 +73,7 @@ function AdminLogin() {
                   Email hoặc Tên đăng nhập
                 </label>
                 <div className="relative">
-                  <span className="material-symbols-outlined absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 text-lg">
+                  <span className="material-symbols-outlined absolute top-1/2 -translate-y-1/2 left-0 pl-3 flex items-center text-gray-400 text-lg">
                     account_circle
                   </span>
                   <input
@@ -98,7 +98,7 @@ function AdminLogin() {
                   </a>
                 </div>
                 <div className="relative">
-                  <span className="material-symbols-outlined absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 text-lg">
+                  <span className="material-symbols-outlined absolute top-1/2 -translate-y-1/2 left-0 pl-3 flex items-center text-gray-400 text-lg">
                     lock
                   </span>
                   <input
