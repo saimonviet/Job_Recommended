@@ -33,7 +33,7 @@ const RegisterSeeker = () => {
     setError('');
     
     try {
-      const response = await fetch('http://127.0.0.1:5000/register', {
+      const response = await fetch('http://127.0.0.1:5000/auth/seeker/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -48,7 +48,9 @@ const RegisterSeeker = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.message || 'Đăng ký thất bại!');
+        const errMsg = data.error || data.message || (Array.isArray(data.errors) && data.errors[0]) || 'Đăng ký thất bại!';
+        console.error('Register failed:', data);
+        setError(errMsg);
         setLoading(false);
         return;
       }
@@ -135,6 +137,12 @@ const RegisterSeeker = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+                  {error}
+                </div>
+              )}
+
               {/* Social Registration */}
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <button 
@@ -173,10 +181,11 @@ const RegisterSeeker = () => {
                   <input 
                     type="text"
                     name="fullName"
-                    className="w-full px-4 py-3 rounded-md bg-gray-50 border-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder:text-gray-400"
+                    className="w-full px-4 py-3 rounded-md bg-gray-50 border-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder:text-gray-400 disabled:opacity-50"
                     placeholder="Nguyễn Văn A"
                     value={formData.fullName}
                     onChange={handleChange}
+                    disabled={loading}
                     required
                   />
                 </div>
@@ -186,10 +195,11 @@ const RegisterSeeker = () => {
                   <input 
                     type="email"
                     name="email"
-                    className="w-full px-4 py-3 rounded-md bg-gray-50 border-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder:text-gray-400"
+                    className="w-full px-4 py-3 rounded-md bg-gray-50 border-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder:text-gray-400 disabled:opacity-50"
                     placeholder="ten@congty.com"
                     value={formData.email}
                     onChange={handleChange}
+                    disabled={loading}
                     required
                   />
                 </div>
@@ -200,10 +210,11 @@ const RegisterSeeker = () => {
                     <input 
                       type="password"
                       name="password"
-                      className="w-full px-4 py-3 rounded-md bg-gray-50 border-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder:text-gray-400"
+                      className="w-full px-4 py-3 rounded-md bg-gray-50 border-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder:text-gray-400 disabled:opacity-50"
                       placeholder="••••••••"
                       value={formData.password}
                       onChange={handleChange}
+                      disabled={loading}
                       required
                     />
                   </div>
@@ -212,10 +223,11 @@ const RegisterSeeker = () => {
                     <input 
                       type="password"
                       name="confirmPassword"
-                      className="w-full px-4 py-3 rounded-md bg-gray-50 border-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder:text-gray-400"
+                      className="w-full px-4 py-3 rounded-md bg-gray-50 border-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder:text-gray-400 disabled:opacity-50"
                       placeholder="••••••••"
                       value={formData.confirmPassword}
                       onChange={handleChange}
+                      disabled={loading}
                       required
                     />
                   </div>
@@ -227,20 +239,15 @@ const RegisterSeeker = () => {
                   type="checkbox"
                   id="terms"
                   name="agreeTerms"
-                  className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
                   checked={formData.agreeTerms}
                   onChange={handleChange}
+                  disabled={loading}
                   required
                 />
                 <label htmlFor="terms" className="text-xs text-gray-600 leading-relaxed">
                   Tôi đồng ý với <a className="text-blue-600 font-bold hover:underline" href="#terms">Điều khoản Dịch vụ</a> và <a className="text-blue-600 font-bold hover:underline" href="#privacy">Chính sách Bảo mật</a> của Career Authority.
                 </label>
-
-                            {error && (
-                              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
-                                {error}
-                              </div>
-                            )}
               </div>
 
               <button 

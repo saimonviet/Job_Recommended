@@ -1,40 +1,41 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import API from '../../services/api';
 
 const LoginEmployer = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Mock authentication - replace with real API call
-    if (email && password) {
-      try {
-        // Simulate API call
-        const response = await new Promise((resolve) => {
-          setTimeout(() => {
-            resolve({
-              success: true,
-              token: 'employer_token_' + Date.now(),
-              company: 'TechVantage'
-            });
-          }, 500);
-        });
+    setLoading(true);
+    setError('');
 
-        if (response.success) {
-          // Save token to localStorage
-          localStorage.setItem('employerToken', response.token);
-          localStorage.setItem('employerCompany', response.company);
-          
-          // Redirect to dashboard
-          navigate('/employer/dashboard');
-        }
-      } catch (error) {
-        console.error('Login error:', error);
-      }
+    if (!email || !password) {
+      setError('Vui lòng nhập email và mật khẩu');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await API.post('/auth/employer/login', { email, password });
+      
+      const user = {
+        ...response.data.user,
+        token: response.data.token,
+        access_token: response.data.token,
+      };
+
+      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('token', response.data.token);
+      navigate('/employer/dashboard');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Không thể đăng nhập');
+      setLoading(false);
     }
   };
 
@@ -115,6 +116,12 @@ const LoginEmployer = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              {error && (
+                <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-md text-sm">
+                  {error}
+                </div>
+              )}
+              
               <div>
                 <label className="block text-sm font-semibold text-on-surface-variant mb-2 ml-1">Email doanh nghiệp</label>
                 <input 
@@ -123,6 +130,7 @@ const LoginEmployer = () => {
                   placeholder="example@company.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
                   required
                 />
               </div>
@@ -138,6 +146,7 @@ const LoginEmployer = () => {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
                   required
                 />
               </div>
@@ -149,15 +158,17 @@ const LoginEmployer = () => {
                   className="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary"
                   checked={remember}
                   onChange={(e) => setRemember(e.target.checked)}
+                  disabled={loading}
                 />
                 <label htmlFor="remember" className="text-sm text-on-surface-variant">Ghi nhớ đăng nhập trên thiết bị này</label>
               </div>
 
               <button 
                 type="submit"
-                className="w-full py-4 hero-gradient text-on-primary rounded-md font-headline font-extrabold tracking-wide hover:shadow-lg hover:opacity-95 transition-all duration-300"
+                disabled={loading}
+                className="w-full py-4 hero-gradient text-on-primary rounded-md font-headline font-extrabold tracking-wide hover:shadow-lg hover:opacity-95 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                ĐĂNG NHẬP VÀO HỆ THỐNG
+                {loading ? 'ĐANG ĐĂNG NHẬP...' : 'ĐĂNG NHẬP VÀO HỆ THỐNG'}
               </button>
             </form>
 

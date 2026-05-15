@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TopNavBar from '../../components/TopNavBar';
-import API from '../../services/api';
+import api from '../../services/api';
 
 const createJobLogo = (seed) => `https://api.dicebear.com/7.x/icons/svg?seed=${encodeURIComponent(seed || 'job')}`;
 
 const SeekerSavedJobsPage = () => {
   const navigate = useNavigate();
   const [savedJobs, setSavedJobs] = useState([]);
-  const [savedJobIds, setSavedJobIds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -20,24 +19,23 @@ const SeekerSavedJobsPage = () => {
       navigate('/login-seeker');
       return;
     }
-
-    const currentUser = JSON.parse(user);
-    loadSavedJobs(currentUser);
+    loadSavedJobs();
   }, [navigate]);
 
-  const loadSavedJobs = async (user) => {
+  const loadSavedJobs = async () => {
     setLoading(true);
     setError('');
 
     try {
-      const response = await API.get(`/user/${user.id}/saved-jobs`);
-      setSavedJobs(response.data?.saved_jobs || []);
-      setSavedJobIds(response.data?.saved_job_ids || []);
+      const response = await api.get('/seeker/saved-jobs');
+      console.log('[loadSavedJobs] API response:', response);
+      const jobs = response.data?.saved_jobs || [];
+      console.log('[loadSavedJobs] Loaded jobs:', jobs);
+      setSavedJobs(jobs);
     } catch (err) {
       console.error('Failed to load saved jobs:', err);
-      setError('Không tải được danh sách công việc đã lưu.');
+      setError(err.message || 'Không tải được danh sách công việc đã lưu.');
       setSavedJobs([]);
-      setSavedJobIds([]);
     } finally {
       setLoading(false);
     }
@@ -46,13 +44,9 @@ const SeekerSavedJobsPage = () => {
   const handleUnsave = async (e, jobId) => {
     e.stopPropagation();
 
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (!user) return;
-
     try {
-      await API.delete(`/user/${user.id}/saved-jobs/${jobId}`);
+      await api.unsaveJob(jobId);
       setSavedJobs((prev) => prev.filter((job) => job.id !== jobId));
-      setSavedJobIds((prev) => prev.filter((id) => id !== jobId));
     } catch (err) {
       console.error('Failed to unsave job:', err);
       setError('Không thể bỏ lưu công việc này.');
@@ -112,48 +106,8 @@ const SeekerSavedJobsPage = () => {
           {/* Header Section */}
           <header className="mb-12">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-              <div>
-                <h1 className="text-4xl lg:text-5xl font-extrabold font-headline tracking-tighter text-primary mb-2">
-                  Việc làm đã lưu
-                </h1>
-                <p className="text-on-surface-variant font-medium flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-tertiary"></span>
-                  Bạn có <span className="text-primary font-bold">{savedJobs.length}</span> vị trí đang theo dõi
-                </p>
-              </div>
-              {/* Quick Filters */}
-              <div className="flex gap-2 p-1.5 bg-surface-container rounded-xl">
-                <button
-                  onClick={() => setFilterStatus('all')}
-                  className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
-                    filterStatus === 'all'
-                      ? 'bg-primary text-on-primary shadow-sm'
-                      : 'text-on-surface-variant hover:bg-surface-container-high'
-                  }`}
-                >
-                  Tất cả
-                </button>
-                <button
-                  onClick={() => setFilterStatus('active')}
-                  className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
-                    filterStatus === 'active'
-                      ? 'bg-primary text-on-primary shadow-sm'
-                      : 'text-on-surface-variant hover:bg-surface-container-high'
-                  }`}
-                >
-                  Còn hạn
-                </button>
-                <button
-                  onClick={() => setFilterStatus('expiring')}
-                  className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
-                    filterStatus === 'expiring'
-                      ? 'bg-primary text-on-primary shadow-sm'
-                      : 'text-on-surface-variant hover:bg-surface-container-high'
-                  }`}
-                >
-                  Sắp hết hạn
-                </button>
-              </div>
+
+        
             </div>
           </header>
 
@@ -278,34 +232,6 @@ const SeekerSavedJobsPage = () => {
             {/* Sidebar Column */}
             <div className="xl:col-span-4 space-y-8">
               
-
-              {/* Tips Section */}
-              <div className="bg-surface-container-low p-6 rounded-xl">
-                <h4 className="text-sm font-bold uppercase tracking-widest text-on-surface-variant mb-4">Gợi ý tối ưu</h4>
-                <ul className="space-y-4">
-                  <li className="flex gap-3">
-                    <div className="mt-1 w-5 h-5 rounded-full bg-tertiary-container/20 flex items-center justify-center text-tertiary flex-shrink-0">
-                      <span
-                        className="material-symbols-outlined text-[14px]"
-                        style={{ fontVariationSettings: "'FILL' 1" }}
-                      >
-                        lightbulb
-                      </span>
-                    </div>
-                    <p className="text-sm text-on-surface-variant">
-                      Cập nhật CV với từ khóa <b>"PyTorch"</b> để tăng tỉ lệ match lên 5% cho các việc làm đã lưu.
-                    </p>
-                  </li>
-                  <li className="flex gap-3">
-                    <div className="mt-1 w-5 h-5 rounded-full bg-primary-container/20 flex items-center justify-center text-primary flex-shrink-0">
-                      <span className="material-symbols-outlined text-[14px]">timer</span>
-                    </div>
-                    <p className="text-sm text-on-surface-variant">
-                      Bạn nên ứng tuyển vào <b>các công ty lớn</b> trong 24h tới để đứng đầu danh sách chờ.
-                    </p>
-                  </li>
-                </ul>
-              </div>
             </div>
           </div>
         </main>

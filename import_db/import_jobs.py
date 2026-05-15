@@ -8,11 +8,32 @@ import pandas as pd
 from datetime import datetime
 import sys
 import os
+from flask import Flask
 
 # Add the backend directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'backend'))
 
-def import_jobs_from_excel(excel_file):
+from app.models import db, Job  # type: ignore
+from app.config import Config  # type: ignore
+
+
+def _build_db_app():
+    app = Flask(__name__)
+    try:
+        app.config.from_object(Config)
+    except Exception:
+        pass
+
+    if not app.config.get('SQLALCHEMY_DATABASE_URI'):
+        app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL') or 'sqlite:///data.db'
+
+    if 'SQLALCHEMY_TRACK_MODIFICATIONS' not in app.config:
+        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    db.init_app(app)
+    return app
+
+def import_jobs_from_excel(app, excel_file):
     """Nhập dữ liệu công việc từ file Excel"""
 
     def get_optional(row, *column_names):
@@ -21,10 +42,6 @@ def import_jobs_from_excel(excel_file):
             if pd.notna(value):
                 return str(value)
         return None
-    
-    # Import Flask app từ run.py
-    from run import app
-    from app.models import db, Job
     
     with app.app_context():
         try:
@@ -111,6 +128,7 @@ def import_jobs_from_excel(excel_file):
             return False
 
 if __name__ == '__main__':
+    app = _build_db_app()
     # Xác định đường dẫn file Excel
     current_dir = os.path.dirname(os.path.abspath(__file__))
     excel_file = os.path.join(current_dir, 'COMBINED_DATA_PROCESSED1.csv')
@@ -121,5 +139,5 @@ if __name__ == '__main__':
         sys.exit(1)
     
     print(f"✓ Tìm thấy file: {excel_file}\n")
-    success = import_jobs_from_excel(excel_file)
+    success = import_jobs_from_excel(app, excel_file)
     sys.exit(0 if success else 1)
