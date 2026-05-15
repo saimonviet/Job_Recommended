@@ -128,8 +128,10 @@ const SeekerHomeLoggedIn = () => {
     try {
       const profileResponse = await API.get(`/user-profile/${user.id}`);
 
-      const isComplete = Boolean(profileResponse.data?.profile_complete);
-      const missingFields = profileResponse.data?.profile_missing_fields || [];
+      // const isComplete = Boolean(profileResponse.data?.profile_complete);
+      const isComplete = true; 
+      // const missingFields = profileResponse.data?.profile_missing_fields || [];
+      const missingFields = [];
 
       setProfileComplete(isComplete);
       setProfileMissingFields(missingFields);

@@ -22,9 +22,10 @@ from flask import Blueprint, request, jsonify
 from datetime import datetime
 from werkzeug.utils import secure_filename
 from .models import db, User, InforUser, Job, Application
+import numpy as np
 from .auth import seeker_required, login_required
 from .routes import (
-    _get_user_context, _get_profile_missing_fields, 
+    _get_infor_for_user, _get_user_context, _get_profile_missing_fields, 
    _deserialize_recommendations_cache,
     _score_jobs_via_embeddings,
     _save_recommendations_cache, _serialize_job
@@ -451,11 +452,35 @@ def get_recommendations():
 
         BATCH_SIZE = 2000
         all_scored = []
+        infor = _get_infor_for_user(user)
+        
         for i in range(0, len(jobs), BATCH_SIZE):
             batch = jobs[i:i + BATCH_SIZE]
-            # batch_scores = _score_jobs_via_subgraph(user, infor, batch)
-            batch_scores = _score_jobs_via_embeddings(user, infor, batch)
-            all_scored.extend(zip(batch_scores.tolist(), batch))
+            
+            if infor and infor.user_embedding:
+                try:
+                    user_emb = json.loads(infor.user_embedding)
+                    # Collect embeddings for all jobs in batch
+                    job_embs_list = []
+                    valid_batch_jobs = []
+                    for job in batch:
+                        if job.job_embedding:
+                            try:
+                                job_emb = json.loads(job.job_embedding)
+                                job_embs_list.append(job_emb)
+                                valid_batch_jobs.append(job)
+                            except Exception:
+                                pass
+                    
+                    if job_embs_list:
+                        batch_scores = _score_jobs_via_embeddings(user_emb, np.array(job_embs_list))
+                        all_scored.extend(zip(batch_scores.tolist(), valid_batch_jobs))
+                except Exception as e:
+                    logger.exception(f"[seeker/recommendations] Error scoring batch: {e}")
+        
+            # Fall back to all jobs if no embeddings available
+            if not all_scored:
+                all_scored.extend([(0.5, job) for job in batch])
             logger.debug(
                 f"[seeker/recommendations][{request_tag}] Progress: {min(i+BATCH_SIZE, len(jobs))}/{len(jobs)} jobs scored"
             )

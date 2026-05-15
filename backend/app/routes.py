@@ -291,34 +291,40 @@ def _score_jobs_via_embeddings(user_emb, job_embs):
     Score jobs using provided embeddings only (no encoder run).
 
     Parameters
-    - user_emb: torch.Tensor or numpy array with shape (64,) or (1,64)
-    - job_embs: torch.Tensor or numpy array with shape (K,64)
+    - user_emb: torch.Tensor or numpy array with shape (64,) or (1,64) or (267,) etc
+    - job_embs: torch.Tensor or numpy array with shape (K,64) or (K,512) etc
 
     Returns
     - numpy array shape (K,) with scores in [0,1]
     """
-    model = _get_recommendation_model()
     try:
         # convert inputs to torch tensors
         if isinstance(user_emb, np.ndarray):
             z_user = torch.tensor(user_emb, dtype=torch.float32)
         else:
-            z_user = user_emb
+            z_user = user_emb.float() if torch.is_tensor(user_emb) else torch.tensor(user_emb, dtype=torch.float32)
+        
         if isinstance(job_embs, np.ndarray):
             z_job = torch.tensor(job_embs, dtype=torch.float32)
         else:
-            z_job = job_embs
-
-        if not torch.is_tensor(z_user):
-            z_user = torch.tensor(z_user, dtype=torch.float32)
-        if not torch.is_tensor(z_job):
-            z_job = torch.tensor(z_job, dtype=torch.float32)
+            z_job = job_embs.float() if torch.is_tensor(job_embs) else torch.tensor(job_embs, dtype=torch.float32)
 
         if z_user.dim() == 1:
             z_user = z_user.unsqueeze(0)
         if z_job.dim() == 1:
             z_job = z_job.unsqueeze(0)
 
+        # Check embedding dimensions
+        user_dim = z_user.size(-1)
+        job_dim = z_job.size(-1)
+        logger.debug(f"[_score_jobs_via_embeddings] user_dim={user_dim}, job_dim={job_dim}")
+        
+        # If embeddings are not 64-dim, fall back to cosine similarity
+        if user_dim != 64 or job_dim != 64:
+            logger.warning(f"[_score_jobs_via_embeddings] Embeddings are {user_dim}D and {job_dim}D, not 64D. Using cosine similarity fallback.")
+            raise ValueError("Embedding dimension mismatch, using fallback")
+        
+        model = _get_recommendation_model()
         K = z_job.size(0)
         edge_label_index = torch.stack([
             torch.zeros(K, dtype=torch.long),
@@ -334,8 +340,8 @@ def _score_jobs_via_embeddings(user_emb, job_embs):
                 pass
             return scores_np
 
-    except Exception:
-        logger.exception("[_score_jobs_via_embeddings] Failed to compute scores using decoder, falling back to cosine similarity")
+    except Exception as e:
+        logger.warning(f"[_score_jobs_via_embeddings] Failed to compute scores using decoder ({e}), falling back to cosine similarity")
         # Fallback: cosine similarity between embeddings -> map [-1,1] to [0,1]
         try:
             if torch.is_tensor(user_emb):
@@ -350,14 +356,22 @@ def _score_jobs_via_embeddings(user_emb, job_embs):
                 u = u.reshape(1, -1)
             if j.ndim == 1:
                 j = j.reshape(1, -1)
+            
+            # Normalize
             u_norm = np.linalg.norm(u, axis=1, keepdims=True) + 1e-12
             j_norm = np.linalg.norm(j, axis=1, keepdims=True) + 1e-12
-            dots = (j @ u.T).flatten()
-            sims = dots / (j_norm.flatten() * u_norm.flatten())
+            u_normalized = u / u_norm
+            j_normalized = j / j_norm
+            
+            # Cosine similarity: (j_normalized @ u_normalized.T).flatten()
+            sims = (j_normalized @ u_normalized.T).flatten()
             sims = np.clip(sims, -1.0, 1.0)
-            return ((sims + 1.0) / 2.0).astype(float)
-        except Exception:
-            logger.exception("[_score_jobs_via_embeddings] Fallback cosine similarity also failed")
+            # Map from [-1, 1] to [0, 1]
+            scores = ((sims + 1.0) / 2.0).astype(float)
+            logger.info(f"[_score_jobs_via_embeddings] Cosine similarity fallback: min={scores.min():.4f}, max={scores.max():.4f}, mean={scores.mean():.4f}")
+            return scores
+        except Exception as ex:
+            logger.exception(f"[_score_jobs_via_embeddings] Fallback cosine similarity also failed: {ex}")
             return np.zeros((0,), dtype=float)
 
 
