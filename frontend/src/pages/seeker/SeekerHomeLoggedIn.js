@@ -67,6 +67,35 @@ const profileStepLabels = {
   experience: 'Kinh nghiệm làm việc',
 };
 
+// Cache constants
+const CACHE_KEY_LATEST_JOBS = 'cache_latest_jobs';
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 phút
+
+// Helper: kiểm tra cache có còn hiệu lực
+const getCachedData = (key) => {
+  try {
+    const raw = sessionStorage.getItem(key);
+    if (!raw) return null;
+    const { ts, data } = JSON.parse(raw);
+    if (Date.now() - ts < CACHE_TTL_MS) {
+      return data; // Cache còn hợp lệ
+    }
+    sessionStorage.removeItem(key); // Cache hết hạn, xóa
+  } catch (e) {
+    console.warn('Cache read error:', e);
+  }
+  return null;
+};
+
+// Helper: lưu dữ liệu vào cache
+const setCachedData = (key, data) => {
+  try {
+    sessionStorage.setItem(key, JSON.stringify({ ts: Date.now(), data }));
+  } catch (e) {
+    console.warn('Cache write error:', e);
+  }
+};
+
 const SeekerHomeLoggedIn = () => {
   const navigate = useNavigate();
   const [recommendations, setRecommendations] = useState([]);
@@ -109,10 +138,26 @@ const SeekerHomeLoggedIn = () => {
 
   const loadLatestJobs = async () => {
     try {
+      // Kiểm tra cache trước
+      const cached = getCachedData(CACHE_KEY_LATEST_JOBS);
+      if (cached) {
+        setLatestJobs(cached.jobs);
+        setTotalPages(cached.pages);
+        setLatestJobsLoaded(true);
+        return;
+      }
+
+      // Gọi API nếu cache hết hạn
       const latestJobsResponse = await API.get('/jobs', { params: { page: 1, per_page: 6 } });
       const freshJobs = (latestJobsResponse.data?.jobs || []).map(toLatestJob);
       setLatestJobs(freshJobs);
       setTotalPages(latestJobsResponse.data?.pages || 1);
+
+      // Lưu vào cache
+      setCachedData(CACHE_KEY_LATEST_JOBS, {
+        jobs: freshJobs,
+        pages: latestJobsResponse.data?.pages || 1,
+      });
     } catch (error) {
       console.error('Failed to load latest jobs:', error);
       setLatestJobs([]);
@@ -128,9 +173,7 @@ const SeekerHomeLoggedIn = () => {
     try {
       const profileResponse = await API.get(`/user-profile/${user.id}`);
 
-      // const isComplete = Boolean(profileResponse.data?.profile_complete);
-      const isComplete = true; 
-      // const missingFields = profileResponse.data?.profile_missing_fields || [];
+      const isComplete = true;
       const missingFields = [];
 
       setProfileComplete(isComplete);
@@ -139,6 +182,7 @@ const SeekerHomeLoggedIn = () => {
       if (!isComplete) {
         setRecommendations([]);
         setNewRecommendations(0);
+        setLoadingRecommendations(false);
         return;
       }
 
@@ -286,6 +330,16 @@ const SeekerHomeLoggedIn = () => {
     setTotalPages(1);
     setActiveSortCriteria('newest');
     setSortOrder('asc');
+  };
+
+  // Format match score for display (handles 0-1 and 0-100 ranges)
+  const formatMatchScore = (s) => {
+    if (s === null || s === undefined) return '—';
+    const n = Number(s);
+    if (Number.isNaN(n)) return '—';
+    if (n >= 0 && n <= 1) return `${Math.round(n * 100)}%`;
+    if (n > 1 && n <= 100) return `${Math.round(n)}%`;
+    return `${n.toFixed(2)}`;
   };
 
   if (!isLoggedIn) return null;
@@ -708,14 +762,16 @@ const SeekerHomeLoggedIn = () => {
                       </div>
 
                       <div className="flex-1">
-                        <h3 className="text-sm font-semibold text-on-surface">{job.title}</h3>
-                        <p className="text-xs text-on-surface-variant mt-1">{job.company}</p>
-                        <p className="text-xs text-on-surface-variant mt-1">{job.location}</p>
-                        {job.benefits && (
-                          <div className="mt-2">
-                            <span className="inline-flex rounded-full bg-[#00488d]/10 px-2 py-0.5 text-xs font-semibold text-[#00488d]">Phúc lợi</span>
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h3 className="text-sm font-semibold text-on-surface">{job.title}</h3>
+                            <p className="text-xs text-on-surface-variant mt-1">{job.company}</p>
+                            <p className="text-xs text-on-surface-variant mt-1">{job.location}</p>
                           </div>
-                        )}
+                          <div className="ml-4 flex-shrink-0">
+                            <span className="text-xs inline-block bg-[#e6f7ef] text-[#0b6e4f] px-2 py-1 rounded-full font-semibold">{formatMatchScore(job.matchScore)}</span>
+                          </div>
+                        </div>
                         <div className="text-sm font-bold text-[#00488d] mt-3">{job.salary}</div>
                       </div>
                     </div>

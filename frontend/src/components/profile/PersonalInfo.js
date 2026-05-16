@@ -241,13 +241,27 @@ const PersonalInfo = () => {
               <div>
                 <label className="block text-xs font-bold text-on-surface-variant mb-2 uppercase tracking-wider">Ngành nghề</label>
                 {isEditing ? (
-                  <input
-                    type="text"
+                  <select
                     name="industry"
                     value={formData.industry}
                     onChange={handleChange}
                     className="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-lg px-4 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
-                  />
+                  >
+                    <option value="">Chọn ngành nghề</option>
+                    <option value="Công nghệ thông tin">Công nghệ thông tin</option>
+                    <option value="Tài chính - Kế toán">Tài chính - Kế toán</option>
+                    <option value="Kinh doanh - Bán hàng">Kinh doanh - Bán hàng</option>
+                    <option value="Marketing - Truyền thông">Marketing - Truyền thông</option>
+                    <option value="Kỹ thuật - Sản xuất">Kỹ thuật - Sản xuất</option>
+                    <option value="Xây dựng - BĐS">Xây dựng - BĐS</option>
+                    <option value="Dịch vụ - F&B - Làm đẹp">Dịch vụ - F&B - Làm đẹp</option>
+                    <option value="Vận tải - Logistics">Vận tải - Logistics</option>
+                    <option value="Y tế - Dược">Y tế - Dược</option>
+                    <option value="Hành chính - Nhân sự">Hành chính - Nhân sự</option>
+                    <option value="Giáo dục - Đào tạo">Giáo dục - Đào tạo</option>
+                    <option value="Lao động phổ thông">Lao động phổ thông</option>
+                    <option value="Nông - Lâm - Ngư nghiệp">Nông - Lâm - Ngư nghiệp</option>
+                  </select>
                 ) : (
                   <p className="text-on-surface font-semibold">{formData.industry}</p>
                 )}
@@ -255,20 +269,26 @@ const PersonalInfo = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-
               <div>
                 <label className="block text-xs font-bold text-on-surface-variant mb-2 uppercase tracking-wider">Mức lương mong muốn</label>
                 {isEditing ? (
-                  <input
-                    type="text"
+                  <select
                     name="desired_salary"
                     value={formData.desired_salary}
                     onChange={handleChange}
                     className="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-lg px-4 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
-                  />
+                  >
+                    <option value="">Chọn khoảng lương</option>
+                    <option value="0-5">Dưới 5 triệu</option>
+                    <option value="5-10">5 - 10 triệu</option>
+                    <option value="10-15">10 - 15 triệu</option>
+                    <option value="15-20">15 - 20 triệu</option>
+                    <option value="20-30">20 - 30 triệu</option>
+                    <option value="30-50">30 - 50 triệu</option>
+                    <option value="50+">Trên 50 triệu</option>
+                  </select>
                 ) : (
-                  <p className="text-on-surface font-semibold">{formData.desired_salary}</p>
+                  <p className="text-on-surface font-semibold">{formData.desired_salary || 'Thoả thuận'}</p>
                 )}
               </div>
             </div>
