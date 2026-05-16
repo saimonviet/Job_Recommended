@@ -1,40 +1,45 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const API_BASE_URL = "http://127.0.0.1:5000";
+
 function AdminLogin() {
   const [identity, setIdentity] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
 
-    // Test credentials
-    const testCredentials = {
-      "admin": "admin123",
-      "admin@careerauthority.com": "admin123",
-    };
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ identity, password }),
+      });
 
-    // Simulate API call with delay
-    setTimeout(() => {
-      if (testCredentials[identity] === password) {
-        // Simulate successful login
-        const mockToken = "admin_token_" + Date.now();
-        localStorage.setItem("adminToken", mockToken);
-        localStorage.setItem("adminUser", JSON.stringify({
-          name: "Quản trị viên",
-          email: identity,
-          role: "Super Admin"
-        }));
-        navigate("/admin/dashboard");
+      const data = await response.json();
+
+      if (data.success && data.token) {
+        // Lưu token và user info vào localStorage
+        localStorage.setItem("adminToken", data.token);
+        localStorage.setItem("adminUser", JSON.stringify(data.user));
+        navigate("/admin/users");
       } else {
-        alert("❌ Đăng nhập thất bại\n\nTest Credentials:\nUsername: admin\nPassword: admin123");
+        setError(data.error || "Đăng nhập thất bại");
       }
+    } catch (err) {
+      setError("❌ Lỗi kết nối: " + err.message);
+    } finally {
       setLoading(false);
-    }, 800);
+    }
   };
 
   return (
@@ -67,6 +72,13 @@ function AdminLogin() {
 
           <div className="p-10">
             <form onSubmit={handleLogin} className="space-y-6">
+              {/* Error Message */}
+              {error && (
+                <div className="p-4 bg-red-50 border border-red-300 rounded-lg text-red-700 text-sm font-medium">
+                  {error}
+                </div>
+              )}
+
               {/* Email/Identity Field */}
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-on-surface ml-1">
@@ -127,7 +139,7 @@ function AdminLogin() {
                   info
                 </span>
                 <div className="text-[11px] leading-relaxed text-blue-700">
-                  <p className="font-semibold mb-1">🔐 Test Credentials:</p>
+                  <p className="font-semibold mb-1">🔐 Test Credentials (Development):</p>
                   <p>Username: <code className="font-mono bg-white px-1 rounded">admin</code></p>
                   <p>Password: <code className="font-mono bg-white px-1 rounded">admin123</code></p>
                 </div>
@@ -140,7 +152,7 @@ function AdminLogin() {
                 className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-lg bg-gradient-to-br from-blue-600 to-blue-500 text-white font-bold text-sm tracking-wide hover:opacity-90 active:scale-[0.98] transition-all shadow-lg shadow-blue-600/20 disabled:opacity-50"
               >
                 <span>{loading ? "Đang xử lý..." : "Đăng nhập quản trị"}</span>
-                <span className="material-symbols-outlined text-xl">login</span>
+                {!loading && <span className="material-symbols-outlined text-xl">login</span>}
               </button>
             </form>
           </div>

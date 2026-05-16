@@ -8,7 +8,7 @@ function AdminSideNavBar() {
 
   const handleLogout = () => {
     localStorage.removeItem("adminToken");
-    window.location.href = "/admin/login";
+    window.location.href = "/admin";
   };
 
   return (
@@ -19,18 +19,6 @@ function AdminSideNavBar() {
       </div>
 
       <nav className="flex-1 flex flex-col gap-2">
-        <Link
-          to="/admin/dashboard"
-          className={`px-4 py-3 flex items-center gap-3 rounded-lg font-medium text-sm transition-all duration-300 ${
-            isActive("/admin/dashboard")
-              ? "bg-white dark:bg-slate-800 text-blue-700 dark:text-blue-400 font-bold shadow-sm"
-              : "text-slate-600 dark:text-slate-400 hover:translate-x-1 hover:text-blue-600 dark:hover:text-blue-300"
-          }`}
-        >
-          <span className="material-symbols-outlined text-lg">dashboard</span>
-          <span>Dashboard</span>
-        </Link>
-
         <Link
           to="/admin/users"
           className={`px-4 py-3 flex items-center gap-3 rounded-lg font-medium text-sm transition-all duration-300 ${

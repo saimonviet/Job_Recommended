@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import TopNavBar from '../../components/TopNavBar';
+import { formatTextWithJustify, formatSalaryRange, formatExperienceRange, formatEmploymentType, formatDate as formatDateUtil } from '../../utils/dataFormatter';
 
 const JobDetailPage = () => {
   const { jobId } = useParams();
@@ -77,22 +78,6 @@ const JobDetailPage = () => {
       fetchJob();
     }
   }, [jobId]);
-
-  const formatDate = (dateString) => {
-    if (!dateString) return 'Chưa cập nhật';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('vi-VN');
-  };
-
-  const formatText = (text) => {
-    if (!text) return '';
-    return text.split('\n').map((line, i) => (
-      <React.Fragment key={i}>
-        {line}
-        <br />
-      </React.Fragment>
-    ));
-  };
 
   const buildMapEmbedUrl = (coords) => {
     if (!coords) return '';
@@ -207,12 +192,6 @@ const JobDetailPage = () => {
             <span className="material-symbols-outlined">arrow_back</span>
             Career Authority
           </button>
-          <div className="hidden md:flex gap-8 items-center">
-            <a className="text-on-surface-variant font-medium hover:text-primary transition-colors" href="#forecast">Dự báo</a>
-            <a className="text-on-surface-variant font-medium hover:text-primary transition-colors" href="#market">Thị trường</a>
-            <a className="text-primary font-bold border-b-2 border-primary" href="#jobs">Công ty</a>
-            <a className="text-on-surface-variant font-medium hover:text-primary transition-colors" href="#about">Về chúng tôi</a>
-          </div>
           <div className="flex gap-4 items-center">
             <button 
               onClick={() => navigate('/login-seeker')}
@@ -249,7 +228,7 @@ const JobDetailPage = () => {
             <div className="flex flex-wrap gap-4 mb-10">
               <div className="bg-surface-container-low px-4 py-2 rounded-full flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary" style={{ fontSize: '20px' }}>payments</span>
-                <span className="text-sm font-semibold">{job.salary_min} - {job.salary_max}</span>
+                <span className="text-sm font-semibold">{formatSalaryRange(job.salary_min, job.salary_max)}</span>
               </div>
               <div className="bg-surface-container-low px-4 py-2 rounded-full flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary" style={{ fontSize: '20px' }}>location_on</span>
@@ -261,7 +240,7 @@ const JobDetailPage = () => {
           {/* Action Column */}
           <div className="lg:col-span-4 flex flex-col gap-4 sticky top-28">
             <button
-              onClick={() => alert('Tính năng ứng tuyển sẽ được cập nhật sớm!')}
+              onClick={() => alert('Hãy tham gia tổ chức ngay !')}
               className="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all"
             >
               Ứng tuyển ngay
@@ -294,8 +273,8 @@ const JobDetailPage = () => {
               <h2 className="text-2xl font-bold text-on-surface mb-6 border-b border-outline-variant/20 pb-4">
                 MỤC TIÊU CÔNG VIỆC
               </h2>
-              <div className="space-y-4 text-on-surface-variant leading-relaxed text-lg text-justify job-description">
-                <p>{formatText(job.description)}</p>
+              <div className="text-on-surface-variant text-lg job-description">
+                {formatTextWithJustify(job.description)}
               </div>
             </article>
 
@@ -304,8 +283,8 @@ const JobDetailPage = () => {
               <h2 className="text-2xl font-bold text-on-surface mb-6 border-b border-outline-variant/20 pb-4">
                 YÊU CẦU CÔNG VIỆC
               </h2>
-              <div className="space-y-4 text-on-surface-variant text-lg text-justify job-requirement">
-                <p>{formatText(job.requirement)}</p>
+              <div className="text-on-surface-variant text-lg job-requirement">
+                {formatTextWithJustify(job.requirement)}
               </div>
             </article>
 
@@ -314,28 +293,30 @@ const JobDetailPage = () => {
               <h2 className="text-2xl font-bold text-on-surface mb-6 border-b border-outline-variant/20 pb-4">
                 Phúc lợi
               </h2>
-              {job.benefits}
+              <div className="text-on-surface-variant text-lg job-benefits mb-8">
+                {formatTextWithJustify(job.benefits)}
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="p-6 bg-surface-container-low rounded-xl">
                   <span className="material-symbols-outlined text-primary mb-3" style={{ fontSize: '32px', display: 'block' }}>
                     calendar_today
                   </span>
                   <h4 className="font-bold text-on-surface mb-1">Hạn chót ứng tuyển</h4>
-                  <p className="text-sm text-on-surface-variant">{formatDate(job.deadline)}</p>
+                  <p className="text-sm text-on-surface-variant">{formatDateUtil(job.deadline)}</p>
                 </div>
                 <div className="p-6 bg-surface-container-low rounded-xl">
                   <span className="material-symbols-outlined text-primary mb-3" style={{ fontSize: '32px', display: 'block' }}>
                     work
                   </span>
                   <h4 className="font-bold text-on-surface mb-1">Loại hợp đồng</h4>
-                  <p className="text-sm text-on-surface-variant">{job.employmentType || 'Chưa cập nhật'}</p>
+                  <p className="text-sm text-on-surface-variant">{formatEmploymentType(job.employmentType || job.employment_type)}</p>
                 </div>
                 <div className="p-6 bg-surface-container-low rounded-xl">
                   <span className="material-symbols-outlined text-primary mb-3" style={{ fontSize: '32px', display: 'block' }}>
                     school
                   </span>
                   <h4 className="font-bold text-on-surface mb-1">Kinh nghiệm yêu cầu</h4>
-                  <p className="text-sm text-on-surface-variant">{job.exp_min && job.exp_max ? `${job.exp_min} - ${job.exp_max} năm` : 'Chưa cập nhật'}</p>
+                  <p className="text-sm text-on-surface-variant">{formatExperienceRange(job.exp_min, job.exp_max)}</p>
                 </div>
                 <div className="p-6 bg-surface-container-low rounded-xl">
                   <span className="material-symbols-outlined text-primary mb-3" style={{ fontSize: '32px', display: 'block' }}>

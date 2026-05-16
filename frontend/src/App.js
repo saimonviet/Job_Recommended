@@ -11,7 +11,6 @@ import RegisterSeeker from "./pages/seeker/RegisterSeeker";
 import LoginEmployer from "./pages/employer/LoginEmployer";
 import RegisterEmployer from "./pages/employer/RegisterEmployer";
 import AdminLogin from "./pages/admin/AdminLogin";
-import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminJobs from "./pages/admin/AdminJobs";
 import AdminSettings from "./pages/admin/AdminSettings";
@@ -54,7 +53,6 @@ function App() {
 
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminLogin />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/jobs" element={<AdminJobs />} />
         <Route path="/admin/analytics" element={<AdminAnalytics />} />

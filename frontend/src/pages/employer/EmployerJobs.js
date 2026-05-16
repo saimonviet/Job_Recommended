@@ -101,24 +101,6 @@ function EmployerJobs() {
             </div>
           </div>
 
-          {/* Quick Insight Card */}
-          <div className="bg-gradient-to-br from-blue-600 to-blue-500 rounded-xl p-6 text-white mb-8 shadow-lg">
-            <div className="flex justify-between items-start">
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="material-symbols-outlined text-lg opacity-80">auto_awesome</span>
-                  <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest">Dự báo tuần này</span>
-                </div>
-                <h4 className="text-2xl font-bold mb-2">Xu hướng ứng tuyển tăng 24%</h4>
-                <p className="text-sm opacity-90">Các vị trí Marketing đang nhận được sự quan tâm lớn từ ứng viên cấp cao.</p>
-                <div className="mt-4 flex items-center gap-2">
-                  <span className="text-xs font-bold bg-orange-400 text-white px-2 py-0.5 rounded">Actionable Insight</span>
-                  <span className="text-xs">Cập nhật tin Marketing ngay!</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* Job Listings Table */}
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm overflow-hidden">
             <table className="w-full text-left border-collapse">

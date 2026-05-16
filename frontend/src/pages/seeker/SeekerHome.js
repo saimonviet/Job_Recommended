@@ -281,11 +281,7 @@ const SeekerHome = () => {
       </div>
 
       {/* Phù hợp badge - chỉ grid view */}
-      {viewMode === 'grid' && (
-        <div className="absolute top-6 right-6 bg-tertiary/10 text-tertiary px-3 py-1 rounded-full text-xs font-bold">
-          Phù hợp
-        </div>
-      )}
+   
     </div>
   );
 

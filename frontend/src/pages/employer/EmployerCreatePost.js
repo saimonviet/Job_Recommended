@@ -81,10 +81,6 @@ function EmployerCreatePost() {
                       {currentStep === 2 && "Bước 2: Mô tả công việc"}
                       {currentStep === 3 && "Bước 3: Cài đặt bài đăng"}
                     </h3>
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full text-xs font-bold">
-                      <span className="material-symbols-outlined text-sm">auto_awesome</span>
-                      AI Gợi ý
-                    </div>
                   </div>
 
                   <form className="space-y-6">

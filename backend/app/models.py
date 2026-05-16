@@ -79,6 +79,9 @@ class Job(db.Model):
     job_description = db.Column(db.Text)
     job_requirement = db.Column(db.Text)
     is_active = db.Column(db.Boolean, default=True)
+    is_locked = db.Column(db.Boolean, default=False)
+    is_hidden = db.Column(db.Boolean, default=False)
+    is_deleted = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     job_embedding = db.Column(db.Text)  # JSON-encoded embedding vector
 

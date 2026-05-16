@@ -16,7 +16,7 @@ import pandas as pd
 from sqlalchemy import inspect, text
 from flask import Blueprint, request, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
-from .models import db, User, Job, InforUser
+from .models import db, User, Job, InforUser, Employer
 import pickle
 
 # ---> Pipeline khớp model_train.ipynb (Model 1: HeteroSAGE encoder + MLP decoder)
@@ -625,6 +625,78 @@ def get_job(job_id):
         **_serialize_job(job),
         "job_id": job.job_id, "salary_min": job.salary_min, "salary_max": job.salary_max,
         "exp_min": job.exp_min, "exp_max": job.exp_max, "benefits": job.benefits,
+    })
+
+@main.route('/companies', methods=['GET'])
+def get_companies():
+    """
+    Get list of companies with filtering
+    Query parameters:
+    - page: page number (default: 1)
+    - per_page: items per page (default: 12)
+    - search: search by company name
+    - industry: filter by industry
+    - location: filter by location/address
+    - sort: sort by ('hiring' = most job openings, 'newest' = recently created)
+    """
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 12, type=int)
+    search = request.args.get('search', '', type=str)
+    industry = request.args.get('industry', '', type=str)
+    location = request.args.get('location', '', type=str)
+    sort = request.args.get('sort', 'newest', type=str)
+
+    # Base query: active employers only
+    query = Employer.query.filter(Employer.is_active == True)
+
+    # Apply filters
+    if search:
+        query = query.filter(Employer.company_name.ilike(f'%{search}%'))
+    if industry:
+        query = query.filter(Employer.industry.ilike(f'%{industry}%'))
+    if location:
+        query = query.filter(Employer.address.ilike(f'%{location}%'))
+
+    # Apply sorting
+    if sort == 'hiring':
+        # Sort by number of active job openings (most to least)
+        query = query.outerjoin(Job).filter(
+            (Job.is_active == True) | (Job.id == None)
+        ).group_by(Employer.id).order_by(db.func.count(Job.id).desc())
+    else:  # default: 'newest'
+        query = query.order_by(Employer.created_at.desc())
+
+    # Paginate
+    pagination = query.paginate(page=page, per_page=per_page)
+
+    # Serialize companies with job count
+    companies = []
+    for employer in pagination.items:
+        # Count active jobs for this employer
+        job_count = Job.query.filter(
+            Job.employer_id == employer.id,
+            Job.is_active == True
+        ).count()
+
+        companies.append({
+            "id": employer.id,
+            "company_name": employer.company_name,
+            "industry": employer.industry,
+            "address": employer.address,
+            "description": employer.description,
+            "logo_path": employer.logo_path,
+            "website": employer.website,
+            "email": employer.email,
+            "phone": employer.phone,
+            "job_count": job_count,
+            "created_at": employer.created_at.isoformat() if employer.created_at else None,
+        })
+
+    return jsonify({
+        "companies": companies,
+        "total": pagination.total,
+        "pages": pagination.pages,
+        "current_page": page,
     })
 
 # Recommendations endpoint moved to routes_seeker.py: GET /seeker/recommendations

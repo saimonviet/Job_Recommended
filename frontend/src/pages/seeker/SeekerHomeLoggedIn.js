@@ -358,171 +358,175 @@ const SeekerHomeLoggedIn = () => {
             </div>
             {searchExpanded && (
               <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Criteria Labels (Left) */}
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Location Filter */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
                   <label className="text-sm font-semibold text-on-surface">Địa điểm làm việc</label>
                   <button
                     onClick={() => handleSortToggleCriteria('location')}
                     className={`text-lg transition-colors ${activeSortCriteria === 'location' ? 'text-[#22c55e]' : 'text-on-surface-variant hover:text-on-surface'}`}
+                    title="Sắp xếp"
                   >
                     {activeSortCriteria === 'location' ? (sortOrder === 'asc' ? '↑' : '↓') : '↑'}
                   </button>
                 </div>
-                <div className="flex items-center justify-between">
+                <select 
+                  value={filterLocation}
+                  onChange={(e) => setFilterLocation(e.target.value)}
+                  className="w-full border border-outline-variant/20 rounded-lg bg-surface-container-lowest px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-[#00488d] transition-colors"
+                >
+                  <option value="">Chọn tỉnh thành</option>
+                  <option value="Hà Nội">Hà Nội</option>
+                  <option value="Hồ Chí Minh">Hồ Chí Minh</option>
+                  <option value="Đà Nẵng">Đà Nẵng</option>
+                  <option value="Hải Phòng">Hải Phòng</option>
+                  <option value="Cần Thơ">Cần Thơ</option>
+                  <option value="An Giang">An Giang</option>
+                  <option value="Bà Rịa - Vũng Tàu">Bà Rịa - Vũng Tàu</option>
+                  <option value="Bắc Giang">Bắc Giang</option>
+                  <option value="Bắc Kạn">Bắc Kạn</option>
+                  <option value="Bạc Liêu">Bạc Liêu</option>
+                  <option value="Bắc Ninh">Bắc Ninh</option>
+                  <option value="Bến Tre">Bến Tre</option>
+                  <option value="Bình Định">Bình Định</option>
+                  <option value="Bình Dương">Bình Dương</option>
+                  <option value="Bình Phước">Bình Phước</option>
+                  <option value="Bình Thuận">Bình Thuận</option>
+                  <option value="Cà Mau">Cà Mau</option>
+                  <option value="Cao Bằng">Cao Bằng</option>
+                  <option value="Đắk Lắk">Đắk Lắk</option>
+                  <option value="Đắk Nông">Đắk Nông</option>
+                  <option value="Điện Biên">Điện Biên</option>
+                  <option value="Đồng Nai">Đồng Nai</option>
+                  <option value="Đồng Tháp">Đồng Tháp</option>
+                  <option value="Gia Lai">Gia Lai</option>
+                  <option value="Hà Giang">Hà Giang</option>
+                  <option value="Hà Nam">Hà Nam</option>
+                  <option value="Hà Tĩnh">Hà Tĩnh</option>
+                  <option value="Hải Dương">Hải Dương</option>
+                  <option value="Hậu Giang">Hậu Giang</option>
+                  <option value="Hòa Bình">Hòa Bình</option>
+                  <option value="Hưng Yên">Hưng Yên</option>
+                  <option value="Khánh Hòa">Khánh Hòa</option>
+                  <option value="Kiên Giang">Kiên Giang</option>
+                  <option value="Kon Tum">Kon Tum</option>
+                  <option value="Lai Châu">Lai Châu</option>
+                  <option value="Lâm Đồng">Lâm Đồng</option>
+                  <option value="Lạng Sơn">Lạng Sơn</option>
+                  <option value="Lào Cai">Lào Cai</option>
+                  <option value="Long An">Long An</option>
+                  <option value="Nam Định">Nam Định</option>
+                  <option value="Nghệ An">Nghệ An</option>
+                  <option value="Ninh Bình">Ninh Bình</option>
+                  <option value="Ninh Thuận">Ninh Thuận</option>
+                  <option value="Phú Thọ">Phú Thọ</option>
+                  <option value="Quảng Bình">Quảng Bình</option>
+                  <option value="Quảng Nam">Quảng Nam</option>
+                  <option value="Quảng Ngãi">Quảng Ngãi</option>
+                  <option value="Quảng Ninh">Quảng Ninh</option>
+                  <option value="Quảng Trị">Quảng Trị</option>
+                  <option value="Sóc Trăng">Sóc Trăng</option>
+                  <option value="Sơn La">Sơn La</option>
+                  <option value="Tây Ninh">Tây Ninh</option>
+                  <option value="Thái Bình">Thái Bình</option>
+                  <option value="Thái Nguyên">Thái Nguyên</option>
+                  <option value="Thanh Hóa">Thanh Hóa</option>
+                  <option value="Thừa Thiên Huế">Thừa Thiên Huế</option>
+                  <option value="Tiền Giang">Tiền Giang</option>
+                  <option value="Trà Vinh">Trà Vinh</option>
+                  <option value="Tuyên Quang">Tuyên Quang</option>
+                  <option value="Vĩnh Long">Vĩnh Long</option>
+                  <option value="Vĩnh Phúc">Vĩnh Phúc</option>
+                  <option value="Yên Bái">Yên Bái</option>
+                  <option value="Phú Yên">Phú Yên</option>
+                </select>
+              </div>
+
+              {/* Salary Filter */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
                   <label className="text-sm font-semibold text-on-surface">Mức lương</label>
                   <button
                     onClick={() => handleSortToggleCriteria('salary')}
                     className={`text-lg transition-colors ${activeSortCriteria === 'salary' ? 'text-[#22c55e]' : 'text-on-surface-variant hover:text-on-surface'}`}
+                    title="Sắp xếp"
                   >
                     {activeSortCriteria === 'salary' ? (sortOrder === 'asc' ? '↑' : '↓') : '↑'}
                   </button>
                 </div>
-                <div className="flex items-center justify-between">
+                <select 
+                  value={filterSalary}
+                  onChange={(e) => setFilterSalary(e.target.value)}
+                  className="w-full border border-outline-variant/20 rounded-lg bg-surface-container-lowest px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-[#00488d] transition-colors"
+                >
+                  <option value="0-5">Dưới 5 triệu</option>
+                  <option value="5-10">5 - 10 triệu</option>
+                  <option value="10-15">10 - 15 triệu</option>
+                  <option value="15-20">15 - 20 triệu</option>
+                  <option value="20-30">20 - 30 triệu</option>
+                  <option value="30-50">30 - 50 triệu</option>
+                  <option value="50+">Trên 50 triệu</option>
+                </select>
+              </div>
+
+              {/* Experience Filter */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
                   <label className="text-sm font-semibold text-on-surface">Kinh nghiệm</label>
                   <button
                     onClick={() => handleSortToggleCriteria('experience')}
                     className={`text-lg transition-colors ${activeSortCriteria === 'experience' ? 'text-[#22c55e]' : 'text-on-surface-variant hover:text-on-surface'}`}
+                    title="Sắp xếp"
                   >
                     {activeSortCriteria === 'experience' ? (sortOrder === 'asc' ? '↑' : '↓') : '↑'}
                   </button>
                 </div>
-                <div className="flex items-center justify-between">
+                <select 
+                  value={filterExperience}
+                  onChange={(e) => setFilterExperience(e.target.value)}
+                  className="w-full border border-outline-variant/20 rounded-lg bg-surface-container-lowest px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-[#00488d] transition-colors"
+                >
+                  <option value="0">Không yêu cầu</option>
+                  <option value="1">Dưới 1 năm</option>
+                  <option value="3">1 - 3 năm</option>
+                  <option value="5">3 - 5 năm</option>
+                  <option value="10">Trên 5 năm</option>
+                </select>
+              </div>
+
+              {/* Industry Filter */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
                   <label className="text-sm font-semibold text-on-surface">Ngành nghề</label>
                   <button
                     onClick={() => handleSortToggleCriteria('industry')}
                     className={`text-lg transition-colors ${activeSortCriteria === 'industry' ? 'text-[#22c55e]' : 'text-on-surface-variant hover:text-on-surface'}`}
+                    title="Sắp xếp"
                   >
                     {activeSortCriteria === 'industry' ? (sortOrder === 'asc' ? '↑' : '↓') : '↑'}
                   </button>
                 </div>
-              </div>
-
-              {/* Input/Select Fields (Right) */}
-              <div className="space-y-6">
-                <div>
-                  <select 
-                    value={filterLocation}
-                    onChange={(e) => setFilterLocation(e.target.value)}
-                    className="w-full border border-outline-variant/20 rounded-lg bg-surface-container-lowest px-4 py-2 text-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-[#00488d]"
-                  >
-                    <option value="">Chọn tỉnh thành</option>
-                    <option value="Hà Nội">Hà Nội</option>
-                    <option value="Hồ Chí Minh">Hồ Chí Minh</option>
-                    <option value="Đà Nẵng">Đà Nẵng</option>
-                    <option value="Hải Phòng">Hải Phòng</option>
-                    <option value="Cần Thơ">Cần Thơ</option>
-                    <option value="An Giang">An Giang</option>
-                    <option value="Bà Rịa - Vũng Tàu">Bà Rịa - Vũng Tàu</option>
-                    <option value="Bắc Giang">Bắc Giang</option>
-                    <option value="Bắc Kạn">Bắc Kạn</option>
-                    <option value="Bạc Liêu">Bạc Liêu</option>
-                    <option value="Bắc Ninh">Bắc Ninh</option>
-                    <option value="Bến Tre">Bến Tre</option>
-                    <option value="Bình Định">Bình Định</option>
-                    <option value="Bình Dương">Bình Dương</option>
-                    <option value="Bình Phước">Bình Phước</option>
-                    <option value="Bình Thuận">Bình Thuận</option>
-                    <option value="Cà Mau">Cà Mau</option>
-                    <option value="Cao Bằng">Cao Bằng</option>
-                    <option value="Đắk Lắk">Đắk Lắk</option>
-                    <option value="Đắk Nông">Đắk Nông</option>
-                    <option value="Điện Biên">Điện Biên</option>
-                    <option value="Đồng Nai">Đồng Nai</option>
-                    <option value="Đồng Tháp">Đồng Tháp</option>
-                    <option value="Gia Lai">Gia Lai</option>
-                    <option value="Hà Giang">Hà Giang</option>
-                    <option value="Hà Nam">Hà Nam</option>
-                    <option value="Hà Tĩnh">Hà Tĩnh</option>
-                    <option value="Hải Dương">Hải Dương</option>
-                    <option value="Hậu Giang">Hậu Giang</option>
-                    <option value="Hòa Bình">Hòa Bình</option>
-                    <option value="Hưng Yên">Hưng Yên</option>
-                    <option value="Khánh Hòa">Khánh Hòa</option>
-                    <option value="Kiên Giang">Kiên Giang</option>
-                    <option value="Kon Tum">Kon Tum</option>
-                    <option value="Lai Châu">Lai Châu</option>
-                    <option value="Lâm Đồng">Lâm Đồng</option>
-                    <option value="Lạng Sơn">Lạng Sơn</option>
-                    <option value="Lào Cai">Lào Cai</option>
-                    <option value="Long An">Long An</option>
-                    <option value="Nam Định">Nam Định</option>
-                    <option value="Nghệ An">Nghệ An</option>
-                    <option value="Ninh Bình">Ninh Bình</option>
-                    <option value="Ninh Thuận">Ninh Thuận</option>
-                    <option value="Phú Thọ">Phú Thọ</option>
-                    <option value="Quảng Bình">Quảng Bình</option>
-                    <option value="Quảng Nam">Quảng Nam</option>
-                    <option value="Quảng Ngãi">Quảng Ngãi</option>
-                    <option value="Quảng Ninh">Quảng Ninh</option>
-                    <option value="Quảng Trị">Quảng Trị</option>
-                    <option value="Sóc Trăng">Sóc Trăng</option>
-                    <option value="Sơn La">Sơn La</option>
-                    <option value="Tây Ninh">Tây Ninh</option>
-                    <option value="Thái Bình">Thái Bình</option>
-                    <option value="Thái Nguyên">Thái Nguyên</option>
-                    <option value="Thanh Hóa">Thanh Hóa</option>
-                    <option value="Thừa Thiên Huế">Thừa Thiên Huế</option>
-                    <option value="Tiền Giang">Tiền Giang</option>
-                    <option value="Trà Vinh">Trà Vinh</option>
-                    <option value="Tuyên Quang">Tuyên Quang</option>
-                    <option value="Vĩnh Long">Vĩnh Long</option>
-                    <option value="Vĩnh Phúc">Vĩnh Phúc</option>
-                    <option value="Yên Bái">Yên Bái</option>
-                    <option value="Phú Yên">Phú Yên</option>
-                  </select>
-                </div>
-                <div>
-                  <select 
-                    value={filterSalary}
-                    onChange={(e) => setFilterSalary(e.target.value)}
-                    className="w-full border border-outline-variant/20 rounded-lg bg-surface-container-lowest px-4 py-2 text-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-[#00488d]"
-                  >
-                    <option value="0-5">Dưới 5 triệu</option>
-                    <option value="5-10">5 - 10 triệu</option>
-                    <option value="10-15">10 - 15 triệu</option>
-                    <option value="15-20">15 - 20 triệu</option>
-                    <option value="20-30">20 - 30 triệu</option>
-                    <option value="30-50">30 - 50 triệu</option>
-                    <option value="50+">Trên 50 triệu</option>
-                  </select>
-                </div>
-                <div>
-                  <select 
-                    value={filterExperience}
-                    onChange={(e) => setFilterExperience(e.target.value)}
-                    className="w-full border border-outline-variant/20 rounded-lg bg-surface-container-lowest px-4 py-2 text-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-[#00488d]"
-                  >
-                    <option value="0">Không yêu cầu</option>
-                    <option value="1">Dưới 1 năm</option>
-                    <option value="3">1 - 3 năm</option>
-                    <option value="5">3 - 5 năm</option>
-                    <option value="10">Trên 5 năm</option>
-                  </select>
-                </div>
-                <div>
-                  <select 
-                    value={filterIndustry}
-                    onChange={(e) => setFilterIndustry(e.target.value)}
-                    className="w-full border border-outline-variant/20 rounded-lg bg-surface-container-lowest px-4 py-2 text-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-[#00488d]"
-                  >
-                    <option value="Công nghệ thông tin">Công nghệ thông tin</option>
-                    <option value="Tài chính - Kế toán">Tài chính - Kế toán</option>
-                    <option value="Kinh doanh - Bán hàng">Kinh doanh - Bán hàng</option>
-                    <option value="Marketing - Truyền thông">Marketing - Truyền thông</option>
-                    <option value="Kỹ thuật - Sản xuất">Kỹ thuật - Sản xuất</option>
-                    <option value="Xây dựng - BĐS">Xây dựng - BĐS</option>
-                    <option value="Dịch vụ - F&B - Làm đẹp">Dịch vụ - F&B - Làm đẹp</option>
-                    <option value="Vận tải - Logistics">Vận tải - Logistics</option>
-                    <option value="Y tế - Dược">Y tế - Dược</option>
-                    <option value="Hành chính - Nhân sự">Hành chính - Nhân sự</option>
-                    <option value="Giáo dục - Đào tạo">Giáo dục - Đào tạo</option>
-                    <option value="Lao động phổ thông">Lao động phổ thông</option>
-                    <option value="Nông - Lâm - Ngư nghiệp">Nông - Lâm - Ngư nghiệp</option>
-                    <option value="Khác">Khác</option>
-                  </select>
-                </div>
+                <select 
+                  value={filterIndustry}
+                  onChange={(e) => setFilterIndustry(e.target.value)}
+                  className="w-full border border-outline-variant/20 rounded-lg bg-surface-container-lowest px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-[#00488d] transition-colors"
+                >
+                  <option value="Công nghệ thông tin">Công nghệ thông tin</option>
+                  <option value="Tài chính - Kế toán">Tài chính - Kế toán</option>
+                  <option value="Kinh doanh - Bán hàng">Kinh doanh - Bán hàng</option>
+                  <option value="Marketing - Truyền thông">Marketing - Truyền thông</option>
+                  <option value="Kỹ thuật - Sản xuất">Kỹ thuật - Sản xuất</option>
+                  <option value="Xây dựng - BĐS">Xây dựng - BĐS</option>
+                  <option value="Dịch vụ - F&B - Làm đẹp">Dịch vụ - F&B - Làm đẹp</option>
+                  <option value="Vận tải - Logistics">Vận tải - Logistics</option>
+                  <option value="Y tế - Dược">Y tế - Dược</option>
+                  <option value="Hành chính - Nhân sự">Hành chính - Nhân sự</option>
+                  <option value="Giáo dục - Đào tạo">Giáo dục - Đào tạo</option>
+                  <option value="Lao động phổ thông">Lao động phổ thông</option>
+                  <option value="Nông - Lâm - Ngư nghiệp">Nông - Lâm - Ngư nghiệp</option>
+                  <option value="Khác">Khác</option>
+                </select>
               </div>
             </div>
             <div className="flex justify-end items-center gap-4 mt-6">
