@@ -35,6 +35,7 @@ _recommendation_model = None
 main = Blueprint('main', __name__)
 logger = logging.getLogger(__name__)
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'instance', 'uploads')
+LOGOS_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'instance', 'logos')
 
 def _load_artifacts():
     global _prep, _tfidf
@@ -499,7 +500,7 @@ def _format_salary(job):
     return salary_min or salary_max or 'Thoả thuận'
 
 def _job_logo_seed(job):
-    return getattr(job, 'company_name', None) or getattr(job, 'job_title', None) or getattr(job, 'job_id', None) or str(getattr(job, 'id', ''))
+    return getattr(job, 'company_name', None) or getattr(job, 'job_title', None) or str(getattr(job, 'id', ''))
 
 def _serialize_job(job, score=None):
     payload = {
@@ -601,7 +602,7 @@ def get_jobs():
 
     pagination = query.paginate(page=page, per_page=per_page)
     jobs = [{
-        "id": job.id, "job_id": job.job_id, "job_title": job.job_title,
+        "id": job.id, "job_title": job.job_title,
         "company_name": job.company_name, "salary_min": job.salary_min,
         "salary_max": job.salary_max, "job_address": job.job_address,
         "deadline": job.deadline.isoformat() if job.deadline else None,
@@ -623,7 +624,7 @@ def get_job(job_id):
         return jsonify({"error": "Job not found"}), 404
     return jsonify({
         **_serialize_job(job),
-        "job_id": job.job_id, "salary_min": job.salary_min, "salary_max": job.salary_max,
+        "salary_min": job.salary_min, "salary_max": job.salary_max,
         "exp_min": job.exp_min, "exp_max": job.exp_max, "benefits": job.benefits,
     })
 
@@ -748,6 +749,11 @@ def get_user_profile(user_id):
 @main.route('/uploads/<path:filename>', methods=['GET'])
 def uploaded_avatar(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
+
+
+@main.route('/logos/<path:filename>', methods=['GET'])
+def uploaded_logo(filename):
+    return send_from_directory(LOGOS_FOLDER, filename)
 
 # Saved-jobs routes moved to routes_seeker.py: /seeker/saved-jobs (GET, POST, DELETE)
 

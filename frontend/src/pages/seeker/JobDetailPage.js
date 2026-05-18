@@ -54,6 +54,22 @@ const JobDetailPage = () => {
     }
   };
 
+  const handleApplyJob = async () => {
+    if (!user) {
+      navigate('/login-seeker');
+      return;
+    }
+
+    try {
+      await api.post(`/seeker/jobs/${jobId}/apply`);
+      alert('Nộp đơn thành công.');
+      navigate('/seeker/applications');
+    } catch (requestError) {
+      console.error('Error applying job:', requestError);
+      alert(requestError.message || 'Không thể nộp đơn lúc này.');
+    }
+  };
+
   // Fetch job data from API
   useEffect(() => {
     const fetchJob = async () => {
@@ -240,7 +256,7 @@ const JobDetailPage = () => {
           {/* Action Column */}
           <div className="lg:col-span-4 flex flex-col gap-4 sticky top-28">
             <button
-              onClick={() => alert('Hãy tham gia tổ chức ngay !')}
+              onClick={handleApplyJob}
               className="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all"
             >
               Ứng tuyển ngay

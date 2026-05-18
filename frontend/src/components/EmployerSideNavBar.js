@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
+import { clearEmployerAuth } from "../utils/authStorage";
 
 function EmployerSideNavBar() {
   const location = useLocation();
@@ -7,9 +8,8 @@ function EmployerSideNavBar() {
   const isActive = (path) => location.pathname === path;
 
   const handleLogout = () => {
-    localStorage.removeItem("employerToken");
-    localStorage.removeItem("employerCompany");
-    window.location.href = "/employer/login";
+    clearEmployerAuth();
+    window.location.href = "/login-employer";
   };
 
   return (
@@ -94,13 +94,6 @@ function EmployerSideNavBar() {
       </nav>
 
       <div className="mt-auto border-t border-slate-200 dark:border-slate-800 pt-4 flex flex-col gap-1">
-        <a
-          href="#"
-          className="text-slate-600 dark:text-slate-400 px-4 py-3 flex items-center gap-3 hover:translate-x-1 transition-transform hover:text-blue-600 dark:hover:text-blue-300 font-medium text-sm"
-        >
-          <span className="material-symbols-outlined text-lg">help</span>
-          <span>Trợ giúp</span>
-        </a>
         <button
           onClick={handleLogout}
           className="text-slate-600 dark:text-slate-400 px-4 py-3 flex items-center gap-3 hover:translate-x-1 transition-transform hover:text-blue-600 dark:hover:text-blue-300 font-medium text-sm text-left"

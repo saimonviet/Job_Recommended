@@ -2,14 +2,15 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import EmployerSideNavBar from "../../components/EmployerSideNavBar";
 import EmployerTopNavBar from "../../components/EmployerTopNavBar";
+import { getEmployerToken } from "../../utils/authStorage";
 
 function EmployerAnalytics() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('employerToken');
+    const token = getEmployerToken();
     if (!token) {
-      navigate('/employer/login');
+      navigate('/login-employer');
     }
   }, [navigate]);
 

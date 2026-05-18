@@ -230,7 +230,7 @@ def me():
 def change_password():
     """Đổi mật khẩu cho seeker hoặc employer."""
     data = request.get_json(silent=True) or {}
-    old_password = data.get('old_password', '')
+    old_password = data.get('old_password') or data.get('current_password', '')
     new_password = data.get('new_password', '')
 
     if not old_password or not new_password:

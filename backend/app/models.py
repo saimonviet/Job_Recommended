@@ -6,12 +6,12 @@ db = SQLAlchemy()
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), nullable=False)
+    username = db.Column(db.String(50), nullable=False, index=True)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(64), nullable=False)
-    role = db.Column(db.String(20), default='seeker')  # 'seeker' | 'admin'
-    is_active = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    role = db.Column(db.String(20), default='seeker', index=True)  # 'seeker' | 'admin'
+    is_active = db.Column(db.Boolean, default=True, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     recommendations = db.Column(db.Text)
     saved_jobs = db.Column(db.Text)  # JSON array of job IDs
 
@@ -32,6 +32,8 @@ class InforUser(db.Model):
     gender = db.Column(db.String(50))
     marriage = db.Column(db.String(100))
     age = db.Column(db.Integer)
+    # index common filter columns
+    age = db.Column(db.Integer, index=True)
     target = db.Column(db.Text)
     experience = db.Column(db.Text)
     skills = db.Column(db.Text)
@@ -47,23 +49,22 @@ class Employer(db.Model):
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(64), nullable=False)
     phone = db.Column(db.String(20))
-    address = db.Column(db.String(300))
+    address = db.Column(db.Text)
     website = db.Column(db.String(255))
     description = db.Column(db.Text)
     logo_path = db.Column(db.String(255))
     industry = db.Column(db.String(255))
     is_active = db.Column(db.Boolean, default=True)
     is_verified = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
 
     jobs = db.relationship('Job', backref='employer', lazy='dynamic')
 
 
 class Job(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    job_id = db.Column(db.String(100), unique=True, nullable=False)
-    employer_id = db.Column(db.Integer, db.ForeignKey('employer.id'), nullable=True)
-    job_title = db.Column(db.String(255), nullable=False)
+    employer_id = db.Column(db.Integer, db.ForeignKey('employer.id'), nullable=True, index=True)
+    job_title = db.Column(db.String(255), nullable=False, index=True)
     company_name = db.Column(db.String(255), nullable=False)
     salary_min = db.Column(db.String(50))
     salary_max = db.Column(db.String(50))
@@ -78,27 +79,31 @@ class Job(db.Model):
     industries = db.Column(db.Text)
     job_description = db.Column(db.Text)
     job_requirement = db.Column(db.Text)
-    is_active = db.Column(db.Boolean, default=True)
+    is_active = db.Column(db.Boolean, default=True, index=True)
     is_locked = db.Column(db.Boolean, default=False)
     is_hidden = db.Column(db.Boolean, default=False)
     is_deleted = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     job_embedding = db.Column(db.Text)  # JSON-encoded embedding vector
+
+    __table_args__ = (
+        db.Index('ix_job_employer_created', 'employer_id', 'created_at'),
+    )
 
     applications = db.relationship('Application', backref='job', lazy='dynamic')
 
 
 class Application(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    job_id = db.Column(db.Integer, db.ForeignKey('job.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    job_id = db.Column(db.Integer, db.ForeignKey('job.id'), nullable=False, index=True)
     cover_letter = db.Column(db.Text)
     cv_path = db.Column(db.String(255))
     # pending | reviewed | interview | accepted | rejected
     status = db.Column(db.String(50), default='pending')
     employer_note = db.Column(db.Text)
     applied_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, index=True)
 
     __table_args__ = (
         db.UniqueConstraint('user_id', 'job_id', name='uq_user_job_application'),

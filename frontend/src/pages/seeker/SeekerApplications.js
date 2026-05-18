@@ -1,12 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TopNavBar from '../../components/TopNavBar';
+import API from '../../services/api';
+
+const statusTextMap = {
+  pending: 'Đang chờ duyệt',
+  interviewing: 'Đang phỏng vấn',
+  accepted: 'Đã chấp nhận',
+  rejected: 'Từ chối',
+};
+
+const formatAppliedDate = (value) => {
+  if (!value) return 'Chưa cập nhật';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString('vi-VN');
+};
 
 const SeekerApplications = () => {
   const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [filterStatus, setFilterStatus] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [withdrawingId, setWithdrawingId] = useState(null);
 
   useEffect(() => {
     // Check if user is logged in
@@ -19,56 +37,37 @@ const SeekerApplications = () => {
     loadApplications();
   }, [navigate]);
 
-  const loadApplications = () => {
-    // Mock application history data
-    const mockApplications = [
-      {
-        id: 1,
-        title: 'Senior Frontend Developer',
-        company: 'TechCorp Solutions',
-        logo: 'https://api.dicebear.com/7.x/icons/svg?seed=techcorp',
-        salary: '2,500 - 3,500 USD',
-        location: 'Quận 1, TP. HCM',
-        appliedDate: '12/10/2023',
-        status: 'interviewing',
-        statusText: 'Đang phỏng vấn',
-      },
-      {
-        id: 2,
-        title: 'Data Analyst',
-        company: 'FinGlobal Group',
-        logo: 'https://api.dicebear.com/7.x/icons/svg?seed=finglobal',
-        salary: '1,800 - 2,200 USD',
-        location: 'Ba Đình, Hà Nội',
-        appliedDate: '08/10/2023',
-        status: 'pending',
-        statusText: 'Đang chờ duyệt',
-      },
-      {
-        id: 3,
-        title: 'UI/UX Designer',
-        company: 'Creative Minds Studio',
-        logo: 'https://api.dicebear.com/7.x/icons/svg?seed=creative',
-        salary: '2,000 USD',
-        location: 'Làm việc từ xa',
-        appliedDate: '30/09/2023',
-        status: 'accepted',
-        statusText: 'Đã chấp nhận',
-      },
-      {
-        id: 4,
-        title: 'Product Manager',
-        company: 'Legacy Enterprise',
-        logo: 'https://api.dicebear.com/7.x/icons/svg?seed=legacy',
-        salary: 'Thỏa thuận',
-        location: 'Quận 7, TP. HCM',
-        appliedDate: '15/09/2023',
-        status: 'rejected',
-        statusText: 'Từ chối',
-      },
-    ];
+  const loadApplications = async () => {
+    setLoading(true);
+    setError('');
 
-    setApplications(mockApplications);
+    try {
+      const response = await API.get('/seeker/applications', {
+        params: { page: 1, per_page: 100 },
+      });
+
+      const items = response.data?.applications || [];
+      const mappedApplications = items.map((app) => ({
+        id: app.id,
+        jobId: app.job_id,
+        title: app.job?.job_title || 'Chưa có tiêu đề',
+        company: app.job?.company_name || 'Chưa cập nhật công ty',
+        logo: `https://api.dicebear.com/7.x/icons/svg?seed=${encodeURIComponent(app.job?.company_name || app.job?.job_title || app.id)}`,
+        salary: 'Thỏa thuận',
+        location: app.job?.job_address || 'Chưa cập nhật địa điểm',
+        appliedDate: formatAppliedDate(app.applied_at),
+        status: app.status || 'pending',
+        statusText: statusTextMap[app.status] || app.status || 'Chưa cập nhật',
+      }));
+
+      setApplications(mappedApplications);
+    } catch (requestError) {
+      console.error('Failed to load applications:', requestError);
+      setError('Không tải được lịch sử ứng tuyển.');
+      setApplications([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getFilteredApplications = () => {
@@ -97,6 +96,19 @@ const SeekerApplications = () => {
 
   const handleDetailClick = (appId) => {
     navigate(`/jobs/${appId}`);
+  };
+
+  const handleWithdrawClick = async (appId) => {
+    try {
+      setWithdrawingId(appId);
+      await API.delete(`/seeker/applications/${appId}`);
+      setApplications((prev) => prev.filter((app) => app.id !== appId));
+    } catch (requestError) {
+      console.error('Failed to withdraw application:', requestError);
+      alert('Không thể rút đơn lúc này.');
+    } finally {
+      setWithdrawingId(null);
+    }
   };
 
   const filteredApplications = getFilteredApplications();
@@ -153,7 +165,15 @@ const SeekerApplications = () => {
 
             {/* Job History List */}
             <div className="space-y-4">
-              {filteredApplications.length > 0 ? (
+              {loading ? (
+                <div className="bg-surface-container-lowest p-12 rounded-xl text-center text-on-surface-variant">
+                  Đang tải lịch sử ứng tuyển...
+                </div>
+              ) : error ? (
+                <div className="bg-surface-container-lowest p-12 rounded-xl text-center text-error">
+                  {error}
+                </div>
+              ) : filteredApplications.length > 0 ? (
                 filteredApplications.map(app => (
                   <div
                     key={app.id}
@@ -190,13 +210,21 @@ const SeekerApplications = () => {
                       </div>
                     </div>
                     <div className="flex md:flex-col justify-end gap-2">
-                      
                       <button
-                        onClick={() => handleDetailClick(app.id)}
+                        onClick={() => handleDetailClick(app.jobId)}
                         className="text-primary hover:bg-surface-container-low px-4 py-2 rounded-md text-sm font-semibold transition-colors"
                       >
                         Chi tiết
                       </button>
+                      {app.status === 'pending' && (
+                        <button
+                          onClick={() => handleWithdrawClick(app.id)}
+                          disabled={withdrawingId === app.id}
+                          className="text-on-surface-variant hover:bg-surface-container-low px-4 py-2 rounded-md text-sm font-semibold transition-colors disabled:opacity-50"
+                        >
+                          {withdrawingId === app.id ? 'Đang rút...' : 'Rút đơn'}
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))

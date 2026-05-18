@@ -203,7 +203,7 @@ const SeekerHomeLoggedIn = () => {
 
   const loadSavedJobsFromAPI = async (user) => {
     try {
-      const response = await API.get(`/user/${user.id}/saved-jobs`);
+      const response = await API.get('/seeker/saved-jobs');
       setSavedJobIds(response.data.saved_job_ids || []);
     } catch (error) {
       console.error('Failed to load saved jobs:', error);
@@ -213,16 +213,15 @@ const SeekerHomeLoggedIn = () => {
 
   const toggleSaveJob = async (e, jobId) => {
     e.stopPropagation();
-    const user = JSON.parse(localStorage.getItem('user'));
 
     try {
       if (savedJobIds.includes(jobId)) {
         // Remove from saved
-        await API.delete(`/user/${user.id}/saved-jobs/${jobId}`);
+        await API.unsaveJob(jobId);
         setSavedJobIds(prevIds => prevIds.filter(id => id !== jobId));
       } else {
         // Add to saved
-        await API.post(`/user/${user.id}/saved-jobs/${jobId}`);
+        await API.saveJob(jobId);
         setSavedJobIds(prevIds => [...prevIds, jobId]);
       }
     } catch (error) {

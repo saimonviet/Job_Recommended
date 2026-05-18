@@ -170,6 +170,7 @@ def get_user(user_id):
             {
                 "id": a.id,
                 "job_id": a.job_id,
+                "job": {"id": a.job.id, "job_title": a.job.job_title} if a.job else None,
                 "status": a.status,
                 "applied_at": a.applied_at.isoformat() if a.applied_at else None,
             }

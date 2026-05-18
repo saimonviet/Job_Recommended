@@ -56,7 +56,6 @@ def _save_file(file_obj, folder, prefix) -> str:
 def _serialize_application(app: Application) -> dict:
     return {
         "id": app.id,
-        "job_id": app.job_id,
         "status": app.status,
         "cover_letter": app.cover_letter,
         "cv_path": app.cv_path,
@@ -335,7 +334,7 @@ def get_saved_jobs():
                 salary = f"{salary} - {job.salary_max}" if salary else job.salary_max
             salary = salary.strip() or 'Thoả thuận'
             
-            logo = f"https://api.dicebear.com/7.x/icons/svg?seed={job.company_name or job.job_title or job.job_id or str(job.id)}".replace(' ', '-')
+            logo = f"https://api.dicebear.com/7.x/icons/svg?seed={job.company_name or job.job_title or str(job.id)}".replace(' ', '-')
             
             jobs.append({
                 "id": job.id,

@@ -3,9 +3,9 @@ const API_URL = 'http://127.0.0.1:5000';
 const getAuthToken = () => {
     try {
         const user = JSON.parse(localStorage.getItem('user'));
-        return user?.access_token || user?.token || localStorage.getItem('token') || null;
+        return localStorage.getItem('employerToken') || user?.access_token || user?.token || localStorage.getItem('token') || null;
     } catch (error) {
-        return localStorage.getItem('token') || null;
+        return localStorage.getItem('employerToken') || localStorage.getItem('token') || null;
     }
 };
 
@@ -92,3 +92,4 @@ const api = {
 };
 
 export default api;
+export { API_URL };

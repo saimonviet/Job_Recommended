@@ -56,6 +56,7 @@ const RegisterEmployer = () => {
         };
         localStorage.setItem('user', JSON.stringify(user));
         localStorage.setItem('token', response.data.token);
+        localStorage.setItem('employerToken', response.data.token);
         alert('Đăng ký thành công! Vui lòng kiểm tra email để xác nhận tài khoản.');
         navigate('/employer/dashboard');
       }

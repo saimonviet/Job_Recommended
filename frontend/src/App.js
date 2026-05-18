@@ -40,7 +40,9 @@ function App() {
         <Route path="/company" element={<SeekerCompany />} />
         <Route path="/about" element={<SeekerAbout />} />
         <Route path="/login-employer" element={<LoginEmployer />} />
+        <Route path="/employer/login" element={<LoginEmployer />} />
         <Route path="/register-employer" element={<RegisterEmployer />} />
+        <Route path="/employer/register" element={<RegisterEmployer />} />
 
         {/* Seeker Routes */}
         <Route path="/seeker/home" element={<SeekerHomeLoggedIn />} />

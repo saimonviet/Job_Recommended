@@ -8,12 +8,14 @@ import pandas as pd
 from datetime import datetime
 import sys
 import os
+import re
+import unicodedata
 from flask import Flask
 
 # Add the backend directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'backend'))
 
-from app.models import db, Job  # type: ignore
+from app.models import db, Job, Employer  # type: ignore
 from app.config import Config  # type: ignore
 
 
@@ -33,6 +35,24 @@ def _build_db_app():
     db.init_app(app)
     return app
 
+
+def _normalize_company_name(value):
+    if not value:
+        return ''
+    normalized = unicodedata.normalize('NFKD', str(value))
+    ascii_only = normalized.encode('ascii', 'ignore').decode('ascii').lower()
+    return re.sub(r'\s+', ' ', re.sub(r'[^a-z0-9]+', ' ', ascii_only)).strip()
+
+
+def _build_employer_lookup():
+    employers = Employer.query.all()
+    lookup = {}
+    for employer in employers:
+        key = _normalize_company_name(employer.company_name)
+        if key and key not in lookup:
+            lookup[key] = employer.id
+    return lookup
+
 def import_jobs_from_excel(app, excel_file):
     """Nhập dữ liệu công việc từ file Excel"""
 
@@ -48,6 +68,7 @@ def import_jobs_from_excel(app, excel_file):
             # Đọc file Excel
             print(f"📁 Đang đọc file: {excel_file}")
             df = pd.read_csv(excel_file)
+            employer_lookup = _build_employer_lookup()
             
             print(f"📊 Tổng số công việc: {len(df)}")
             print("\n⏳ Đang cập nhật dữ liệu (không xóa dữ liệu cũ)...\n")
@@ -66,12 +87,6 @@ def import_jobs_from_excel(app, excel_file):
             
             for idx, row in df.iterrows():
                 try:
-                    # # Kiểm tra job_id đã tồn tại hay chưa
-                    # existing = Job.query.filter_by(job_id=str(row['job_id'])).first()
-                    # if existing:
-                    #     error_count += 1
-                    #     continue
-                    
                     # Xử lý ngày deadline
                     deadline = None
                     if pd.notna(row['deadline']):
@@ -82,7 +97,6 @@ def import_jobs_from_excel(app, excel_file):
                     
                     # Tạo object Job
                     job = Job(
-                        job_id=str(row['job_id']),
                         job_title=str(row['job_title']),
                         company_name=str(row['company_name']),
                         salary_min=get_optional(row, 'salary_min'),
@@ -99,6 +113,10 @@ def import_jobs_from_excel(app, excel_file):
                         job_description=get_optional(row, 'job_description'),
                         job_requirement=get_optional(row, 'job_requirement'),
                     )
+
+                    employer_id = employer_lookup.get(_normalize_company_name(job.company_name))
+                    if employer_id:
+                        job.employer_id = employer_id
                     
                     db.session.add(job)
                     success_count += 1

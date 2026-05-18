@@ -32,6 +32,7 @@ const LoginEmployer = () => {
 
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('token', response.data.token);
+      localStorage.setItem('employerToken', response.data.token);
       navigate('/employer/dashboard');
     } catch (err) {
       setError(err.response?.data?.error || 'Không thể đăng nhập');

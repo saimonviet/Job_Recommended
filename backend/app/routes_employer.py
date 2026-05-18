@@ -14,12 +14,12 @@ Endpoints:
 """
 
 import os
-import uuid
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app, send_from_directory
 from datetime import datetime
 from werkzeug.utils import secure_filename
 from .models import db, Employer, Job, Application, User, InforUser
 from .auth import employer_required, admin_required
+from sqlalchemy import or_
 
 employer_bp = Blueprint('employer', __name__, url_prefix='/employer')
 
@@ -37,7 +37,6 @@ def _serialize_application(app: Application, include_job=False) -> dict:
     result = {
         "id": app.id,
         "user_id": app.user_id,
-        "job_id": app.job_id,
         "status": app.status,
         "cover_letter": app.cover_letter,
         "cv_path": app.cv_path,
@@ -63,6 +62,60 @@ def _serialize_application(app: Application, include_job=False) -> dict:
     return result
 
 
+def _get_current_employer():
+    return Employer.query.get(request.current_user_id)
+
+
+def _parse_deadline(raw_deadline):
+    """Parse deadline from date input or ISO datetime safely."""
+    if not raw_deadline:
+        return None
+
+    if isinstance(raw_deadline, datetime):
+        return raw_deadline
+
+    if isinstance(raw_deadline, str):
+        value = raw_deadline.strip()
+        if not value:
+            return None
+
+        # Accept `YYYY-MM-DD` directly from HTML date input.
+        try:
+            return datetime.strptime(value, "%Y-%m-%d")
+        except ValueError:
+            pass
+
+        # Accept ISO with trailing `Z` by normalizing to UTC offset.
+        if value.endswith('Z'):
+            value = value[:-1] + '+00:00'
+
+        try:
+            return datetime.fromisoformat(value)
+        except ValueError:
+            return None
+
+    return None
+
+
+@employer_bp.route('/logos/<path:filename>', methods=['GET'])
+def employer_logos(filename):
+    """Serve uploaded employer logos."""
+    try:
+        return send_from_directory(UPLOAD_FOLDER_LOGOS, filename)
+    except Exception:
+        return jsonify({"error": "Logo not found"}), 404
+
+
+def _job_belongs_to_employer(job: Job, employer: Employer) -> bool:
+    if not job or not employer:
+        return False
+
+    employer_name = (employer.company_name or '').strip()
+    job_name = (job.company_name or '').strip()
+
+    return job.employer_id == employer.id or (employer_name and job_name == employer_name)
+
+
 # ---------------------------------------------------------------------------
 # Hồ sơ Employer
 # ---------------------------------------------------------------------------
@@ -71,7 +124,7 @@ def _serialize_application(app: Application, include_job=False) -> dict:
 @employer_required
 def get_employer_profile():
     """Lấy thông tin hồ sơ employer."""
-    employer = Employer.query.get(request.current_user_id)
+    employer = _get_current_employer()
     if not employer:
         return jsonify({"error": "Không tìm thấy employer"}), 404
 
@@ -94,7 +147,7 @@ def get_employer_profile():
 @employer_required
 def update_employer_profile():
     """Cập nhật hồ sơ employer (kể cả upload logo)."""
-    employer = Employer.query.get(request.current_user_id)
+    employer = _get_current_employer()
     if not employer:
         return jsonify({"error": "Không tìm thấy employer"}), 404
 
@@ -128,7 +181,7 @@ def update_employer_profile():
 @employer_required
 def create_job():
     """Employer tạo job mới."""
-    employer = Employer.query.get(request.current_user_id)
+    employer = _get_current_employer()
     if not employer:
         return jsonify({"error": "Không tìm thấy employer"}), 404
 
@@ -138,15 +191,11 @@ def create_job():
     if not job_title:
         return jsonify({"error": "job_title là bắt buộc"}), 400
 
-    deadline = None
-    if data.get('deadline'):
-        try:
-            deadline = datetime.fromisoformat(data['deadline'])
-        except (ValueError, TypeError):
-            return jsonify({"error": "deadline không hợp lệ (dùng ISO 8601)"}), 400
+    deadline = _parse_deadline(data.get('deadline'))
+    if data.get('deadline') and deadline is None:
+        return jsonify({"error": "deadline không hợp lệ (dùng YYYY-MM-DD hoặc ISO 8601)"}), 400
 
     job = Job(
-        job_id=str(uuid.uuid4()),
         employer_id=employer.id,
         job_title=job_title,
         company_name=employer.company_name,
@@ -177,12 +226,22 @@ def create_job():
 @employer_bp.route('/jobs', methods=['GET'])
 @employer_required
 def get_employer_jobs():
-    """Lấy danh sách job của employer hiện tại."""
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
     status = request.args.get('status', '')  # 'active' | 'inactive' | ''
 
-    query = Job.query.filter_by(employer_id=request.current_user_id)
+    employer = _get_current_employer()
+    if not employer:
+        return jsonify({"error": "Không tìm thấy employer"}), 404
+
+    employer_name = (employer.company_name or '').strip()
+
+    query = Job.query.filter(
+        or_(
+            Job.employer_id == employer.id,
+            db.func.trim(Job.company_name) == employer_name,
+        )
+    )
     if status == 'active':
         query = query.filter_by(is_active=True)
     elif status == 'inactive':
@@ -196,7 +255,6 @@ def get_employer_jobs():
         total_applications = job.applications.count()
         jobs.append({
             "id": job.id,
-            "job_id": job.job_id,
             "job_title": job.job_title,
             "job_address": job.job_address,
             "employment_type": job.employment_type,
@@ -218,13 +276,16 @@ def get_employer_jobs():
 @employer_required
 def get_employer_job_detail(job_id):
     """Lấy chi tiết một job của employer."""
-    job = Job.query.filter_by(id=job_id, employer_id=request.current_user_id).first()
-    if not job:
+    employer = _get_current_employer()
+    if not employer:
+        return jsonify({"error": "Không tìm thấy employer"}), 404
+
+    job = Job.query.filter_by(id=job_id).first()
+    if not _job_belongs_to_employer(job, employer):
         return jsonify({"error": "Không tìm thấy job hoặc bạn không có quyền"}), 404
 
     return jsonify({
         "id": job.id,
-        "job_id": job.job_id,
         "job_title": job.job_title,
         "company_name": job.company_name,
         "salary_min": job.salary_min,
@@ -250,8 +311,12 @@ def get_employer_job_detail(job_id):
 @employer_required
 def update_job(job_id):
     """Employer cập nhật job."""
-    job = Job.query.filter_by(id=job_id, employer_id=request.current_user_id).first()
-    if not job:
+    employer = _get_current_employer()
+    if not employer:
+        return jsonify({"error": "Không tìm thấy employer"}), 404
+
+    job = Job.query.filter_by(id=job_id).first()
+    if not _job_belongs_to_employer(job, employer):
         return jsonify({"error": "Không tìm thấy job hoặc bạn không có quyền"}), 404
 
     data = request.get_json(silent=True) or {}
@@ -287,15 +352,19 @@ def update_job(job_id):
 @employer_required
 def delete_job(job_id):
     """Employer xóa job (chỉ khi chưa có application)."""
-    job = Job.query.filter_by(id=job_id, employer_id=request.current_user_id).first()
-    if not job:
+    employer = _get_current_employer()
+    if not employer:
+        return jsonify({"error": "Không tìm thấy employer"}), 404
+
+    job = Job.query.filter_by(id=job_id).first()
+    if not _job_belongs_to_employer(job, employer):
         return jsonify({"error": "Không tìm thấy job hoặc bạn không có quyền"}), 404
 
     if job.applications.count() > 0:
         # Ẩn thay vì xóa để giữ lịch sử ứng viên
         job.is_active = False
         db.session.commit()
-        return jsonify({"message": "Job đã có ứng viên nộp đơn, đã ẩn thay vì xóa"})
+        return jsonify({"message": "Job đã có ứng viên nộp đơn, đã đóng thay vì xóa"})
 
     db.session.delete(job)
     db.session.commit()
@@ -310,8 +379,12 @@ def delete_job(job_id):
 @employer_required
 def get_applicants(job_id):
     """Xem danh sách ứng viên đã nộp đơn vào job."""
-    job = Job.query.filter_by(id=job_id, employer_id=request.current_user_id).first()
-    if not job:
+    employer = _get_current_employer()
+    if not employer:
+        return jsonify({"error": "Không tìm thấy employer"}), 404
+
+    job = Job.query.filter_by(id=job_id).first()
+    if not _job_belongs_to_employer(job, employer):
         return jsonify({"error": "Không tìm thấy job hoặc bạn không có quyền"}), 404
 
     page = request.args.get('page', 1, type=int)
@@ -326,7 +399,7 @@ def get_applicants(job_id):
     pagination = query.paginate(page=page, per_page=per_page)
 
     return jsonify({
-        "job_id": job_id,
+        "id": job.id,
         "job_title": job.job_title,
         "applicants": [_serialize_application(a) for a in pagination.items],
         "total": pagination.total,
@@ -347,8 +420,12 @@ def update_application_status(app_id):
         return jsonify({"error": "Không tìm thấy đơn ứng tuyển"}), 404
 
     # Kiểm tra job thuộc employer này
-    job = Job.query.filter_by(id=application.job_id, employer_id=request.current_user_id).first()
-    if not job:
+    employer = _get_current_employer()
+    if not employer:
+        return jsonify({"error": "Không tìm thấy employer"}), 404
+
+    job = Job.query.filter_by(id=application.job_id).first()
+    if not _job_belongs_to_employer(job, employer):
         return jsonify({"error": "Bạn không có quyền cập nhật đơn này"}), 403
 
     data = request.get_json(silent=True) or {}

@@ -28,6 +28,14 @@ def _normalize_company_slug(value):
     return slug[:40] or 'employer'
 
 
+def _normalize_company_name(value):
+    if not value:
+        return ''
+    normalized = unicodedata.normalize('NFKD', str(value))
+    ascii_only = normalized.encode('ascii', 'ignore').decode('ascii').lower()
+    return re.sub(r'\s+', ' ', re.sub(r'[^a-z0-9]+', ' ', ascii_only)).strip()
+
+
 def _build_unique_placeholder_email(company_name, address, used_emails):
     base = _normalize_company_slug(company_name)
     fingerprint_source = f"{company_name}|{address or ''}"
@@ -47,28 +55,6 @@ def _build_unique_placeholder_email(company_name, address, used_emails):
             return candidate
         counter += 1
 
-
-# def backup_jobs(csv_path):
-#     with app.app_context():
-#         jobs = Job.query.order_by(Job.id).all()
-
-#         with open(csv_path, 'w', newline='', encoding='utf-8') as f:
-#             writer = csv.writer(f)
-#             # Header
-#             writer.writerow([
-#                 'id', 'job_id', 'employer_id', 'job_title', 'company_name', 'salary_min', 'salary_max',
-#                 'job_detail_address', 'job_detail_address', 'deadline', 'exp_min', 'exp_max', 'benefits',
-#                 'employment_type', 'job_function', 'industries', 'job_description', 'job_requirement',
-#                 'is_active', 'created_at'
-#             ])
-
-#             for j in jobs:
-#                 writer.writerow([
-#                     j.id, j.job_id, j.employer_id, j.job_title, j.company_name, j.salary_min, j.salary_max,
-#                     j.job_detail_address, j.job_detail_address, j.deadline.isoformat() if j.deadline else None,
-#                     j.exp_min, j.exp_max, j.benefits, j.employment_type, j.job_function, j.industries,
-#                     j.job_description, j.job_requirement, j.is_active, j.created_at.isoformat() if j.created_at else None,
-#                 ])
 
 
 def migrate():
@@ -90,12 +76,16 @@ def migrate():
 
         by_exact = {}
         by_name = {}
+        by_normalized = {}
         for e in existing_employers:
             name_key = (e.company_name or '').strip()
             addr_key = (e.address or '').strip() or None
             if name_key:
                 by_exact[(name_key, addr_key)] = e
                 by_name.setdefault(name_key, e)
+                normalized_key = _normalize_company_name(name_key)
+                if normalized_key:
+                    by_normalized.setdefault(normalized_key, e)
 
         for company_name, job_detail_address in distinct:
             if not company_name or str(company_name).strip() == '':
@@ -104,7 +94,7 @@ def migrate():
             company_name_clean = str(company_name).strip()
             addr = str(job_detail_address).strip() if job_detail_address else None
 
-            employer = by_exact.get((company_name_clean, addr)) or by_name.get(company_name_clean)
+            employer = by_exact.get((company_name_clean, addr)) or by_name.get(company_name_clean) or by_normalized.get(_normalize_company_name(company_name_clean))
 
             if not employer:
                 # Provide placeholder email/password because Employer.email/password are NOT NULL.
@@ -140,6 +130,9 @@ def migrate():
             name_key = (e.company_name.strip() if e.company_name else '', None)
             if name_key not in lookup:
                 lookup[name_key] = e.id
+            normalized_name = _normalize_company_name(e.company_name)
+            if normalized_name and normalized_name not in lookup:
+                lookup[normalized_name] = e.id
 
         # Update jobs in batches
         BATCH = 500
@@ -153,7 +146,7 @@ def migrate():
             for job in batch:
                 name = job.company_name.strip() if job.company_name else ''
                 addr = job.job_detail_address.strip() if job.job_detail_address else None
-                emp_id = lookup.get((name, addr)) or lookup.get((name, None))
+                emp_id = lookup.get((name, addr)) or lookup.get((name, None)) or lookup.get(_normalize_company_name(name))
                 if emp_id:
                     job.employer_id = emp_id
                     total_updated += 1
