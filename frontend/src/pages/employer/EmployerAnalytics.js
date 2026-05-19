@@ -1,94 +1,218 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import EmployerSideNavBar from "../../components/EmployerSideNavBar";
-import EmployerTopNavBar from "../../components/EmployerTopNavBar";
 import { getEmployerToken } from "../../utils/authStorage";
+import EmployerTopNavBar from "../../components/EmployerTopNavBar";
+import API from "../../services/api";
+import { formatSalaryRange } from "../../utils/dataFormatter";
+
+const ANALYTICS_CACHE_KEY_PREFIX = "employer_analytics_cache";
+const ANALYTICS_CACHE_DURATION = 10 * 60 * 1000;
+
+const getAnalyticsCacheKey = (token) => `${ANALYTICS_CACHE_KEY_PREFIX}:${token || "anonymous"}`;
+
+const readAnalyticsCache = (token) => {
+  try {
+    const raw = sessionStorage.getItem(getAnalyticsCacheKey(token));
+    if (!raw) return null;
+
+    const cached = JSON.parse(raw);
+    if (Date.now() - cached.timestamp > ANALYTICS_CACHE_DURATION) {
+      sessionStorage.removeItem(getAnalyticsCacheKey(token));
+      return null;
+    }
+
+    return cached.data || null;
+  } catch {
+    return null;
+  }
+};
+
+const writeAnalyticsCache = (token, data) => {
+  try {
+    sessionStorage.setItem(
+      getAnalyticsCacheKey(token),
+      JSON.stringify({ data, timestamp: Date.now() })
+    );
+  } catch {
+    // ignore storage quota errors
+  }
+};
+
+const STATUS_COLOR = {
+  accepted: "bg-emerald-500",
+  interview: "bg-blue-500",
+  reviewed: "bg-yellow-500",
+  pending: "bg-indigo-500",
+  rejected: "bg-red-500",
+};
 
 function EmployerAnalytics() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [analytics, setAnalytics] = useState({
+    kpis: {
+      applications_growth_pct: 0,
+      applications_growth_count: 0,
+      processing_rate_pct: 0,
+      avg_hiring_days: null,
+      avg_salary: null,
+    },
+    monthly_applications: { labels: [], values: [] },
+    status_distribution: [],
+    top_positions: [],
+    top_companies: [],
+  });
 
   useEffect(() => {
     const token = getEmployerToken();
     if (!token) {
       navigate('/login-employer');
+      return;
     }
+
+    let cancelled = false;
+
+    const cached = readAnalyticsCache(token);
+    if (cached) {
+      setAnalytics(cached);
+      setLoading(false);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const loadAnalytics = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const response = await API.get("/employer/analytics");
+        if (!cancelled) {
+          const nextAnalytics = response.data || {};
+          setAnalytics(nextAnalytics);
+          writeAnalyticsCache(token, nextAnalytics);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err.response?.data?.error || "Không tải được dữ liệu phân tích.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadAnalytics();
+    return () => {
+      cancelled = true;
+    };
   }, [navigate]);
+
+  const growthPct = analytics?.kpis?.applications_growth_pct ?? 0;
+  const growthCount = analytics?.kpis?.applications_growth_count ?? 0;
+  const processingRate = analytics?.kpis?.processing_rate_pct ?? 0;
+  const avgHiringDays = analytics?.kpis?.avg_hiring_days;
+  const avgSalary = analytics?.kpis?.avg_salary;
+
+  const monthlyLabels = analytics?.monthly_applications?.labels || [];
+  const monthlyValues = analytics?.monthly_applications?.values || [];
+  const maxMonthlyValue = Math.max(...monthlyValues, 1);
+  const monthlyChartData = monthlyLabels.map((label, index) => {
+    const value = monthlyValues[index] || 0;
+    const height = Math.max(6, Math.round((value / maxMonthlyValue) * 100));
+    return { label, value, height };
+  });
+
+  const statusDistribution = analytics?.status_distribution || [];
+
+  const avgSalaryText = useMemo(() => {
+    if (!avgSalary) return "Chưa có";
+    return formatSalaryRange(avgSalary, avgSalary);
+  }, [avgSalary]);
+
+  const kpiCards = [
+    {
+      icon: "trending_up",
+      iconBg: "bg-green-100 dark:bg-green-900/30",
+      iconColor: "text-green-600 dark:text-green-400",
+      badgeBg: "bg-green-50 dark:bg-green-900/30",
+      badgeColor: "text-green-600 dark:text-green-400",
+      badge: `${growthPct >= 0 ? "+" : ""}${growthPct.toFixed(1)}%`,
+      title: "Tăng trưởng ứng viên (30 ngày)",
+      value: `${growthCount >= 0 ? "+" : ""}${growthCount}`,
+    },
+    {
+      icon: "task_alt",
+      iconBg: "bg-blue-100 dark:bg-blue-900/30",
+      iconColor: "text-blue-600 dark:text-blue-400",
+      badgeBg: "bg-blue-50 dark:bg-blue-900/30",
+      badgeColor: "text-blue-600 dark:text-blue-400",
+      badge: `${processingRate.toFixed(1)}%`,
+      title: "Tỷ lệ xử lý hồ sơ",
+      value: `${processingRate.toFixed(1)}%`,
+    },
+    {
+      icon: "schedule",
+      iconBg: "bg-purple-100 dark:bg-purple-900/30",
+      iconColor: "text-purple-600 dark:text-purple-400",
+      badgeBg: "bg-purple-50 dark:bg-purple-900/30",
+      badgeColor: "text-purple-600 dark:text-purple-400",
+      badge: avgHiringDays !== null ? `${avgHiringDays} ngày` : "Chưa có",
+      title: "Thời gian tuyển trung bình",
+      value: avgHiringDays !== null ? `${avgHiringDays} ngày` : "Chưa có",
+    },
+    {
+      icon: "attach_money",
+      iconBg: "bg-orange-100 dark:bg-orange-900/30",
+      iconColor: "text-orange-600 dark:text-orange-400",
+      badgeBg: "bg-orange-50 dark:bg-orange-900/30",
+      badgeColor: "text-orange-600 dark:text-orange-400",
+      badge: avgSalaryText,
+      title: "Mức lương trung bình",
+      value: avgSalaryText,
+    },
+  ];
 
   return (
     <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
       <EmployerSideNavBar />
+      <EmployerTopNavBar />
 
       <main className="ml-64 w-full">
-        <EmployerTopNavBar />
 
-        <div className="pt-20 p-8 max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="mb-10">
-            <h2 className="text-3xl font-black text-blue-600 dark:text-blue-400 tracking-tight mb-2">
-              Phân tích & Báo cáo
-            </h2>
-            <p className="text-slate-600 dark:text-slate-400 max-w-lg">
-              Xem chi tiết hiệu suất bài đăng, ứng viên và quy trình tuyển dụng của bạn.
-            </p>
-          </div>
+        <div className="pt-32 p-8 max-w-7xl mx-auto">
+
+
+          {error && (
+            <div className="mb-6 rounded-lg border border-red-300 bg-red-50 p-4 text-sm font-semibold text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300">
+              {error}
+            </div>
+          )}
+
+          {loading && (
+            <div className="mb-6 rounded-lg border border-slate-300 bg-white p-4 text-sm font-semibold text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+              Đang tải dữ liệu thống kê...
+            </div>
+          )}
 
           {/* KPI Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-            {/* Card 1 */}
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm hover:shadow-md transition-all">
-              <div className="flex justify-between items-start mb-4">
-                <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg text-green-600 dark:text-green-400">
-                  <span className="material-symbols-outlined text-xl">trending_up</span>
+            {kpiCards.map((card) => (
+              <div key={card.title} className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm hover:shadow-md transition-all">
+                <div className="flex justify-between items-start mb-4 gap-2">
+                  <div className={`p-3 rounded-lg ${card.iconBg} ${card.iconColor}`}>
+                    <span className="material-symbols-outlined text-xl">{card.icon}</span>
+                  </div>
+                  <span className={`text-xs font-bold px-2 py-1 rounded-full ${card.badgeColor} ${card.badgeBg}`}>
+                    {card.badge}
+                  </span>
                 </div>
-                <span className="text-xs font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded-full">
-                  +23.5%
-                </span>
+                <h3 className="text-slate-600 dark:text-slate-400 text-sm font-medium mb-1">{card.title}</h3>
+                <p className="text-2xl font-black text-slate-900 dark:text-white">{card.value}</p>
               </div>
-              <h3 className="text-slate-600 dark:text-slate-400 text-sm font-medium mb-1">Tăng trưởng ứng viên</h3>
-              <p className="text-2xl font-black text-slate-900 dark:text-white">+156</p>
-            </div>
-
-            {/* Card 2 */}
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm hover:shadow-md transition-all">
-              <div className="flex justify-between items-start mb-4">
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
-                  <span className="material-symbols-outlined text-xl">task_alt</span>
-                </div>
-                <span className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-full">
-                  87.3%
-                </span>
-              </div>
-              <h3 className="text-slate-600 dark:text-slate-400 text-sm font-medium mb-1">Tỷ lệ xử lý hồ sơ</h3>
-              <p className="text-2xl font-black text-slate-900 dark:text-white">87.3%</p>
-            </div>
-
-            {/* Card 3 */}
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm hover:shadow-md transition-all">
-              <div className="flex justify-between items-start mb-4">
-                <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-purple-600 dark:text-purple-400">
-                  <span className="material-symbols-outlined text-xl">schedule</span>
-                </div>
-                <span className="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/30 px-2 py-1 rounded-full">
-                  14 ngày
-                </span>
-              </div>
-              <h3 className="text-slate-600 dark:text-slate-400 text-sm font-medium mb-1">Thời gian trung bình</h3>
-              <p className="text-2xl font-black text-slate-900 dark:text-white">14 ngày</p>
-            </div>
-
-            {/* Card 4 */}
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm hover:shadow-md transition-all">
-              <div className="flex justify-between items-start mb-4">
-                <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg text-orange-600 dark:text-orange-400">
-                  <span className="material-symbols-outlined text-xl">attach_money</span>
-                </div>
-                <span className="text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30 px-2 py-1 rounded-full">
-                  15M+
-                </span>
-              </div>
-              <h3 className="text-slate-600 dark:text-slate-400 text-sm font-medium mb-1">Mức lương trung bình</h3>
-              <p className="text-2xl font-black text-slate-900 dark:text-white">15M+</p>
-            </div>
+            ))}
           </div>
 
           {/* Charts */}
@@ -98,96 +222,40 @@ function EmployerAnalytics() {
               <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-6">Tăng trưởng ứng viên</h3>
 
               <div className="h-64 flex items-end justify-between gap-3 px-2">
-                {[35, 42, 38, 55, 48, 62, 58, 70, 65, 78, 72, 85].map((height, idx) => (
-                  <div key={idx} className="flex-1 flex flex-col items-center gap-3">
+                {monthlyChartData.length > 0 ? monthlyChartData.map((item) => (
+                  <div key={item.label} className="flex-1 flex flex-col items-center gap-3">
                     <div
                       className="w-full bg-blue-200 dark:bg-blue-900/40 rounded-t-lg transition-all duration-500 hover:bg-blue-300"
-                      style={{ height: `${height}%` }}
+                      style={{ height: `${item.height}%` }}
+                      title={`${item.label}: ${item.value}`}
                     ></div>
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">T{idx + 1}</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">{item.label}</span>
                   </div>
-                ))}
+                )) : (
+                  <div className="w-full h-full flex items-center justify-center text-sm text-slate-500 dark:text-slate-400">
+                    Chưa có dữ liệu ứng tuyển.
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Application Status Distribution */}
             <div className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-sm">
-              <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-6">Phân bố trạng thái ứng tuyển</h3>
 
               <div className="space-y-4">
-                {[
-                  { label: "Đã tuyển", value: 45, color: "bg-emerald-500" },
-                  { label: "Đang phỏng vấn", value: 28, color: "bg-blue-500" },
-                  { label: "Xem xét", value: 18, color: "bg-yellow-500" },
-                  { label: "Từ chối", value: 9, color: "bg-red-500" },
-                ].map((item, idx) => (
-                  <div key={idx}>
+                {statusDistribution.length > 0 ? statusDistribution.map((item) => (
+                  <div key={item.status}>
                     <div className="flex justify-between items-center mb-2">
                       <p className="font-semibold text-slate-900 dark:text-white text-sm">{item.label}</p>
-                      <span className="text-xs font-bold text-slate-600 dark:text-slate-400">{item.value}%</span>
+                      <span className="text-xs font-bold text-slate-600 dark:text-slate-400">{item.value}% ({item.count})</span>
                     </div>
                     <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
-                      <div className={`${item.color} h-full transition-all`} style={{ width: `${item.value}%` }}></div>
+                      <div className={`${STATUS_COLOR[item.status] || "bg-slate-500"} h-full transition-all`} style={{ width: `${item.value}%` }}></div>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Rankings */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-            {/* Top Positions */}
-            <div className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-sm">
-              <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-6">Vị trí phổ biến nhất</h3>
-
-              <div className="space-y-3">
-                {[
-                  { rank: 1, title: "Frontend Developer", count: 45 },
-                  { rank: 2, title: "UI/UX Designer", count: 38 },
-                  { rank: 3, title: "Backend Developer", count: 32 },
-                  { rank: 4, title: "Product Manager", count: 28 },
-                  { rank: 5, title: "Data Analyst", count: 24 },
-                ].map((position) => (
-                  <div key={position.rank} className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                    <div className="flex-shrink-0 text-center">
-                      <span className="inline-flex items-center justify-center w-8 h-8 bg-blue-600 dark:bg-blue-500 text-white font-bold rounded-full text-xs">
-                        {position.rank}
-                      </span>
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-slate-900 dark:text-white text-sm">{position.title}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{position.count} ứng viên</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Top Companies */}
-            <div className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-sm">
-              <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-6">Công ty cạnh tranh</h3>
-
-              <div className="space-y-3">
-                {[
-                  { rank: 1, name: "TechVantage", hires: 156 },
-                  { rank: 2, name: "Silicon Valley Vietnam", hires: 142 },
-                  { rank: 3, name: "Digital Solutions Asia", hires: 128 },
-                  { rank: 4, name: "CloudTech Innovations", hires: 115 },
-                  { rank: 5, name: "FutureLabs", hires: 98 },
-                ].map((company) => (
-                  <div key={company.rank} className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                    <div className="flex-shrink-0 text-center">
-                      <span className="inline-flex items-center justify-center w-8 h-8 bg-purple-600 dark:bg-purple-500 text-white font-bold rounded-full text-xs">
-                        {company.rank}
-                      </span>
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-slate-900 dark:text-white text-sm">{company.name}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{company.hires} lần tuyển dụng</p>
-                    </div>
-                  </div>
-                ))}
+                )) : (
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Chưa có dữ liệu trạng thái ứng tuyển.</p>
+                )}
               </div>
             </div>
           </div>

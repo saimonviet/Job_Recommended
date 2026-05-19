@@ -10,6 +10,33 @@ import {
   EMPLOYMENT_TYPES,
   SALARY_RANGES
 } from "../../constants/dropdownOptions";
+import { formatExperienceRange, formatSalaryInputRange } from "../../utils/dataFormatter";
+const TODAY = new Date();
+const TODAY_DATE = new Date(TODAY.getTime() - TODAY.getTimezoneOffset() * 60000)
+  .toISOString()
+  .split("T")[0];
+
+const EMPLOYER_PROFILE_CACHE_KEY_PREFIX = "employer_profile_cache";
+const EMPLOYER_PROFILE_CACHE_DURATION = 10 * 60 * 1000;
+
+const getEmployerProfileCacheKey = (token) => `${EMPLOYER_PROFILE_CACHE_KEY_PREFIX}:${token || "anonymous"}`;
+
+const readEmployerProfileCache = (token) => {
+  try {
+    const raw = sessionStorage.getItem(getEmployerProfileCacheKey(token));
+    if (!raw) return null;
+
+    const cached = JSON.parse(raw);
+    if (Date.now() - cached.timestamp > EMPLOYER_PROFILE_CACHE_DURATION) {
+      sessionStorage.removeItem(getEmployerProfileCacheKey(token));
+      return null;
+    }
+
+    return cached.data || null;
+  } catch {
+    return null;
+  }
+};
 
 function EmployerCreatePost() {
   const navigate = useNavigate();
@@ -45,6 +72,13 @@ function EmployerCreatePost() {
     }
 
     let cancelled = false;
+
+    const cachedProfile = readEmployerProfileCache(token);
+    if (cachedProfile) {
+      setEmployerName(cachedProfile.company_name || cachedProfile.username || "Nhà tuyển dụng");
+      return () => { cancelled = true; };
+    }
+
     const loadEmployerProfile = async () => {
       try {
         const response = await API.get("/auth/me");
@@ -52,6 +86,14 @@ function EmployerCreatePost() {
           setEmployerName(
             response.data.company_name || response.data.username || "Nhà tuyển dụng"
           );
+          try {
+            sessionStorage.setItem(
+              getEmployerProfileCacheKey(token),
+              JSON.stringify({ data: response.data, timestamp: Date.now() })
+            );
+          } catch {
+            // ignore storage quota errors
+          }
         }
       } catch {
         if (!cancelled) setEmployerName("Nhà tuyển dụng");
@@ -90,12 +132,29 @@ function EmployerCreatePost() {
       // Validate Step 1
       if (currentStep === 1) {
         const newErrors = {};
+        const expMinValue = parseInt(formData.exp_min, 10);
+        const expMaxValue = parseInt(formData.exp_max, 10);
         if (!formData.job_title.trim()) newErrors.job_title = "Vui lòng nhập tên công việc";
         if (!formData.job_address.trim()) newErrors.job_address = "Vui lòng chọn tỉnh/thành phố";
         if (!formData.employment_type.trim()) newErrors.employment_type = "Vui lòng chọn hình thức làm việc";
         if (!formData.industries.trim()) newErrors.industries = "Vui lòng chọn ngành nghề";
         if (!formData.exp_min.trim()) newErrors.exp_min = "Vui lòng nhập kinh nghiệm tối thiểu";
         if (!formData.exp_max.trim()) newErrors.exp_max = "Vui lòng nhập kinh nghiệm tối đa";
+        if (formData.exp_min.trim() && (Number.isNaN(expMinValue) || expMinValue < 0)) {
+          newErrors.exp_min = "Kinh nghiệm tối thiểu phải lớn hơn hoặc bằng 0";
+        }
+        if (formData.exp_max.trim() && (Number.isNaN(expMaxValue) || expMaxValue < 0)) {
+          newErrors.exp_max = "Kinh nghiệm tối đa phải lớn hơn hoặc bằng 0";
+        }
+        if (
+          formData.exp_min.trim() &&
+          formData.exp_max.trim() &&
+          !Number.isNaN(expMinValue) &&
+          !Number.isNaN(expMaxValue) &&
+          expMaxValue < expMinValue
+        ) {
+          newErrors.exp_max = "Kinh nghiệm tối đa phải lớn hơn hoặc bằng kinh nghiệm tối thiểu";
+        }
         if (!formData.deadline.trim()) newErrors.deadline = "Vui lòng chọn hạn nộp hồ sơ";
       
         if (Object.keys(newErrors).length > 0) {
@@ -150,9 +209,26 @@ function EmployerCreatePost() {
 
       // Validate all required fields
       const newErrors = {};
+        const expMinValue = parseInt(formData.exp_min, 10);
+        const expMaxValue = parseInt(formData.exp_max, 10);
       if (!formData.industries.trim()) newErrors.industries = "Vui lòng chọn ngành nghề";
       if (!formData.exp_min.trim()) newErrors.exp_min = "Vui lòng nhập kinh nghiệm tối thiểu";
       if (!formData.exp_max.trim()) newErrors.exp_max = "Vui lòng nhập kinh nghiệm tối đa";
+        if (formData.exp_min.trim() && (Number.isNaN(expMinValue) || expMinValue < 0)) {
+        newErrors.exp_min = "Kinh nghiệm tối thiểu phải lớn hơn hoặc bằng 0";
+      }
+        if (formData.exp_max.trim() && (Number.isNaN(expMaxValue) || expMaxValue < 0)) {
+        newErrors.exp_max = "Kinh nghiệm tối đa phải lớn hơn hoặc bằng 0";
+      }
+      if (
+        formData.exp_min.trim() &&
+        formData.exp_max.trim() &&
+          !Number.isNaN(expMinValue) &&
+          !Number.isNaN(expMaxValue) &&
+          expMaxValue < expMinValue
+      ) {
+        newErrors.exp_max = "Kinh nghiệm tối đa phải lớn hơn hoặc bằng kinh nghiệm tối thiểu";
+      }
       if (!formData.deadline.trim()) newErrors.deadline = "Vui lòng chọn hạn nộp hồ sơ";
       if (!formData.job_description.trim()) newErrors.job_description = "Vui lòng nhập mô tả công việc";
       if (!formData.job_requirement.trim()) newErrors.job_requirement = "Vui lòng nhập yêu cầu ứng viên";
@@ -201,49 +277,12 @@ function EmployerCreatePost() {
   return (
     <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
       <EmployerSideNavBar />
+      <EmployerTopNavBar />
 
       <main className="ml-64 w-full">
-        <EmployerTopNavBar />
 
         <div className="pt-24 pb-12 px-8 min-h-screen">
           <div className="max-w-7xl mx-auto">
-            {/* Stepper */}
-            <div className="flex items-center justify-between mb-12 max-w-3xl mx-auto">
-              {[1, 2, 3].map((step) => (
-                <div key={step} className="flex flex-col items-center gap-2 flex-1">
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
-                      step <= currentStep
-                        ? "bg-blue-600 text-white"
-                        : "border-2 border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
-                    }`}
-                  >
-                    {step}
-                  </div>
-                  <span
-                    className={`text-xs font-bold ${
-                      step <= currentStep
-                        ? "text-blue-600 dark:text-blue-400"
-                        : "text-slate-500 dark:text-slate-400"
-                    }`}
-                  >
-                    {step === 1 && "Thông tin chung"}
-                    {step === 2 && "Mô tả công việc"}
-                    {step === 3 && "Xem trước & Đăng"}
-                  </span>
-                  {step < 3 && (
-                    <div
-                      className={`flex-1 h-[2px] mx-4 -mt-6 ${
-                        step < currentStep
-                          ? "bg-blue-600 dark:bg-blue-400"
-                          : "bg-slate-300 dark:bg-slate-700"
-                      }`}
-                    ></div>
-                  )}
-                </div>
-              ))}
-            </div>
-
             {submitError && (
               <div className="mb-6 max-w-3xl mx-auto p-4 bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-lg text-sm text-red-700 dark:text-red-400">
                 {submitError}
@@ -339,7 +378,7 @@ function EmployerCreatePost() {
                               value={formData.exp_min}
                               onChange={handleChange}
                               placeholder="Ví dụ: 1"
-                              min="0"
+                              min="1"
                               className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-blue-600/20 text-slate-900 dark:text-white"
                             />
                               {errors.exp_min && (
@@ -356,7 +395,7 @@ function EmployerCreatePost() {
                               value={formData.exp_max}
                               onChange={handleChange}
                               placeholder="Ví dụ: 3"
-                              min="0"
+                              min="1"
                               className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-blue-600/20 text-slate-900 dark:text-white"
                             />
                               {errors.exp_max && (
@@ -457,7 +496,7 @@ function EmployerCreatePost() {
                             name="deadline"
                             value={formData.deadline}
                             onChange={handleChange}
-                            min={new Date().toISOString().split("T")[0]}
+                            min={TODAY_DATE}
                             className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-blue-600/20 text-slate-900 dark:text-white"
                           />
                             {errors.deadline && (
@@ -544,14 +583,14 @@ function EmployerCreatePost() {
                               label: "Mức lương",
                               value:
                                 formData.salary_min || formData.salary_max
-                                  ? `${formData.salary_min || "?"} – ${formData.salary_max || "?"} ${formData.salary_currency === "USD" ? "USD" : "Triệu VND"}`
+                                  ? formatSalaryInputRange(formData.salary_min, formData.salary_max, formData.salary_currency)
                                   : "",
                             },
                             {
                               label: "Kinh nghiệm",
                               value:
                                 formData.exp_min || formData.exp_max
-                                  ? `${formData.exp_min || "?"} – ${formData.exp_max || "?"}`
+                                  ? formatExperienceRange(formData.exp_min, formData.exp_max)
                                   : "",
                             },
                             { label: "Hạn nộp", value: formData.deadline },
@@ -628,7 +667,7 @@ function EmployerCreatePost() {
                       )}
                       {formData.exp_min && (
                         <span className="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-full">
-                          {formData.exp_min}+ kinh nghiệm
+                          {formatExperienceRange(formData.exp_min, formData.exp_max)}
                         </span>
                       )}
                     </div>
@@ -636,7 +675,7 @@ function EmployerCreatePost() {
                       <p className="text-xs text-slate-600 dark:text-slate-400">Mức lương:</p>
                       <p className="font-bold text-slate-900 dark:text-white">
                         {formData.salary_min || formData.salary_max
-                          ? `${formData.salary_min || "?"} – ${formData.salary_max || "?"} ${formData.salary_currency === "USD" ? "USD" : "Triệu VND"}`
+                          ? formatSalaryInputRange(formData.salary_min, formData.salary_max, formData.salary_currency)
                           : "Thỏa thuận"}
                       </p>
                     </div>

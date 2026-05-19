@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GuestTopNavBar from '../../components/GuestTopNavBar';
 import '../../styles/seeker-home.css';
+import { formatSalaryRange } from '../../utils/dataFormatter';
 
 const SeekerHome = () => {
   const navigate = useNavigate();
@@ -266,7 +267,7 @@ const SeekerHome = () => {
       <div className={`flex ${viewMode === 'list' ? 'flex-col items-end gap-3' : 'pt-6 justify-between items-center border-t border-surface-container w-full'}`}>
         <div className={`font-bold text-on-surface ${viewMode === 'list' ? 'text-right whitespace-nowrap' : ''}`}>
           <div className="text-sm text-on-surface-variant">Mức lương</div>
-          {job.salary_min} - {job.salary_max}
+          {formatSalaryRange(job.salary_min, job.salary_max)}
         </div>
         <button
           onClick={() => navigate(`/jobs/${job.id}`)}

@@ -135,7 +135,7 @@ def get_my_applications():
     """Lấy danh sách đơn ứng tuyển của seeker hiện tại."""
     user_id = request.current_user_id
     page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)
+    per_page = request.args.get('per_page', 6, type=int)
     status_filter = request.args.get('status', '')
 
     query = Application.query.filter_by(user_id=user_id)
@@ -289,9 +289,32 @@ def save_profile():
             infor.skills = skills_value or None
 
     if 'exp_min' in data:
-        infor.exp_min = (data['exp_min'] or '').strip() or None
+        exp_min_value = (data['exp_min'] or '').strip()
+        if exp_min_value:
+            try:
+                exp_min_int = int(exp_min_value)
+            except (TypeError, ValueError):
+                return jsonify({"error": "exp_min không hợp lệ"}), 400
+            if exp_min_int < 0:
+                return jsonify({"error": "exp_min phải lớn hơn hoặc bằng 0"}), 400
+        infor.exp_min = exp_min_value or None
     if 'exp_max' in data:
-        infor.exp_max = (data['exp_max'] or '').strip() or None
+        exp_max_value = (data['exp_max'] or '').strip()
+        if exp_max_value:
+            try:
+                exp_max_int = int(exp_max_value)
+            except (TypeError, ValueError):
+                return jsonify({"error": "exp_max không hợp lệ"}), 400
+            if exp_max_int < 0:
+                return jsonify({"error": "exp_max phải lớn hơn hoặc bằng 0"}), 400
+        infor.exp_max = exp_max_value or None
+
+    if (data.get('exp_min') or data.get('exp_max')) and infor.exp_min and infor.exp_max:
+        try:
+            if int(infor.exp_max) < int(infor.exp_min):
+                return jsonify({"error": "exp_max phải lớn hơn hoặc bằng exp_min"}), 400
+        except (TypeError, ValueError):
+            return jsonify({"error": "exp_min/exp_max không hợp lệ"}), 400
 
     # Xóa cache gợi ý khi profile thay đổi
     user.recommendations = None

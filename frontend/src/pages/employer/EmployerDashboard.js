@@ -5,12 +5,46 @@ import EmployerTopNavBar from "../../components/EmployerTopNavBar";
 import API from "../../services/api";
 import { getEmployerToken } from "../../utils/authStorage";
 
+const DASHBOARD_CACHE_KEY_PREFIX = "employer_dashboard_cache";
+const DASHBOARD_CACHE_DURATION = 5 * 60 * 1000;
+
+const getDashboardCacheKey = (token) => `${DASHBOARD_CACHE_KEY_PREFIX}:${token || "anonymous"}`;
+
+const readDashboardCache = (token) => {
+  try {
+    const raw = sessionStorage.getItem(getDashboardCacheKey(token));
+    if (!raw) return null;
+
+    const cached = JSON.parse(raw);
+    if (Date.now() - cached.timestamp > DASHBOARD_CACHE_DURATION) {
+      sessionStorage.removeItem(getDashboardCacheKey(token));
+      return null;
+    }
+
+    return cached.data || null;
+  } catch {
+    return null;
+  }
+};
+
+const writeDashboardCache = (token, data) => {
+  try {
+    sessionStorage.setItem(
+      getDashboardCacheKey(token),
+      JSON.stringify({ data, timestamp: Date.now() })
+    );
+  } catch {
+    // ignore storage quota errors
+  }
+};
+
 function EmployerDashboard() {
   const navigate = useNavigate();
-  const [employerName, setEmployerName] = useState("Nhà tuyển dụng");
   const [stats, setStats] = useState(null);
   const [recentJobs, setRecentJobs] = useState([]);
   const [loadingStats, setLoadingStats] = useState(true);
+  const chartData = [40, 65, 45, 70, 55, 80, 60];
+  const maxValue = Math.max(...chartData);
 
   useEffect(() => {
     const token = getEmployerToken();
@@ -21,6 +55,14 @@ function EmployerDashboard() {
 
     let cancelled = false;
 
+    const cached = readDashboardCache(token);
+    if (cached) {
+      setStats(cached.stats || null);
+      setRecentJobs(cached.recentJobs || []);
+      setLoadingStats(false);
+      return () => { cancelled = true; };
+    }
+
     const loadDashboard = async () => {
       try {
         // Load profile + jobs concurrently
@@ -30,15 +72,6 @@ function EmployerDashboard() {
         ]);
 
         if (cancelled) return;
-
-        // Profile
-        if (profileRes.status === "fulfilled" && profileRes.value.data) {
-          setEmployerName(
-            profileRes.value.data.company_name ||
-              profileRes.value.data.username ||
-              "Nhà tuyển dụng"
-          );
-        }
 
         // Jobs stats
         if (jobsRes.status === "fulfilled") {
@@ -60,6 +93,15 @@ function EmployerDashboard() {
             .sort((a, b) => (b.total_applications || 0) - (a.total_applications || 0))
             .slice(0, 5);
           setRecentJobs(sorted);
+
+          writeDashboardCache(token, {
+            stats: {
+              activePostings: activeJobs.length,
+              totalJobs: jobs.length,
+              newApplications: totalApplications,
+            },
+            recentJobs: sorted,
+          });
         }
       } catch {
         // silently fail — UI shows placeholders
@@ -72,33 +114,18 @@ function EmployerDashboard() {
     return () => { cancelled = true; };
   }, [navigate]);
 
-  const greeting = () => {
-    const h = new Date().getHours();
-    if (h < 12) return "Chào buổi sáng";
-    if (h < 18) return "Chào buổi chiều";
-    return "Chào buổi tối";
-  };
 
   return (
     <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
       <EmployerSideNavBar />
+      <EmployerTopNavBar />
 
       <main className="ml-64 w-full">
-        <EmployerTopNavBar />
 
-        <div className="pt-20 p-8 max-w-7xl mx-auto">
-          {/* Welcome */}
-          <div className="mb-10">
-            <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight mb-2">
-              {greeting()}, {employerName}
-            </h2>
-            <p className="text-slate-600 dark:text-slate-400 max-w-2xl">
-              Hôm nay là một ngày tuyệt vời để tìm kiếm những tài năng mới cho đội ngũ của bạn.
-            </p>
-          </div>
+        <div className="pt-20 p-5 max-w-7xl mx-auto">
 
           {/* Action Buttons */}
-          <div className="flex gap-3 mb-10">
+          <div className="flex gap-3 mb-5">
             <button
               onClick={() => navigate("/employer/analytics")}
               className="flex items-center gap-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 px-4 py-2.5 rounded-lg font-semibold text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
@@ -116,114 +143,98 @@ function EmployerDashboard() {
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
             {/* Active Postings */}
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm hover:shadow-md transition-all">
-              <div className="flex justify-between items-start mb-4">
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm hover:shadow-md transition-all">
+              <div className="flex justify-between items-start mb-2">
+                <div className="p-2.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
                   <span className="material-symbols-outlined text-xl">campaign</span>
                 </div>
-                <span className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-full">
-                  Đang chạy
-                </span>
               </div>
-              <h3 className="text-slate-600 dark:text-slate-400 text-sm font-medium mb-1">Bài đăng đang chạy</h3>
-              <p className="text-3xl font-black text-slate-900 dark:text-white">
+              <h3 className="text-slate-600 dark:text-slate-400 text-sm font-medium mb-0.5">Bài đăng</h3>
+              <p className="text-2xl font-black text-slate-900 dark:text-white">
                 {loadingStats ? "—" : stats?.activePostings ?? 0}
-              </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                / {loadingStats ? "—" : stats?.totalJobs ?? 0} tổng bài đăng
               </p>
             </div>
 
             {/* Total Applications */}
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm hover:shadow-md transition-all">
-              <div className="flex justify-between items-start mb-4">
-                <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-purple-600 dark:text-purple-400">
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm hover:shadow-md transition-all">
+              <div className="flex justify-between items-start mb-2">
+                <div className="p-2.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-purple-600 dark:text-purple-400">
                   <span className="material-symbols-outlined text-xl">person_add</span>
                 </div>
-                <span className="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/30 px-2 py-1 rounded-full">
-                  Tổng
-                </span>
               </div>
-              <h3 className="text-slate-600 dark:text-slate-400 text-sm font-medium mb-1">Tổng lượt ứng tuyển</h3>
-              <p className="text-3xl font-black text-slate-900 dark:text-white">
+              <h3 className="text-slate-600 dark:text-slate-400 text-sm font-medium mb-0.5">Tổng lượt ứng tuyển</h3>
+              <p className="text-2xl font-black text-slate-900 dark:text-white">
                 {loadingStats ? "—" : stats?.newApplications ?? 0}
               </p>
-              <div className="mt-4 text-xs text-purple-600 dark:text-purple-400 font-medium flex items-center gap-1">
-                <span className="material-symbols-outlined text-sm">work</span>
-                <span>Từ tất cả bài đăng</span>
-              </div>
             </div>
 
             {/* Navigate to Candidates */}
             <div
               onClick={() => navigate("/employer/candidates")}
-              className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer group"
+              className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer group"
             >
-              <div className="flex justify-between items-start mb-4">
-                <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg text-emerald-600 dark:text-emerald-400">
+              <div className="flex justify-between items-start mb-2">
+                <div className="p-2.5 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg text-emerald-600 dark:text-emerald-400">
                   <span className="material-symbols-outlined text-xl">groups</span>
                 </div>
                 <span className="material-symbols-outlined text-slate-400 dark:text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                   arrow_forward
                 </span>
               </div>
-              <h3 className="text-slate-600 dark:text-slate-400 text-sm font-medium mb-1">Quản lý ứng viên</h3>
+              <h3 className="text-slate-600 dark:text-slate-400 text-sm font-medium mb-0.5">Quản lý ứng viên</h3>
               <p className="text-base font-bold text-emerald-600 dark:text-emerald-400">Xem tất cả ứng viên →</p>
             </div>
           </div>
 
           {/* Charts & Top Jobs */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 h-[440px]">
             {/* Placeholder Chart */}
-            <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-8 rounded-xl shadow-sm">
-              <div className="flex justify-between items-center mb-8">
+            <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm flex flex-col">
+              <div className="flex justify-between items-center mb-3">
                 <div>
-                  <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                    Xu hướng ứng tuyển theo tuần
-                  </h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400">
                     Thống kê 7 ngày gần nhất
                   </p>
                 </div>
               </div>
-              <div className="h-64 flex items-end justify-between gap-3 px-2">
-                {[40, 65, 45, 70, 55, 80, 60].map((height, idx) => (
-                  <div key={idx} className="flex-1 flex flex-col items-center gap-3">
-                    <div
-                      className="w-full bg-blue-200 dark:bg-blue-900/40 rounded-t-lg transition-all duration-500 hover:bg-blue-400"
-                      style={{ height: `${height}%` }}
-                    ></div>
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">
-                      N{idx + 1}
-                    </span>
-                  </div>
-                ))}
+              <div className="flex-1 flex items-end justify-between gap-3 px-2">
+                {chartData.map((value, idx) => {
+                  const pct = Math.round((value / maxValue) * 100);
+                  return (
+                    <div key={idx} className="flex-1 flex flex-col items-center gap-2">
+                      <div
+                        className="w-full bg-blue-200 dark:bg-blue-900/40 rounded-t-lg transition-all duration-500 hover:bg-blue-400"
+                        style={{ height: `${pct}%`, minHeight: 4 }}
+                      />
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">
+                        N{idx + 1}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
             {/* Top Jobs by Applications */}
-            <div className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-sm">
-              <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-6">
-                Job nhận nhiều CV nhất
-              </h3>
+            <div className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm flex flex-col">
               {loadingStats ? (
                 <p className="text-sm text-slate-500 dark:text-slate-400">Đang tải...</p>
               ) : recentJobs.length === 0 ? (
                 <p className="text-sm text-slate-500 dark:text-slate-400">Chưa có dữ liệu.</p>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-2 flex-1 overflow-hidden">
                   {recentJobs.map((job) => (
                     <div
                       key={job.id}
                       onClick={() => navigate(`/employer/candidates?job=${job.id}`)}
-                      className="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                      className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                     >
                       <p className="font-semibold text-sm text-slate-900 dark:text-white truncate">
                         {job.job_title}
                       </p>
-                      <div className="flex justify-between items-center mt-1">
+                      <div className="flex justify-between items-center mt-0.5">
                         <p className="text-xs text-slate-500 dark:text-slate-400">
                           {job.employment_type || "—"}
                         </p>

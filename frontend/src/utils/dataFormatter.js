@@ -87,6 +87,28 @@ export const formatTextSimple = (text) => {
   return lines.join('\n');
 };
 
+const parseNumericValue = (value) => {
+  if (value === null || value === undefined || value === '') return null;
+  const normalized = Number(String(value).replace(/[^0-9-]/g, ''));
+  return Number.isNaN(normalized) ? null : normalized;
+};
+
+const formatSalaryAmount = (value) => {
+  const amount = parseNumericValue(value);
+  if (amount === null) return '';
+
+  const absolute = Math.abs(amount);
+  if (absolute >= 1000000) {
+    const millions = amount / 1000000;
+    const formatted = Number.isInteger(millions)
+      ? millions.toLocaleString('vi-VN')
+      : millions.toLocaleString('vi-VN', { maximumFractionDigits: 1 });
+    return `${formatted} Triệu VND`;
+  }
+
+  return `${amount.toLocaleString('vi-VN')} VND`;
+};
+
 /**
  * Format salary range
  * @param {number|string} min - Mức lương tối thiểu
@@ -94,32 +116,60 @@ export const formatTextSimple = (text) => {
  * @returns {string}
  */
 export const formatSalaryRange = (min, max) => {
-  const parseNumeric = (val) => {
-    if (!val) return null;
-    const num = Number(String(val).replace(/[^0-9]/g, ''));
-    return Number.isNaN(num) ? null : num;
-  };
+  const minAmount = parseNumericValue(min);
+  const maxAmount = parseNumericValue(max);
 
-  const formatNumber = (num) => {
-    if (!num) return '';
-    // Nếu là triệu (chia hết cho 1,000,000)
-    if (num >= 1000000 && num % 1000000 === 0) {
-      return `${(num / 1000000).toLocaleString('vi-VN')} Triệu`;
-    }
-    return num.toLocaleString('vi-VN');
-  };
-
-  const minNum = parseNumeric(min);
-  const maxNum = parseNumeric(max);
-
-  if (minNum && maxNum) {
-    return `${formatNumber(minNum)} - ${formatNumber(maxNum)}`;
-  } else if (minNum) {
-    return `Từ ${formatNumber(minNum)}`;
-  } else if (maxNum) {
-    return `Đến ${formatNumber(maxNum)}`;
+  if (minAmount === null && maxAmount === null) {
+    return 'Thoả thuận';
   }
-  return 'Thoả thuận';
+
+  if (minAmount !== null && maxAmount !== null) {
+    if (minAmount === maxAmount) {
+      return formatSalaryAmount(minAmount);
+    }
+
+    const minText = formatSalaryAmount(minAmount).replace(/\s+(Triệu VND|VND)$/, '');
+    const maxText = formatSalaryAmount(maxAmount).replace(/\s+(Triệu VND|VND)$/, '');
+    const unit = Math.abs(minAmount) >= 1000000 || Math.abs(maxAmount) >= 1000000 ? 'Triệu VND' : 'VND';
+    return `${minText} - ${maxText} ${unit}`;
+  }
+
+  if (minAmount !== null) {
+    return `Từ ${formatSalaryAmount(minAmount)}`;
+  }
+
+  return `Đến ${formatSalaryAmount(maxAmount)}`;
+};
+
+/**
+ * Format salary range for form previews where values are already in display units.
+ * @param {number|string} min
+ * @param {number|string} max
+ * @param {string} currency
+ * @returns {string}
+ */
+export const formatSalaryInputRange = (min, max, currency = 'VND') => {
+  const minText = min === null || min === undefined || min === '' ? '?' : min;
+  const maxText = max === null || max === undefined || max === '' ? '?' : max;
+  const suffix = currency === 'USD' ? 'USD' : 'Triệu VND';
+
+  if (minText === '?' && maxText === '?') {
+    return 'Thoả thuận';
+  }
+
+  if (minText === maxText) {
+    return `${minText} ${suffix}`;
+  }
+
+  if (minText === '?') {
+    return `Đến ${maxText} ${suffix}`;
+  }
+
+  if (maxText === '?') {
+    return `Từ ${minText} ${suffix}`;
+  }
+
+  return `${minText} - ${maxText} ${suffix}`;
 };
 
 /**
@@ -148,10 +198,16 @@ export const formatDate = (date) => {
  * @returns {string}
  */
 export const formatExperienceRange = (min, max) => {
-  if (!min && !max) return 'Chưa cập nhật';
-  if (min && max) return `${min} - ${max} năm`;
-  if (min) return `Từ ${min} năm`;
-  if (max) return `Đến ${max} năm`;
+  const minValue = parseNumericValue(min);
+  const maxValue = parseNumericValue(max);
+
+  if (minValue === null && maxValue === null) return 'Chưa cập nhật';
+  if (minValue !== null && maxValue !== null) {
+    if (minValue === maxValue) return `${minValue} năm`;
+    return `${minValue} - ${maxValue} năm`;
+  }
+  if (minValue !== null) return `Từ ${minValue} năm`;
+  if (maxValue !== null) return `Đến ${maxValue} năm`;
   return 'Chưa cập nhật';
 };
 
@@ -198,9 +254,9 @@ export const normalizeJobData = (job) => {
     company: job.company || job.company_name || '',
     location: formatLocation(job.location || job.job_address || ''),
     detailAddress: job.job_detail_address || job.detail_address || '',
-    salary: formatSalaryRange(job.salary_min || job.min_salary, job.salary_max || job.max_salary),
-    salaryMin: Number(String(job.salary_min || job.min_salary || 0).replace(/[^0-9]/g, '')) || 0,
-    salaryMax: Number(String(job.salary_max || job.max_salary || 0).replace(/[^0-9]/g, '')) || 0,
+    salary: formatSalaryRange(job.salary_min ?? job.min_salary, job.salary_max ?? job.max_salary),
+    salaryMin: Number(String(job.salary_min ?? job.min_salary ?? 0).replace(/[^0-9]/g, '')) || 0,
+    salaryMax: Number(String(job.salary_max ?? job.max_salary ?? 0).replace(/[^0-9]/g, '')) || 0,
     description: job.description || '',
     requirement: job.requirement || '',
     benefits: job.benefits || '',

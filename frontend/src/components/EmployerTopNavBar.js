@@ -72,7 +72,7 @@ function EmployerTopNavBar() {
           {/* Account Dropdown */}
           <div className="relative">
             <div
-              className="flex items-center gap-3 px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors group"
+              className="flex items-center gap-3 px-3 py-2"
             >
               <img
                 alt="Company Avatar"

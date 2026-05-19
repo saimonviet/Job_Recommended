@@ -2,45 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TopNavBar from '../../components/TopNavBar';
 import API from '../../services/api';
+import { formatSalaryRange } from '../../utils/dataFormatter';
 
 const createJobLogo = (seed) => `https://api.dicebear.com/7.x/icons/svg?seed=${encodeURIComponent(seed || 'job')}`;
 
-const formatSalary = (job) => {
-  const parseNumeric = (v) => {
-    if (v === null || v === undefined) return null;
-    // accept numbers or numeric strings with punctuation
-    const s = String(v).replace(/[^0-9\-]/g, '');
-    const n = Number(s);
-    return Number.isNaN(n) ? null : n;
-  };
-
-  const fmt = (val) => {
-    const n = parseNumeric(val);
-    if (n === null) return val;
-    // if value is an exact multiple of 1,000,000 show in Triệu
-    if (n % 1000000 === 0 && Math.abs(n) >= 1000000) {
-      return `${(n / 1000000).toLocaleString('vi-VN')} Triệu`;
-    }
-    // fallback: show localized number
-    return n.toLocaleString('vi-VN');
-  };
-
-  if (job.salary) {
-    const s = String(job.salary || '');
-    if (s.includes('-')) {
-      const parts = s.split('-').map((p) => p.trim());
-      return parts.map(fmt).join(' - ');
-    }
-    return fmt(job.salary);
-  }
-
-  if (job.salary_min && job.salary_max) {
-    return `${fmt(job.salary_min)} - ${fmt(job.salary_max)}`;
-  }
-
-  const single = job.salary_min || job.salary_max;
-  return single ? fmt(single) : 'Thoả thuận';
-};
+const formatSalary = (job) => job.salary || formatSalaryRange(job.salary_min ?? job.min_salary, job.salary_max ?? job.max_salary);
 
 const normalizeJob = (job) => ({
   id: job.id,
@@ -120,6 +86,7 @@ const SeekerHomeLoggedIn = () => {
   const [filterSalary, setFilterSalary] = useState('');
   const [filterExperience, setFilterExperience] = useState('');
   const [filterIndustry, setFilterIndustry] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [savedJobIds, setSavedJobIds] = useState([]);
 
   useEffect(() => {
@@ -233,8 +200,17 @@ const SeekerHomeLoggedIn = () => {
     try {
       setCurrentPage(1); // Reset to page 1 for new search
       
+      // If no search criteria are selected, restore the latest jobs
+      if (!searchQuery && !filterLocation && !filterSalary && !filterExperience && !filterIndustry) {
+        handleClearFilters();
+        return;
+      }
+
       // Build query params from filters
       const params = { page: 1, per_page: 12 };
+      if (searchQuery) {
+        params.search = searchQuery.trim();
+      }
       
       if (filterLocation) {
         params.location = filterLocation;
@@ -278,6 +254,9 @@ const SeekerHomeLoggedIn = () => {
       setCurrentPage(newPage);
       
       const params = { page: newPage, per_page: 12 };
+      if (searchQuery) {
+        params.search = searchQuery.trim();
+      }
       
       if (filterLocation) {
         params.location = filterLocation;
@@ -323,12 +302,14 @@ const SeekerHomeLoggedIn = () => {
     setFilterSalary('');
     setFilterExperience('');
     setFilterIndustry('');
+    setSearchQuery('');
     setSearchActive(false);
     setFilteredJobs([]);
     setCurrentPage(1);
     setTotalPages(1);
     setActiveSortCriteria('newest');
     setSortOrder('asc');
+    loadLatestJobs();
   };
 
   // Format match score for display (handles 0-1 and 0-100 ranges)
@@ -411,6 +392,15 @@ const SeekerHomeLoggedIn = () => {
             </div>
             {searchExpanded && (
               <>
+                <div className="space-y-3 mb-6">
+                  <label className="text-sm font-semibold text-on-surface">Tìm kiếm theo từ khóa</label>
+                  <input
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Tên công việc, công ty hoặc kỹ năng"
+                    className="w-full border border-outline-variant/20 rounded-lg bg-surface-container-lowest px-4 py-3 text-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-[#00488d] transition-colors"
+                  />
+                </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Location Filter */}
               <div className="space-y-2">
@@ -513,6 +503,7 @@ const SeekerHomeLoggedIn = () => {
                   onChange={(e) => setFilterSalary(e.target.value)}
                   className="w-full border border-outline-variant/20 rounded-lg bg-surface-container-lowest px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-[#00488d] transition-colors"
                 >
+                  <option value="">Tất cả mức lương</option>
                   <option value="0-5">Dưới 5 triệu</option>
                   <option value="5-10">5 - 10 triệu</option>
                   <option value="10-15">10 - 15 triệu</option>
@@ -540,6 +531,7 @@ const SeekerHomeLoggedIn = () => {
                   onChange={(e) => setFilterExperience(e.target.value)}
                   className="w-full border border-outline-variant/20 rounded-lg bg-surface-container-lowest px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-[#00488d] transition-colors"
                 >
+                  <option value="">Tất cả kinh nghiệm</option>
                   <option value="0">Không yêu cầu</option>
                   <option value="1">Dưới 1 năm</option>
                   <option value="3">1 - 3 năm</option>
@@ -565,6 +557,7 @@ const SeekerHomeLoggedIn = () => {
                   onChange={(e) => setFilterIndustry(e.target.value)}
                   className="w-full border border-outline-variant/20 rounded-lg bg-surface-container-lowest px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-[#00488d] transition-colors"
                 >
+                  <option value="">Tất cả ngành nghề</option>
                   <option value="Công nghệ thông tin">Công nghệ thông tin</option>
                   <option value="Tài chính - Kế toán">Tài chính - Kế toán</option>
                   <option value="Kinh doanh - Bán hàng">Kinh doanh - Bán hàng</option>
@@ -620,18 +613,18 @@ const SeekerHomeLoggedIn = () => {
                   displayJobs.map((job) => (
                     <div
                       key={job.id}
-                      className="bg-surface-container-lowest p-6 rounded-xl transition-all hover:shadow-[0_20px_40px_rgba(25,28,33,0.06)] group cursor-pointer relative"
+                      className="bg-surface-container-lowest p-6 rounded-xl transition-all hover:shadow-[0_20px_40px_rgba(25,28,33,0.06)] group cursor-pointer relative h-full min-h-[210px] flex flex-col overflow-hidden"
                       onClick={() => navigate(`/jobs/${job.id}`)}
                     >
                       <div className="flex gap-4 mb-4">
                         <div className="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center p-2">
                           <img className="w-full h-full object-contain" src={job.logo} alt={job.company} />
                         </div>
-                        <div className="flex-1">
-                          <h3 className="text-base font-bold text-on-surface group-hover:text-[#00488d] transition-colors">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-base font-bold text-on-surface group-hover:text-[#00488d] transition-colors line-clamp-2 overflow-hidden truncate">
                             {job.title}
                           </h3>
-                          <p className="text-sm text-on-surface-variant">{job.company}</p>
+                          <p className="text-sm text-on-surface-variant line-clamp-1 overflow-hidden truncate">{job.company}</p>
                         </div>
                         <button
                           onClick={(e) => toggleSaveJob(e, job.id)}
@@ -645,11 +638,12 @@ const SeekerHomeLoggedIn = () => {
                           />
                         </button>
                       </div>
-                      <p className="text-sm text-on-surface-variant mb-2">{job.location}</p>
-                      {job.detail_address && (
-                        <p className="text-xs text-on-surface-variant mb-4 line-clamp-2">{job.detail_address}</p>
-                      )}
-                      <div className="flex flex-wrap gap-2 mb-4" />
+                      <div className="flex-1 overflow-hidden">
+                        <p className="text-sm text-on-surface-variant mb-2 line-clamp-1 overflow-hidden truncate">{job.location}</p>
+                        {job.detail_address && (
+                          <p className="text-xs text-on-surface-variant mb-4 line-clamp-3 overflow-hidden truncate">{job.detail_address}</p>
+                        )}
+                      </div>
                       <div className="flex items-center justify-between pt-4 border-t border-outline-variant/10">
                         <span className="text-sm text-on-surface-variant">{job.posted}</span>
                         <span className="text-[#00488d] dark:text-[#005fb8] font-bold">{job.salary}</span>
@@ -753,26 +747,24 @@ const SeekerHomeLoggedIn = () => {
                   recommendations.map((job) => (
                     <div
                       key={job.id}
-                      className="flex items-start gap-3 p-3 rounded-lg bg-white cursor-pointer hover:bg-surface-container-low transition-colors"
+                      className="flex flex-col gap-3 p-3 rounded-lg bg-white cursor-pointer hover:bg-surface-container-low transition-colors max-h-[180px] overflow-hidden"
                       onClick={() => navigate(`/jobs/${job.id}`)}
                     >
-                      <div className="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center p-2">
-                        <img className="w-full h-full object-contain" src={job.logo} alt={job.company} />
-                      </div>
-
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h3 className="text-sm font-semibold text-on-surface">{job.title}</h3>
-                            <p className="text-xs text-on-surface-variant mt-1">{job.company}</p>
-                            <p className="text-xs text-on-surface-variant mt-1">{job.location}</p>
-                          </div>
-                          <div className="ml-4 flex-shrink-0">
-                            <span className="text-xs inline-block bg-[#e6f7ef] text-[#0b6e4f] px-2 py-1 rounded-full font-semibold">{formatMatchScore(job.matchScore)}</span>
-                          </div>
+                      <div className="flex items-start gap-3">
+                        <div className="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center p-2">
+                          <img className="w-full h-full object-contain" src={job.logo} alt={job.company} />
                         </div>
-                        <div className="text-sm font-bold text-[#00488d] mt-3">{job.salary}</div>
+
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-sm font-semibold text-on-surface line-clamp-2 overflow-hidden truncate">{job.title}</h3>
+                          <p className="text-xs text-on-surface-variant mt-1 line-clamp-1 overflow-hidden truncate">{job.company}</p>
+                          <p className="text-xs text-on-surface-variant mt-1 line-clamp-1 overflow-hidden truncate">{job.location}</p>
+                        </div>
+                        <div className="ml-4 flex-shrink-0">
+                          <span className="text-xs inline-block bg-[#e6f7ef] text-[#0b6e4f] px-2 py-1 rounded-full font-semibold">{formatMatchScore(job.matchScore)}</span>
+                        </div>
                       </div>
+                      <div className="mt-auto text-sm font-bold text-[#00488d]">{job.salary}</div>
                     </div>
                   ))
                 )}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AdminSideNavBar from "../../components/AdminSideNavBar";
 import AdminTopNavBar from "../../components/AdminTopNavBar";
+import { formatExperienceRange, formatSalaryRange } from "../../utils/dataFormatter";
 
 const API_BASE_URL = "http://127.0.0.1:5000";
 
@@ -500,21 +501,23 @@ function AdminJobs() {
                 <div className="mb-6 p-4 bg-blue-50 rounded-lg">
                   <p className="text-xs font-bold text-blue-600 uppercase mb-1">Mức lương</p>
                   <p className="text-lg font-bold text-blue-600">
-                    {selectedJob.salary_min ? `${(selectedJob.salary_min / 1000000).toFixed(1)}M` : ''}
-                    {selectedJob.salary_min && selectedJob.salary_max ? ' - ' : ''}
-                    {selectedJob.salary_max ? `${(selectedJob.salary_max / 1000000).toFixed(1)}M` : ''}
-                    {selectedJob.salary_min || selectedJob.salary_max ? ' VNĐ' : '-'}
+                    {formatSalaryRange(selectedJob.salary_min, selectedJob.salary_max)}
                   </p>
                 </div>
               )}
 
               {/* Experience */}
-              {selectedJob.experience_required && (
+              {selectedJob.exp_min || selectedJob.exp_max ? (
+                <div className="mb-6">
+                  <p className="text-xs font-bold text-slate-500 uppercase mb-2">Kinh nghiệm yêu cầu</p>
+                  <p className="text-sm text-on-surface">{formatExperienceRange(selectedJob.exp_min, selectedJob.exp_max)}</p>
+                </div>
+              ) : selectedJob.experience_required ? (
                 <div className="mb-6">
                   <p className="text-xs font-bold text-slate-500 uppercase mb-2">Kinh nghiệm yêu cầu</p>
                   <p className="text-sm text-on-surface">{selectedJob.experience_required}</p>
                 </div>
-              )}
+              ) : null}
 
               {/* Description */}
               {selectedJob.description && (

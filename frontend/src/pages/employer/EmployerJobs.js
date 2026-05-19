@@ -4,6 +4,59 @@ import EmployerSideNavBar from "../../components/EmployerSideNavBar";
 import EmployerTopNavBar from "../../components/EmployerTopNavBar";
 import API from "../../services/api";
 import { getEmployerToken } from "../../utils/authStorage";
+import {
+  PROVINCES_LIST,
+  INDUSTRIES_LIST,
+  EMPLOYMENT_TYPES,
+  SALARY_RANGES,
+} from "../../constants/dropdownOptions";
+
+const TODAY = new Date();
+const TODAY_DATE = new Date(TODAY.getTime() - TODAY.getTimezoneOffset() * 60000)
+  .toISOString()
+  .split("T")[0];
+
+const SALARY_RANGE_MAP = {
+  "0-5": { min: 0, max: 5000000 },
+  "5-10": { min: 5000000, max: 10000000 },
+  "10-15": { min: 10000000, max: 15000000 },
+  "15-20": { min: 15000000, max: 20000000 },
+  "20-30": { min: 20000000, max: 30000000 },
+  "30-50": { min: 30000000, max: 50000000 },
+  "50+": { min: 50000000, max: null },
+  negotiate: { min: null, max: null },
+};
+
+const normalizeSalary = (value) => {
+  if (value === null || value === undefined || value === "") return null;
+  const numeric = Number(value);
+  if (Number.isNaN(numeric)) return null;
+  return numeric > 1000 ? numeric : numeric * 1000000;
+};
+
+const getSalaryRangeKey = (salaryMin, salaryMax) => {
+  const normalizedMin = normalizeSalary(salaryMin);
+  const normalizedMax = normalizeSalary(salaryMax);
+
+  const entries = Object.entries(SALARY_RANGE_MAP);
+  for (const [key, range] of entries) {
+    if (key === "negotiate") {
+      if (normalizedMin === null && normalizedMax === null) return key;
+      continue;
+    }
+
+    if (key === "50+") {
+      if (normalizedMin === 50000000 && normalizedMax === null) return key;
+      continue;
+    }
+
+    if (range.min === normalizedMin && range.max === normalizedMax) {
+      return key;
+    }
+  }
+
+  return "custom";
+};
 
 function EmployerJobs() {
   const navigate = useNavigate();
@@ -20,15 +73,16 @@ function EmployerJobs() {
   const [editLoading, setEditLoading] = useState(false);
   const PER_PAGE = 10;
   const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+  const token = getEmployerToken();
 
   // Cache management functions
-  const getCacheKey = useCallback((pageNum, filterStatus) => {
-    return `employer_jobs_cache_p${pageNum}_${filterStatus || "all"}`;
+  const getCacheKey = useCallback((tokenValue, pageNum, filterStatus) => {
+    return `employer_jobs_cache:${tokenValue || "anonymous"}_p${pageNum}_${filterStatus || "all"}`;
   }, []);
 
-  const getCachedJobs = useCallback((pageNum, filterStatus) => {
+  const getCachedJobs = useCallback((tokenValue, pageNum, filterStatus) => {
     try {
-      const cacheKey = getCacheKey(pageNum, filterStatus);
+      const cacheKey = getCacheKey(tokenValue, pageNum, filterStatus);
       const cached = sessionStorage.getItem(cacheKey);
       if (!cached) return null;
 
@@ -46,9 +100,9 @@ function EmployerJobs() {
     }
   }, [getCacheKey]);
 
-  const setCachedJobs = useCallback((data, pageNum, filterStatus) => {
+  const setCachedJobs = useCallback((tokenValue, data, pageNum, filterStatus) => {
     try {
-      const cacheKey = getCacheKey(pageNum, filterStatus);
+      const cacheKey = getCacheKey(tokenValue, pageNum, filterStatus);
       sessionStorage.setItem(
         cacheKey,
         JSON.stringify({
@@ -61,11 +115,12 @@ function EmployerJobs() {
     }
   }, [getCacheKey]);
 
-  const clearJobsCache = useCallback(() => {
-    // Clear all job cache entries
+  const clearJobsCache = useCallback((tokenValue) => {
+    // Clear only the active employer's job cache entries
+    const prefix = `employer_jobs_cache:${tokenValue || "anonymous"}_`;
     for (let i = 0; i < sessionStorage.length; i++) {
       const key = sessionStorage.key(i);
-      if (key && key.startsWith("employer_jobs_cache_")) {
+      if (key && key.startsWith(prefix)) {
         sessionStorage.removeItem(key);
       }
     }
@@ -77,12 +132,18 @@ function EmployerJobs() {
   }, [navigate]);
 
   const loadJobs = useCallback(async (forceRefresh = false) => {
+    const currentToken = getEmployerToken();
+    if (!currentToken) {
+      navigate("/login-employer");
+      return;
+    }
+
     setLoading(true);
     setError("");
     try {
       // Check cache first if not forcing refresh
       if (!forceRefresh) {
-        const cachedData = getCachedJobs(page, statusFilter);
+        const cachedData = getCachedJobs(currentToken, page, statusFilter);
         if (cachedData) {
           setJobs(cachedData.jobs || []);
           setTotalPages(cachedData.pages || 1);
@@ -107,13 +168,13 @@ function EmployerJobs() {
       setTotalJobs(data.total);
 
       // Cache the result
-      setCachedJobs(data, page, statusFilter);
+      setCachedJobs(currentToken, data, page, statusFilter);
     } catch (err) {
       setError("Không tải được danh sách việc làm.");
     } finally {
       setLoading(false);
     }
-  }, [page, statusFilter, getCachedJobs, setCachedJobs]);
+  }, [page, statusFilter, navigate, getCachedJobs, setCachedJobs]);
 
   useEffect(() => {
     loadJobs();
@@ -130,7 +191,7 @@ function EmployerJobs() {
       setJobs((prev) =>
         prev.map((j) => (j.id === job.id ? { ...j, is_active: !j.is_active } : j))
       );
-      clearJobsCache(); // Clear cache when status changes
+      clearJobsCache(token); // Clear cache when status changes
     } catch {
       alert("Không thể thay đổi trạng thái bài đăng.");
     }
@@ -141,10 +202,11 @@ function EmployerJobs() {
     try {
       const response = await API.delete(`/employer/jobs/${job.id}`);
       alert(response.data?.message || "Đã xử lý.");
-      clearJobsCache(); // Clear cache when job is deleted
+      clearJobsCache(token); // Clear cache when job is deleted
       loadJobs(true); // Force refresh after deletion
     } catch (err) {
-      alert(err.response?.data?.error || "Không thể xóa bài đăng.");
+      console.error('Delete job error:', err);
+      alert(err.message || "Không thể xóa bài đăng.");
     }
   };
 
@@ -163,6 +225,7 @@ function EmployerJobs() {
         job_title: jobDetail.job_title || "",
         salary_min: jobDetail.salary_min || "",
         salary_max: jobDetail.salary_max || "",
+        salary_band: getSalaryRangeKey(jobDetail.salary_min, jobDetail.salary_max),
         job_address: jobDetail.job_address || "",
         employment_type: jobDetail.employment_type || "",
         deadline: jobDetail.deadline ? jobDetail.deadline.substring(0, 10) : "",
@@ -195,26 +258,56 @@ function EmployerJobs() {
     }));
   };
 
+  const handleSalaryBandChange = (value) => {
+    const range = SALARY_RANGE_MAP[value];
+    setEditFormData((prev) => ({
+      ...prev,
+      salary_band: value,
+      salary_min: range ? (range.min === null ? "" : String(range.min)) : prev.salary_min,
+      salary_max: range ? (range.max === null ? "" : String(range.max)) : prev.salary_max,
+    }));
+  };
+
   const handleSaveEdit = async () => {
     if (!editFormData.job_title || !editFormData.job_title.trim()) {
       alert("Tên công việc không được để trống");
       return;
     }
 
+    const expMin = editFormData.exp_min ? parseInt(editFormData.exp_min, 10) : null;
+    const expMax = editFormData.exp_max ? parseInt(editFormData.exp_max, 10) : null;
+    if (expMin !== null && (Number.isNaN(expMin) || expMin < 0)) {
+      alert("Kinh nghiệm tối thiểu phải lớn hơn hoặc bằng 0");
+      return;
+    }
+    if (expMax !== null && (Number.isNaN(expMax) || expMax < 0)) {
+      alert("Kinh nghiệm tối đa phải lớn hơn hoặc bằng 0");
+      return;
+    }
+    if (expMin !== null && expMax !== null && expMax < expMin) {
+      alert("Kinh nghiệm tối đa phải lớn hơn hoặc bằng kinh nghiệm tối thiểu");
+      return;
+    }
+
     setEditLoading(true);
     try {
+      const salaryRange = SALARY_RANGE_MAP[editFormData.salary_band];
       const saveData = {
         job_title: editFormData.job_title,
-        salary_min: editFormData.salary_min ? parseInt(editFormData.salary_min) : null,
-        salary_max: editFormData.salary_max ? parseInt(editFormData.salary_max) : null,
+        salary_min: editFormData.salary_band && editFormData.salary_band !== "custom"
+          ? salaryRange?.min
+          : (editFormData.salary_min ? parseInt(editFormData.salary_min) : null),
+        salary_max: editFormData.salary_band && editFormData.salary_band !== "custom"
+          ? salaryRange?.max
+          : (editFormData.salary_max ? parseInt(editFormData.salary_max) : null),
         job_address: editFormData.job_address,
         employment_type: editFormData.employment_type,
         deadline: editFormData.deadline || null,
         job_description: editFormData.job_description,
         job_requirement: editFormData.job_requirement,
         benefits: editFormData.benefits,
-        exp_min: editFormData.exp_min ? parseInt(editFormData.exp_min) : null,
-        exp_max: editFormData.exp_max ? parseInt(editFormData.exp_max) : null,
+        exp_min: expMin,
+        exp_max: expMax,
         job_function: editFormData.job_function,
         industries: editFormData.industries,
         job_detail_address: editFormData.job_detail_address,
@@ -222,11 +315,12 @@ function EmployerJobs() {
 
       await API.put(`/employer/jobs/${editFormData.id}`, saveData);
       alert("Cập nhật job thành công");
-      clearJobsCache();
+      clearJobsCache(token);
       loadJobs(true);
       handleCloseEditModal();
     } catch (err) {
-      alert(err.response?.data?.error || "Không thể cập nhật job");
+      console.error('Update job error:', err);
+      alert(err.message || "Không thể cập nhật job");
     } finally {
       setEditLoading(false);
     }
@@ -235,26 +329,20 @@ function EmployerJobs() {
   return (
     <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
       <EmployerSideNavBar />
+      <EmployerTopNavBar />
 
       <main className="ml-64 w-full">
-        <EmployerTopNavBar />
 
         <div className="pt-20 p-8 max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
-              <h2 className="text-3xl font-black text-blue-600 dark:text-blue-400 tracking-tight mb-2">
-                Quản lý tuyển dụng
-              </h2>
-              <p className="text-slate-600 dark:text-slate-400 max-w-lg">
-                Tổng cộng <span className="font-bold text-slate-900 dark:text-white">{totalJobs}</span> bài đăng.
-              </p>
             </div>
             <div className="flex gap-3">
               <button
                 onClick={() => {
                   setIsRefreshing(true);
-                  clearJobsCache();
+                  clearJobsCache(token);
                   loadJobs(true).finally(() => setIsRefreshing(false));
                 }}
                 disabled={isRefreshing || loading}
@@ -276,19 +364,7 @@ function EmployerJobs() {
           </div>
 
           {/* Filters */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-blue-600 dark:text-blue-400 flex items-center gap-2">
-                <span className="material-symbols-outlined text-lg">filter_list</span>
-                Bộ lọc
-              </h3>
-              <button
-                onClick={() => handleFilterChange("")}
-                className="text-sm text-blue-600 dark:text-blue-400 font-medium hover:underline"
-              >
-                Xóa tất cả
-              </button>
-            </div>
+          <div className="pt-4 pb-4">
 
             <div className="flex flex-wrap gap-2">
               {[
@@ -465,43 +541,50 @@ function EmployerJobs() {
                   />
                 </div>
 
-                {/* Row 2: Salary Min & Max */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-                      Lương tối thiểu
-                    </label>
-                    <input
-                      type="number"
-                      value={editFormData.salary_min || ""}
-                      onChange={(e) => handleEditFormChange("salary_min", e.target.value)}
-                      className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
-                    />
+                {editFormData.salary_band === "custom" && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+                        Lương tối thiểu
+                      </label>
+                      <input
+                        type="number"
+                        value={editFormData.salary_min || ""}
+                        onChange={(e) => handleEditFormChange("salary_min", e.target.value)}
+                        className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+                        Lương tối đa
+                      </label>
+                      <input
+                        type="number"
+                        value={editFormData.salary_max || ""}
+                        onChange={(e) => handleEditFormChange("salary_max", e.target.value)}
+                        className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-                      Lương tối đa
-                    </label>
-                    <input
-                      type="number"
-                      value={editFormData.salary_max || ""}
-                      onChange={(e) => handleEditFormChange("salary_max", e.target.value)}
-                      className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
-                    />
-                  </div>
-                </div>
+                )}
 
                 {/* Row 3: Address & Detail Address */}
                 <div>
                   <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-                    Địa chỉ
+                    Tỉnh/Thành phố
                   </label>
-                  <input
-                    type="text"
+                  <select
                     value={editFormData.job_address || ""}
                     onChange={(e) => handleEditFormChange("job_address", e.target.value)}
                     className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
-                  />
+                  >
+                    <option value="">Chọn tỉnh/thành phố</option>
+                    {PROVINCES_LIST.map((province) => (
+                      <option key={province} value={province}>
+                        {province}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
@@ -520,14 +603,20 @@ function EmployerJobs() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-                      Loại hình công việc
+                      Hình thức làm việc
                     </label>
-                    <input
-                      type="text"
+                    <select
                       value={editFormData.employment_type || ""}
                       onChange={(e) => handleEditFormChange("employment_type", e.target.value)}
                       className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
-                    />
+                    >
+                      <option value="">Chọn hình thức</option>
+                      {EMPLOYMENT_TYPES.map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
@@ -535,6 +624,7 @@ function EmployerJobs() {
                     </label>
                     <input
                       type="date"
+                      min={TODAY_DATE}
                       value={editFormData.deadline || ""}
                       onChange={(e) => handleEditFormChange("deadline", e.target.value)}
                       className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
@@ -550,6 +640,7 @@ function EmployerJobs() {
                     </label>
                     <input
                       type="number"
+                      min={1}
                       value={editFormData.exp_min || ""}
                       onChange={(e) => handleEditFormChange("exp_min", e.target.value)}
                       className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
@@ -561,6 +652,7 @@ function EmployerJobs() {
                     </label>
                     <input
                       type="number"
+                      min={1}
                       value={editFormData.exp_max || ""}
                       onChange={(e) => handleEditFormChange("exp_max", e.target.value)}
                       className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
@@ -583,14 +675,20 @@ function EmployerJobs() {
                   </div>
                   <div>
                     <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-                      Ngành công nghiệp
+                      Ngành nghề
                     </label>
-                    <input
-                      type="text"
+                    <select
                       value={editFormData.industries || ""}
                       onChange={(e) => handleEditFormChange("industries", e.target.value)}
                       className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
-                    />
+                    >
+                      <option value="">Chọn ngành nghề</option>
+                      {INDUSTRIES_LIST.map((industry) => (
+                        <option key={industry} value={industry}>
+                          {industry}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 

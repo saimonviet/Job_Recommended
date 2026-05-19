@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import API from "../services/api";
+import { formatSalaryRange } from "../utils/dataFormatter";
 
 const JobList = () => {
   const [jobs, setJobs] = useState([]);
@@ -94,7 +95,7 @@ const JobList = () => {
 
               <div className="job-details">
                 <p>
-                  <strong>Lương:</strong> {job.salary_min} - {job.salary_max}
+                  <strong>Lương:</strong> {formatSalaryRange(job.salary_min, job.salary_max)}
                 </p>
                 {job.job_experience_required && (
                   <p>

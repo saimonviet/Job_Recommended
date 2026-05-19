@@ -556,7 +556,7 @@ def get_users():
 @main.route('/jobs', methods=['GET'])
 def get_jobs():
     page            = request.args.get('page', 1, type=int)
-    per_page        = request.args.get('per_page', 12, type=int)
+    per_page        = request.args.get('per_page', 6, type=int)
     search          = request.args.get('search', '', type=str)
     location        = request.args.get('location', '', type=str)
     salary_min      = request.args.get('salary_min', None)
@@ -641,7 +641,7 @@ def get_companies():
     - sort: sort by ('hiring' = most job openings, 'newest' = recently created)
     """
     page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 12, type=int)
+    per_page = request.args.get('per_page', 6, type=int)
     search = request.args.get('search', '', type=str)
     industry = request.args.get('industry', '', type=str)
     location = request.args.get('location', '', type=str)

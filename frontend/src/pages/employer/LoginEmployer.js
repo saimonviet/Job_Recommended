@@ -70,9 +70,7 @@ const LoginEmployer = () => {
               <h1 className="text-4xl font-extrabold font-headline leading-tight tracking-tight mb-6">
                 Kiến tạo đội ngũ <br/>với sức mạnh AI
               </h1>
-              <p className="text-on-primary-container text-lg mb-10 max-w-md">
-                Hệ thống dự báo nhân tài hàng đầu giúp bạn tìm kiếm, đánh giá và kết nối với những ứng viên tiềm năng nhất một cách khoa học.
-              </p>
+
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
                   <span className="material-symbols-outlined bg-white/20 p-2 rounded-lg">insights</span>
@@ -99,22 +97,13 @@ const LoginEmployer = () => {
 
           {/* Right Panel (Login Form) */}
           <div className="p-8 md:p-16 flex flex-col justify-center">
-            <div className="mb-8">
-              <div 
-                className="text-2xl font-extrabold text-primary font-headline tracking-tight mb-10 cursor-pointer hover:opacity-80 transition-all"
-                onClick={() => navigate('/employer')}
-              >
-                Career Authority
-              </div>
-              <div className="text-center md:text-left">
-                <h2 className="text-3xl font-extrabold font-headline text-on-surface mb-4">Đăng nhập Nhà tuyển dụng</h2>
+            <header className="mb-10">
+                <h2 className="font-headline text-3xl font-bold text-on-surface mb-4">Chào mừng trở lại</h2>
                 <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-lg mb-4">
-                  <span className="material-symbols-outlined text-primary text-lg">business</span>
-                  <p className="text-primary font-headline font-bold text-base">Quản lý tuyển dụng thông minh</p>
+                  <span className="material-symbols-outlined text-primary text-lg">person_search</span>
+                  <p className="text-primary font-headline font-bold text-base">Đăng nhập với tư cách là Nhà tuyển dụng</p>
                 </div>
-                <p className="text-on-surface-variant">Vui lòng nhập thông tin để truy cập vào bảng điều khiển của bạn.</p>
-              </div>
-            </div>
+            </header>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               {error && (
@@ -173,7 +162,17 @@ const LoginEmployer = () => {
               </button>
             </form>
 
-            <p className="mt-12 text-center text-on-surface-variant text-sm">
+            <div className="mt-6">
+              <button
+                type="button"
+                onClick={() => navigate('/login-seeker')}
+                className="w-full py-3 rounded-md border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
+              >
+                Đăng nhập với tư cách Người tìm việc
+              </button>
+            </div>
+
+            <p className="mt-6 text-center text-on-surface-variant text-sm">
               Chưa có tài khoản Nhà tuyển dụng? 
               <button 
                 onClick={() => navigate('/register-employer')}

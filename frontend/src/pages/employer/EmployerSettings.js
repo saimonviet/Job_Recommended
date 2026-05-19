@@ -4,6 +4,48 @@ import EmployerSideNavBar from "../../components/EmployerSideNavBar";
 import EmployerTopNavBar from "../../components/EmployerTopNavBar";
 import API, { API_URL } from "../../services/api";
 import { getEmployerToken } from "../../utils/authStorage";
+import { INDUSTRIES_LIST } from "../../constants/dropdownOptions";
+
+const PROFILE_CACHE_KEY_PREFIX = "employer_profile_cache";
+const PROFILE_CACHE_DURATION = 10 * 60 * 1000;
+
+const getProfileCacheKey = (token) => `${PROFILE_CACHE_KEY_PREFIX}:${token || "anonymous"}`;
+
+const readProfileCache = (token) => {
+  try {
+    const raw = sessionStorage.getItem(getProfileCacheKey(token));
+    if (!raw) return null;
+
+    const cached = JSON.parse(raw);
+    if (Date.now() - cached.timestamp > PROFILE_CACHE_DURATION) {
+      sessionStorage.removeItem(getProfileCacheKey(token));
+      return null;
+    }
+
+    return cached.data || null;
+  } catch {
+    return null;
+  }
+};
+
+const writeProfileCache = (token, data) => {
+  try {
+    sessionStorage.setItem(
+      getProfileCacheKey(token),
+      JSON.stringify({ data, timestamp: Date.now() })
+    );
+  } catch {
+    // ignore storage quota errors
+  }
+};
+
+const clearProfileCache = (token) => {
+  try {
+    sessionStorage.removeItem(getProfileCacheKey(token));
+  } catch {
+    // ignore storage errors
+  }
+};
 
 // ---------------------------------------------------------------------------
 // Modal đổi mật khẩu
@@ -272,6 +314,24 @@ function EmployerSettings() {
 
     let cancelled = false;
 
+    const cachedProfile = readProfileCache(token);
+    if (cachedProfile) {
+      setSettings((prev) => ({
+        ...prev,
+        company_name: cachedProfile.company_name || "",
+        phone: cachedProfile.phone || "",
+        address: cachedProfile.address || "",
+        website: cachedProfile.website || "",
+        description: cachedProfile.description || "",
+        industry: cachedProfile.industry || "",
+        logo_path: cachedProfile.logo_path || "",
+        twoFA: savedPrefs.twoFA ?? prev.twoFA,
+        emailNotifications: savedPrefs.emailNotifications ?? prev.emailNotifications,
+      }));
+      if (cachedProfile.logo_path) setLogoPreview(cachedProfile.logo_path);
+      return () => { cancelled = true; };
+    }
+
     const loadProfile = async () => {
       try {
         const response = await API.get("/employer/profile");
@@ -291,6 +351,7 @@ function EmployerSettings() {
             emailNotifications: savedPrefs.emailNotifications ?? prev.emailNotifications,
           }));
           if (d.logo_path) setLogoPreview(d.logo_path);
+          writeProfileCache(token, d);
         }
       } catch {
         // keep defaults
@@ -364,6 +425,7 @@ function EmployerSettings() {
 
       setSaveMsg("Cài đặt đã được lưu thành công!");
       setLogoFile(null);
+      clearProfileCache(getEmployerToken());
 
       // Reload profile từ server để hiển thị đúng
       try {
@@ -381,6 +443,7 @@ function EmployerSettings() {
             logo_path: d.logo_path || "",
           }));
           if (d.logo_path) setLogoPreview(d.logo_path);
+          writeProfileCache(getEmployerToken(), d);
         }
       } catch { /* ignore reload errors */ }
     } catch (err) {
@@ -416,21 +479,11 @@ function EmployerSettings() {
   return (
     <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
       <EmployerSideNavBar />
+      <EmployerTopNavBar />
 
       <main className="ml-64 w-full">
-        <EmployerTopNavBar />
-
-        <div className="pt-24 pb-16 px-8 min-h-screen">
+        <div className="pt-20 pb-2 px-4 min-h-screen">
           <div className="max-w-6xl mx-auto">
-            {/* Header */}
-            <header className="mb-12">
-              <h1 className="text-4xl font-extrabold tracking-tight text-blue-600 dark:text-blue-400 mb-2">
-                Cài đặt hệ thống
-              </h1>
-              <p className="text-slate-600 dark:text-slate-400 text-lg">
-                Quản lý thông tin doanh nghiệp, bảo mật và thông báo.
-              </p>
-            </header>
 
             {/* Save feedback */}
             {saveMsg && (
@@ -450,7 +503,7 @@ function EmployerSettings() {
               {/* ----------------------------------------------------------------
                   Hồ sơ công ty
               ---------------------------------------------------------------- */}
-              <section className="col-span-12 lg:col-span-8 bg-white dark:bg-slate-800 rounded-xl p-8 shadow-sm">
+              <section className="col-span-12 lg:col-span-8 bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm">
                 <div className="flex justify-between items-center mb-8">
                   <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <span className="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">domain</span>
@@ -468,7 +521,7 @@ function EmployerSettings() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Logo */}
                   <div className="col-span-1 md:col-span-2 flex items-center gap-6 mb-4">
                     <label className="relative group cursor-pointer">
@@ -538,13 +591,16 @@ function EmployerSettings() {
                   {/* Industry */}
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Lĩnh vực</label>
-                    <input
-                      type="text"
+                    <select
                       value={settings.industry}
                       onChange={(e) => handleChange("industry", e.target.value)}
-                      placeholder="Ví dụ: Công nghệ thông tin"
                       className="w-full bg-slate-100 dark:bg-slate-700 border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-600/20 text-slate-900 dark:text-white outline-none"
-                    />
+                    >
+                      <option value="">Chọn ngành nghề</option>
+                      {INDUSTRIES_LIST.map((industry) => (
+                        <option key={industry} value={industry}>{industry}</option>
+                      ))}
+                    </select>
                   </div>
 
                   {/* Address */}
@@ -596,34 +652,6 @@ function EmployerSettings() {
                         chevron_right
                       </span>
                     </button>
-
-                    {/* Toggle 2FA */}
-                    <div className="p-4 bg-slate-100 dark:bg-slate-700 rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <div>
-                          <p className="font-bold text-slate-900 dark:text-white">Xác thực 2 yếu tố (2FA)</p>
-                        </div>
-                        <button
-                          onClick={() => handleTogglePreference("twoFA", !settings.twoFA)}
-                          aria-checked={settings.twoFA}
-                          role="switch"
-                          className={`relative inline-flex items-center cursor-pointer h-6 w-11 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-600/30 ${
-                            settings.twoFA ? "bg-blue-600" : "bg-slate-300 dark:bg-slate-600"
-                          }`}
-                        >
-                          <span
-                            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
-                              settings.twoFA ? "translate-x-5" : "translate-x-0.5"
-                            }`}
-                          />
-                        </button>
-                      </div>
-                      <p className="text-xs text-slate-600 dark:text-slate-400">
-                        {settings.twoFA
-                          ? "✓ Đã bật — Tài khoản của bạn được bảo vệ thêm một lớp."
-                          : "Tăng cường lớp bảo mật khi đăng nhập"}
-                      </p>
-                    </div>
                   </div>
                 </div>
 

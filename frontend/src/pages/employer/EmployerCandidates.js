@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import EmployerSideNavBar from "../../components/EmployerSideNavBar";
-import EmployerTopNavBar from "../../components/EmployerTopNavBar";
 import API from "../../services/api";
 import { getEmployerToken } from "../../utils/authStorage";
+import EmployerTopNavBar from "../../components/EmployerTopNavBar";
+import { formatExperienceRange } from "../../utils/dataFormatter";
 
 const STATUS_OPTIONS = ["Tất cả", "pending", "reviewed", "interview", "accepted", "rejected"];
 
@@ -31,10 +32,29 @@ const NEXT_STATUSES = {
   rejected: [],
 };
 
+const JOBS_CACHE_KEY_PREFIX = "employer_candidates_jobs_cache";
+const JOBS_CACHE_DURATION = 24 * 60 * 60 * 1000;
+
 const fmtDate = (v) => {
   if (!v) return "—";
   const d = new Date(v);
   return isNaN(d) ? v : d.toLocaleDateString("vi-VN");
+};
+
+const tryParseJsonArray = (value) => {
+  if (!value || typeof value !== "string") return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const describeExperience = (exp) => {
+  if (!exp || typeof exp !== "object") return "";
+  const parts = [exp.company, exp.position, exp.startDate, exp.endDate].filter(Boolean);
+  return parts.join(" • ");
 };
 
 // ---------------------------------------------------------------------------
@@ -105,8 +125,11 @@ function CandidateModal({ appId, onClose, onStatusChange }) {
 
   const seeker = data?.seeker;
   const nextStatuses = NEXT_STATUSES[data?.status] || [];
+  const experienceItems = tryParseJsonArray(seeker?.experience);
+  const projectItems = tryParseJsonArray(seeker?.target);
 
   return (
+    
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
@@ -175,6 +198,9 @@ function CandidateModal({ appId, onClose, onStatusChange }) {
                   { label: "Học vấn", value: seeker?.degree },
                   { label: "Lương mong muốn", value: seeker?.desired_salary },
                   { label: "Nơi làm việc mong muốn", value: seeker?.workplace_desired },
+                  { label: "Ngành quan tâm", value: seeker?.industry },
+                  { label: "Tình trạng hôn nhân", value: seeker?.marriage },
+                  { label: "Kinh nghiệm mong muốn", value: seeker?.exp_min || seeker?.exp_max ? formatExperienceRange(seeker?.exp_min, seeker?.exp_max) : null },
                 ].map(({ label, value }) =>
                   value ? (
                     <div key={label} className="bg-slate-50 dark:bg-slate-700/50 p-3 rounded-lg">
@@ -195,8 +221,67 @@ function CandidateModal({ appId, onClose, onStatusChange }) {
                 </div>
               )}
 
+              {/* Experience */}
+              {experienceItems.length > 0 && (
+                <div>
+                  <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Kinh nghiệm làm việc</p>
+                  <div className="space-y-3">
+                    {experienceItems.map((exp, index) => (
+                      <div key={exp.id || index} className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-sm font-bold text-slate-900 dark:text-white">{exp.position || "Chưa có chức vụ"}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{exp.company || "Chưa có công ty"}</p>
+                          </div>
+                          <span className="text-xs text-slate-500 dark:text-slate-400 text-right">
+                            {exp.startDate || exp.endDate ? `${exp.startDate || "?"} - ${exp.endDate || "Hiện tại"}` : ""}
+                          </span>
+                        </div>
+                        {exp.description && (
+                          <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">{exp.description}</p>
+                        )}
+                        {Array.isArray(exp.skills) && exp.skills.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mt-3">
+                            {exp.skills.map((skill) => (
+                              <span key={`${index}-${skill}`} className="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Projects */}
+              {projectItems.length > 0 && (
+                <div>
+                  <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Dự án</p>
+                  <div className="space-y-3">
+                    {projectItems.map((project, index) => (
+                      <div key={project.id || index} className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-sm font-bold text-slate-900 dark:text-white">{project.title || "Dự án chưa đặt tên"}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{project.role || "Chưa rõ vai trò"}</p>
+                          </div>
+                          {project.year && (
+                            <span className="text-xs text-slate-500 dark:text-slate-400">{project.year}</span>
+                          )}
+                        </div>
+                        {project.description && (
+                          <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">{project.description}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Target / Bio */}
-              {seeker?.target && (
+              {seeker?.target && !projectItems.length && (
                 <div>
                   <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Mục tiêu nghề nghiệp</p>
                   <p className="text-sm text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-700/50 p-3 rounded-lg">
@@ -319,6 +404,7 @@ function CandidateModal({ appId, onClose, onStatusChange }) {
 function EmployerCandidates() {
   const navigate = useNavigate();
   const location = useLocation();
+  const employerCacheKey = `${JOBS_CACHE_KEY_PREFIX}:${getEmployerToken() || "anonymous"}`;
 
   const [jobs, setJobs] = useState([]);
   const [selectedJobId, setSelectedJobId] = useState(null);
@@ -344,10 +430,37 @@ function EmployerCandidates() {
     const load = async () => {
       setLoadingJobs(true);
       setError("");
+
+      try {
+        const rawCached = localStorage.getItem(employerCacheKey);
+        if (rawCached) {
+          const cached = JSON.parse(rawCached);
+          const isExpired = Date.now() - cached.timestamp > JOBS_CACHE_DURATION;
+          if (!isExpired && Array.isArray(cached.jobs)) {
+            const list = cached.jobs;
+            setJobs(list);
+            if (urlJobId && list.some((j) => j.id === urlJobId)) {
+              setSelectedJobId(urlJobId);
+            } else if (list.length > 0) {
+              setSelectedJobId(list[0].id);
+            }
+            setLoadingJobs(false);
+            return;
+          }
+          localStorage.removeItem(employerCacheKey);
+        }
+      } catch {
+        localStorage.removeItem(employerCacheKey);
+      }
+
       try {
         const res = await API.get("/employer/jobs", { params: { page: 1, per_page: 100 } });
         const list = res.data?.jobs || [];
         setJobs(list);
+        localStorage.setItem(
+          employerCacheKey,
+          JSON.stringify({ jobs: list, timestamp: Date.now() })
+        );
         // Ưu tiên job từ URL, nếu không có thì job đầu tiên
         if (urlJobId && list.some((j) => j.id === urlJobId)) {
           setSelectedJobId(urlJobId);
@@ -361,7 +474,7 @@ function EmployerCandidates() {
       }
     };
     load();
-  }, [navigate, urlJobId]);
+  }, [employerCacheKey, navigate, urlJobId]);
 
   // Load candidates khi selectedJobId thay đổi
   const loadCandidates = useCallback(async () => {
@@ -417,28 +530,19 @@ function EmployerCandidates() {
   return (
     <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
       <EmployerSideNavBar />
+      <EmployerTopNavBar />
 
       <main className="ml-64 w-full">
-        <EmployerTopNavBar />
 
         <div className="pt-20 p-8 max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="mb-10">
-            <h2 className="text-3xl font-black text-blue-600 dark:text-blue-400 tracking-tight mb-2">
-              Quản lý ứng viên
-            </h2>
-            <p className="text-slate-600 dark:text-slate-400 max-w-lg">
-              Xem hồ sơ, cập nhật trạng thái và ghi chú cho từng ứng viên.
-            </p>
-          </div>
 
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
             {[
-              { label: "Tổng ứng viên", value: totalCandidates, sub: "Job đang chọn", color: "text-blue-600 dark:text-blue-400" },
-              { label: "Chờ xử lý", value: pendingCount, sub: "Trạng thái pending", color: "text-slate-900 dark:text-white" },
-              { label: "Đang phỏng vấn", value: interviewCount, sub: "Đã lên lịch", color: "text-purple-600 dark:text-purple-400" },
-              { label: "Đã tuyển", value: hiredCount, sub: "Trạng thái accepted", color: "text-emerald-600 dark:text-emerald-400" },
+              { label: "Tổng ứng viên", value: totalCandidates, color: "text-blue-600 dark:text-blue-400" },
+              { label: "Chờ xử lý", value: pendingCount, color: "text-slate-900 dark:text-white" },
+              { label: "Đang phỏng vấn", value: interviewCount, color: "text-purple-600 dark:text-purple-400" },
+              { label: "Đã tuyển", value: hiredCount, color: "text-emerald-600 dark:text-emerald-400" },
             ].map(({ label, value, sub, color }) => (
               <div key={label} className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm">
                 <p className="text-slate-600 dark:text-slate-400 text-sm font-medium mb-2">{label}</p>
@@ -450,19 +554,6 @@ function EmployerCandidates() {
 
           {/* Filters */}
           <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm mb-8 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <span className="material-symbols-outlined text-lg">filter_list</span>
-                Bộ lọc
-              </h3>
-              <button
-                onClick={() => setStatusFilter("Tất cả")}
-                className="text-sm text-blue-600 dark:text-blue-400 font-medium hover:underline"
-              >
-                Xóa bộ lọc
-              </button>
-            </div>
-
             {/* Status filter pills */}
             <div className="flex flex-wrap gap-2">
               {STATUS_OPTIONS.map((s) => (
@@ -503,14 +594,6 @@ function EmployerCandidates() {
                 )}
               </select>
             </div>
-
-            {selectedJob && (
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                Đang xem:{" "}
-                <span className="font-semibold text-slate-900 dark:text-white">{selectedJob.job_title}</span>{" "}
-                — {selectedJob.total_applications || 0} hồ sơ
-              </p>
-            )}
           </div>
 
           {/* Table */}

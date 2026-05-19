@@ -3,9 +3,9 @@ const API_URL = 'http://127.0.0.1:5000';
 const getAuthToken = () => {
     try {
         const user = JSON.parse(localStorage.getItem('user'));
-        return localStorage.getItem('employerToken') || user?.access_token || user?.token || localStorage.getItem('token') || null;
+        return user?.access_token || user?.token || localStorage.getItem('token') || localStorage.getItem('employerToken') || null;
     } catch (error) {
-        return localStorage.getItem('employerToken') || localStorage.getItem('token') || null;
+        return localStorage.getItem('token') || localStorage.getItem('employerToken') || null;
     }
 };
 
