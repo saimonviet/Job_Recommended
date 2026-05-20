@@ -14,22 +14,6 @@ const SideNavBar = ({ activeTab = 'personal' }) => {
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 pt-20 bg-[#ffffff] dark:bg-[#191c21] shadow-[20px_0_40px_rgba(25,28,33,0.04)] flex flex-col font-inter text-sm font-medium z-40">
-      {/* User Info */}
-      <div className="px-6 mb-8">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[#f2f3fb] dark:bg-[#2e3036] overflow-hidden flex items-center justify-center">
-            <img
-              alt="User Profile Avatar"
-              className="w-full h-full object-cover"
-              src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-            />
-          </div>
-          <div>
-            <p className="font-bold text-[#00488d] dark:text-[#005fb8] leading-none">{user.name}</p>
-            <p className="text-xs text-[#5d5e66] mt-1">Tài khoản cá nhân</p>
-          </div>
-        </div>
-      </div>
 
       {/* Navigation */}
       <nav className="flex flex-col gap-2 py-6 pr-4">

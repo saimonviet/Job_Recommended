@@ -1,437 +1,218 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import TopNavBar from '../../components/TopNavBar';
+import TopNavBar from '../../components/SeekerTopNavBar';
+
+const API_BASE_URL = 'http://127.0.0.1:5000';
 
 const SeekerCompanyDetail = () => {
   const navigate = useNavigate();
   const { companyId } = useParams();
+
   const [company, setCompany] = useState(null);
   const [jobs, setJobs] = useState([]);
-  const [followed, setFollowed] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [selectedJobType, setSelectedJobType] = useState('all');
 
+
   useEffect(() => {
-    // Check if user is logged in
     const user = localStorage.getItem('user');
     if (!user) {
       navigate('/login-seeker');
       return;
     }
     setIsLoggedIn(true);
-    loadCompanyDetails();
-  }, [navigate, companyId]);
+    fetchCompanyDetail();
+  }, [companyId, navigate]);
 
-  const loadCompanyDetails = () => {
-    // Mock company data
-    const companiesData = {
-      1: {
-        id: 1,
-        name: 'FPT Software',
-        logo: 'https://api.dicebear.com/7.x/icons/svg?seed=fpt',
-        industry: 'IT',
-        location: 'TP. Hồ Chí Minh, Hà Nội',
-        employees: '5,000+',
-        description: 'Công ty phần mềm hàng đầu Việt Nam với các giải pháp IT toàn cầu.',
-        rating: 4.8,
-        reviews: 2341,
-        website: 'https://www.fpt-software.com',
-        founded: '1999',
-        aboutText:
-          'FPT Software là công ty phần mềm hàng đầu Việt Nam, thành lập từ năm 1999. Chúng tôi cung cấp các giải pháp công nghệ thông tin toàn diện cho các khách hàng trên toàn thế giới. Với đội ngũ hơn 5.000 nhân viên tài năng, chúng tôi cam kết phát triển sản phẩm và dịch vụ chất lượng cao.',
-        benefits: [
-          'Lương thưởng cạnh tranh theo thị trường',
-          'Bảo hiểm sức khỏe toàn diện',
-          'Đào tạo và phát triển kỹ năng liên tục',
-          'Môi trường làm việc hiện đại',
-          'Cơ hội du học quốc tế',
-          'Phúc lợi sức khỏe tâm thần',
-        ],
-        images: [
-          'https://api.dicebear.com/7.x/icons/svg?seed=office1',
-          'https://api.dicebear.com/7.x/icons/svg?seed=office2',
-        ],
-      },
-      2: {
-        id: 2,
-        name: 'VNG Corporation',
-        logo: 'https://api.dicebear.com/7.x/icons/svg?seed=vng',
-        industry: 'IT',
-        location: 'Hà Nội',
-        employees: '3,000+',
-        description: 'Công ty công nghệ hàng đầu với các sản phẩm trực tuyến phổ biến.',
-        rating: 4.6,
-        reviews: 1856,
-        website: 'https://www.vng.com.vn',
-        founded: '2004',
-        aboutText:
-          'VNG Corporation là công ty công nghệ Việt Nam hàng đầu, nổi tiếng với các sản phẩm trực tuyến như Zalo, Zing, VNG Game. Chúng tôi phát triển các dịch vụ kỹ thuật số đổi mới cho hàng triệu người dùng.',
-        benefits: [
-          'Mức lương cạnh tranh',
-          'Bảo hiểm y tế cao cấp',
-          'Chế độ làm việc linh hoạt',
-          'Đạo tạo công nghệ mới',
-          'Cơ hội thăng tiến nhanh',
-          'Môi trường sáng tạo',
-        ],
-        images: [
-          'https://api.dicebear.com/7.x/icons/svg?seed=office3',
-          'https://api.dicebear.com/7.x/icons/svg?seed=office4',
-        ],
-      },
-      3: {
-        id: 3,
-        name: 'Techcombank',
-        logo: 'https://api.dicebear.com/7.x/icons/svg?seed=techcom',
-        industry: 'Fintech',
-        location: 'TP. Hồ Chí Minh',
-        employees: '2,500+',
-        description: 'Ngân hàng kỹ thuật số với các dịch vụ tài chính hiện đại.',
-        rating: 4.5,
-        reviews: 1205,
-        website: 'https://www.techcombank.com.vn',
-        founded: '2004',
-        aboutText:
-          'Techcombank là ngân hàng kỹ thuật số hàng đầu Việt Nam, cung cấp các dịch vụ tài chính hiện đại và an toàn. Chúng tôi tập trung vào chuyển đổi số trong lĩnh vực ngân hàng.',
-        benefits: [
-          'Lương thưởng cao',
-          'Bảo hiểm toàn diện',
-          'Môi trường tài chính chuyên nghiệp',
-          'Đạo tạo chuyên sâu',
-          'Cơ hội phát triển sự nghiệp',
-          'Phúc lợi gia đình',
-        ],
-        images: [
-          'https://api.dicebear.com/7.x/icons/svg?seed=office5',
-          'https://api.dicebear.com/7.x/icons/svg?seed=office6',
-        ],
-      },
-      4: {
-        id: 4,
-        name: 'Grab Vietnam',
-        logo: 'https://api.dicebear.com/7.x/icons/svg?seed=grab',
-        industry: 'Công nghệ',
-        location: 'Hà Nội, TP. Hồ Chí Minh',
-        employees: '1,500+',
-        description: 'Nền tảng giao thông chia sẻ và dịch vụ giao hàng hàng đầu.',
-        rating: 4.4,
-        reviews: 987,
-        website: 'https://www.grab.com/vn',
-        founded: '2012',
-        aboutText:
-          'Grab là nền tảng vận chuyển và giao hàng hàng đầu Đông Nam Á. Chúng tôi kết nối người dùng, tài xế và các tiểu thương thông qua ứng dụng di động.',
-        benefits: [
-          'Lương thưởng cạnh tranh',
-          'Bảo hiểm sức khỏe',
-          'Môi trường năng động',
-          'Đạo tạo liên tục',
-          'Thăng tiến nhanh',
-          'Phúc lợi toàn diện',
-        ],
-        images: [
-          'https://api.dicebear.com/7.x/icons/svg?seed=office7',
-          'https://api.dicebear.com/7.x/icons/svg?seed=office8',
-        ],
-      },
-      5: {
-        id: 5,
-        name: 'Shopee',
-        logo: 'https://api.dicebear.com/7.x/icons/svg?seed=shopee',
-        industry: 'E-commerce',
-        location: 'TP. Hồ Chí Minh',
-        employees: '4,000+',
-        description: 'Sàn thương mại điện tử dẫn đầu Đông Nam Á.',
-        rating: 4.3,
-        reviews: 1543,
-        website: 'https://shopee.vn',
-        founded: '2015',
-        aboutText:
-          'Shopee là sàn thương mại điện tử dẫn đầu Đông Nam Á, cung cấp nền tảng kết nối mua bán trực tuyến. Chúng tôi cam kết tạo ra một hệ sinh thái mua sắm trực tuyến an toàn và thuận tiện.',
-        benefits: [
-          'Lương thưởng cao',
-          'Bảo hiểm toàn diện',
-          'Môi trường năng động, sáng tạo',
-          'Đạo tạo kỹ năng',
-          'Cơ hội quốc tế',
-          'Phúc lợi sinh hoạt',
-        ],
-        images: [
-          'https://api.dicebear.com/7.x/icons/svg?seed=office9',
-          'https://api.dicebear.com/7.x/icons/svg?seed=office10',
-        ],
-      },
-    };
+  const fetchCompanyDetail = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-    // Mock jobs data
-    const jobsData = {
-      1: [
-        {
-          id: 101,
-          title: 'Senior Product Designer',
-          company: 'FPT Software',
-          location: 'TP. Hồ Chí Minh',
-          salary: '2,500 - 3,500 USD',
-          type: 'full-time',
-          experience: '5+ năm',
-          postedDate: '2 ngày trước',
-          matchScore: 92,
-        },
-        {
-          id: 102,
-          title: 'Frontend Developer',
-          company: 'FPT Software',
-          location: 'Hà Nội',
-          salary: '1,800 - 2,500 USD',
-          type: 'full-time',
-          experience: '2-3 năm',
-          postedDate: '5 ngày trước',
-          matchScore: 88,
-        },
-        {
-          id: 103,
-          title: 'Backend Engineer',
-          company: 'FPT Software',
-          location: 'TP. Hồ Chí Minh',
-          salary: '2,200 - 3,000 USD',
-          type: 'full-time',
-          experience: '3-5 năm',
-          postedDate: '1 tuần trước',
-          matchScore: 85,
-        },
-        {
-          id: 104,
-          title: 'QA Engineer',
-          company: 'FPT Software',
-          location: 'Hà Nội',
-          salary: '1,500 - 2,200 USD',
-          type: 'full-time',
-          experience: '1-2 năm',
-          postedDate: '1 tuần trước',
-          matchScore: 78,
-        },
-        {
-          id: 105,
-          title: 'DevOps Engineer',
-          company: 'FPT Software',
-          location: 'TP. Hồ Chí Minh',
-          salary: '2,500 - 3,200 USD',
-          type: 'full-time',
-          experience: '3+ năm',
-          postedDate: '2 tuần trước',
-          matchScore: 82,
-        },
-        {
-          id: 106,
-          title: 'UI/UX Designer',
-          company: 'FPT Software',
-          location: 'Hà Nội',
-          salary: '1,800 - 2,400 USD',
-          type: 'part-time',
-          experience: '2+ năm',
-          postedDate: '2 tuần trước',
-          matchScore: 80,
-        },
-      ],
-      2: [
-        {
-          id: 201,
-          title: 'Lead UX Researcher',
-          company: 'VNG Corporation',
-          location: 'Hà Nội',
-          salary: 'Cạnh tranh',
-          type: 'full-time',
-          experience: '5+ năm',
-          postedDate: '3 ngày trước',
-          matchScore: 88,
-        },
-        {
-          id: 202,
-          title: 'Python Developer',
-          company: 'VNG Corporation',
-          location: 'Hà Nội',
-          salary: '1,800 - 2,600 USD',
-          type: 'full-time',
-          experience: '2-3 năm',
-          postedDate: '1 tuần trước',
-          matchScore: 85,
-        },
-      ],
-      3: [
-        {
-          id: 301,
-          title: 'Data Analyst',
-          company: 'Techcombank',
-          location: 'TP. Hồ Chí Minh',
-          salary: '1,500 - 2,200 USD',
-          type: 'full-time',
-          experience: '1-3 năm',
-          postedDate: '4 ngày trước',
-          matchScore: 81,
-        },
-      ],
-      4: [
-        {
-          id: 401,
-          title: 'Mobile App Developer',
-          company: 'Grab Vietnam',
-          location: 'Hà Nội',
-          salary: '1,800 - 2,500 USD',
-          type: 'full-time',
-          experience: '2-4 năm',
-          postedDate: '5 ngày trước',
-          matchScore: 86,
-        },
-      ],
-      5: [
-        {
-          id: 501,
-          title: 'Full Stack Developer',
-          company: 'Shopee',
-          location: 'TP. Hồ Chí Minh',
-          salary: '2,200 - 3,000 USD',
-          type: 'full-time',
-          experience: '3-5 năm',
-          postedDate: '2 tuần trước',
-          matchScore: 84,
-        },
-        {
-          id: 502,
-          title: 'Product Manager',
-          company: 'Shopee',
-          location: 'TP. Hồ Chí Minh',
-          salary: '2,500 - 3,500 USD',
-          type: 'full-time',
-          experience: '4+ năm',
-          postedDate: '2 tuần trước',
-          matchScore: 79,
-        },
-      ],
-    };
+      // Gọi song song: chi tiết công ty + danh sách job của công ty
+      const [companyRes, jobsRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/companies/${companyId}`),
+        fetch(`${API_BASE_URL}/companies/${companyId}/jobs`),
+      ]);
 
-    const companyData = companiesData[companyId];
-    const companyJobs = jobsData[companyId] || [];
+      if (!companyRes.ok) throw new Error(`Không tìm thấy công ty (${companyRes.status})`);
+      const companyData = await companyRes.json();
 
-    if (companyData) {
-      setCompany(companyData);
-      setJobs(companyJobs);
-    } else {
-      navigate('/seeker/companies');
+      let jobsData = { jobs: [] };
+      if (jobsRes.ok) {
+        jobsData = await jobsRes.json();
+      }
+
+      // Normalize company
+      const c = companyData.company || companyData;
+      setCompany({
+        id: c.id,
+        name: c.company_name || c.name || '',
+        logo: c.logo_path
+          ? `${API_BASE_URL}/uploads/${c.logo_path}`
+          : `https://api.dicebear.com/7.x/icons/svg?seed=${encodeURIComponent(c.company_name || c.name || c.id)}`,
+        industry: c.industry || '',
+        location: c.address || c.location || '',
+        description: c.description || '',
+        website: c.website || '',
+        openPositions: c.job_count ?? jobsData.jobs?.length ?? 0,
+      });
+
+      // Normalize jobs
+      const normalizedJobs = (jobsData.jobs || []).map((j) => ({
+        id: j.id,
+        title: j.job_title || j.title || '',
+        company: j.company_name || '',
+        location: j.job_address || j.location || '',
+        salary: (() => {
+          const min = j.salary_min || '';
+          const max = j.salary_max || '';
+          if (min && max && min !== max) return `${min} - ${max}`;
+          return min || max || 'Thoả thuận';
+        })(),
+        type: (j.employment_type || 'full-time').toLowerCase().replace(' ', '-'),
+        experience: j.experience_required || j.experience || '',
+        postedDate: j.created_at
+          ? formatRelativeDate(j.created_at)
+          : j.deadline
+          ? `Hạn: ${new Date(j.deadline).toLocaleDateString('vi-VN')}`
+          : '',
+        deadline: j.deadline || null,
+      }));
+      setJobs(normalizedJobs);
+    } catch (err) {
+      console.error('fetchCompanyDetail error:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const toggleFollow = () => {
-    setFollowed(!followed);
+  const formatRelativeDate = (dateStr) => {
+    const diff = Math.floor((Date.now() - new Date(dateStr)) / 86400000);
+    if (diff === 0) return 'Hôm nay';
+    if (diff === 1) return '1 ngày trước';
+    if (diff < 30) return `${diff} ngày trước`;
+    return new Date(dateStr).toLocaleDateString('vi-VN');
   };
 
-  const filteredJobs =
-    selectedJobType === 'all' ? jobs : jobs.filter((job) => job.type === selectedJobType);
 
-  if (!isLoggedIn || !company) {
-    return null;
+  const filteredJobs =
+    selectedJobType === 'all'
+      ? jobs
+      : jobs.filter((j) => j.type === selectedJobType);
+
+  if (!isLoggedIn) return null;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen">
+        <TopNavBar currentPage="companies" />
+        <main className="max-w-7xl mx-auto px-6 py-24 text-center">
+          <span className="material-symbols-outlined text-7xl text-outline-variant/40 block mb-4 animate-pulse">
+            hourglass_empty
+          </span>
+          <p className="text-on-surface-variant">Đang tải thông tin công ty...</p>
+        </main>
+      </div>
+    );
+  }
+
+  if (error || !company) {
+    return (
+      <div className="min-h-screen">
+        <TopNavBar currentPage="companies" />
+        <main className="max-w-7xl mx-auto px-6 py-24 text-center">
+          <span className="material-symbols-outlined text-7xl text-error block mb-4">error_outline</span>
+          <p className="text-error font-semibold mb-4">{error || 'Không tìm thấy công ty'}</p>
+          <button
+            onClick={() => navigate(-1)}
+            className="bg-[#00488d] text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90"
+          >
+            Quay lại
+          </button>
+        </main>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="min-h-screen">
       <TopNavBar currentPage="companies" />
 
       <main className="max-w-7xl mx-auto px-6 py-24 space-y-8">
-        {/* Back Button */}
+        {/* Back button */}
         <button
-          onClick={() => navigate('/seeker/companies')}
-          className="flex items-center gap-2 text-[#00488d] hover:text-[#0066cc] font-semibold transition-colors"
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-1 text-on-surface-variant hover:text-[#00488d] transition-colors text-sm"
         >
-          <span className="material-symbols-outlined">arrow_back</span>
+          <span className="material-symbols-outlined text-sm">arrow_back</span>
           Quay lại
         </button>
 
-        {/* Company Header Section */}
-        <section className="bg-surface-container-lowest rounded-xl p-8 shadow-sm">
+        {/* Company Header */}
+        <section className="bg-surface-container-lowest rounded-xl p-8">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-            {/* Company Info */}
+            {/* Left: Info */}
             <div className="md:col-span-8 space-y-6">
               <div className="flex gap-6 items-start">
-                <div className="w-24 h-24 rounded-xl bg-surface-container-low flex items-center justify-center p-2 flex-shrink-0">
-                  <img className="w-full h-full object-contain" src={company.logo} alt={company.name} />
+                <div className="w-24 h-24 rounded-xl bg-surface-container-low flex items-center justify-center p-3 flex-shrink-0">
+                  <img
+                    className="w-full h-full object-contain"
+                    src={company.logo}
+                    alt={company.name}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = `https://api.dicebear.com/7.x/icons/svg?seed=${encodeURIComponent(company.name)}`;
+                    }}
+                  />
                 </div>
-                <div className="flex-1">
-                  <h1 className="text-4xl font-extrabold text-on-surface mb-2">{company.name}</h1>
-                  <div className="flex items-center gap-4 flex-wrap">
-                    <span className="inline-block bg-[#00488d]/10 text-[#00488d] px-3 py-1 rounded-full text-sm font-semibold">
-                      {company.industry}
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-yellow-500">star</span>
-                      <span className="font-bold text-on-surface">{company.rating}</span>
-                      <span className="text-on-surface-variant">({company.reviews} đánh giá)</span>
+                <div>
+                  <h1 className="text-3xl font-extrabold tracking-tight text-on-surface mb-1">
+                    {company.name}
+                  </h1>
+                  <p className="text-on-surface-variant text-lg">{company.industry}</p>
+                  {company.rating !== null && (
+                    <div className="flex items-center gap-1 mt-2">
+                      <span className="material-symbols-outlined text-yellow-500 text-sm">star</span>
+                      <span className="text-sm font-semibold text-on-surface">{company.rating}</span>
+                      {company.reviews > 0 && (
+                        <span className="text-xs text-on-surface-variant">
+                          ({company.reviews} đánh giá)
+                        </span>
+                      )}
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
 
-              {/* Stats */}
-              <div className="grid grid-cols-3 gap-4">
-                <div className="bg-surface-container rounded-lg p-4">
-                  <p className="text-xs text-on-surface-variant mb-1">Nhân viên</p>
-                  <p className="text-xl font-bold text-on-surface">{company.employees}</p>
+              {/* About */}
+              {company.aboutText && (
+                <div>
+                  <h3 className="text-lg font-bold text-on-surface mb-2">Về công ty</h3>
+                  <p className="text-on-surface-variant leading-relaxed">{company.aboutText}</p>
                 </div>
-                <div className="bg-surface-container rounded-lg p-4">
-                  <p className="text-xs text-on-surface-variant mb-1">Thành lập</p>
-                  <p className="text-xl font-bold text-on-surface">{company.founded}</p>
-                </div>
-                <div className="bg-surface-container rounded-lg p-4">
-                  <p className="text-xs text-on-surface-variant mb-1">Vị trí mở</p>
-                  <p className="text-xl font-bold text-[#00488d]">{jobs.length}</p>
-                </div>
-              </div>
+              )}
 
-              {/* Description */}
-              <div>
-                <h3 className="text-lg font-bold text-on-surface mb-2">Về công ty</h3>
-                <p className="text-on-surface-variant leading-relaxed">{company.aboutText}</p>
-              </div>
-
-              {/* Benefits */}
-              <div>
-                <h3 className="text-lg font-bold text-on-surface mb-3">Phúc lợi</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  {company.benefits.map((benefit, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[#00488d] text-sm">
-                        check_circle
-                      </span>
-                      <span className="text-on-surface-variant">{benefit}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
 
             {/* Right Sidebar */}
             <div className="md:col-span-4 space-y-4">
               {/* Action Buttons */}
               <div className="space-y-2">
-                <button
-                  onClick={toggleFollow}
-                  className={`w-full px-6 py-3 rounded-lg font-bold transition-all flex items-center justify-center gap-2 ${
-                    followed
-                      ? 'bg-[#00488d] text-white hover:opacity-90'
-                      : 'bg-surface-container text-on-surface hover:bg-surface-dim'
-                  }`}
-                >
-                  <span className="material-symbols-outlined">
-                    {followed ? 'bookmark' : 'bookmark_border'}
-                  </span>
-                  {followed ? 'Đã theo dõi' : 'Theo dõi công ty'}
-                </button>
-                <a
-                  href={company.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full px-6 py-3 rounded-lg font-bold bg-[#00488d]/10 text-[#00488d] hover:bg-[#00488d]/20 transition-colors flex items-center justify-center gap-2"
-                >
-                  <span className="material-symbols-outlined">open_in_new</span>
-                  Trang web
-                </a>
+                {company.website && (
+                  <a
+                    href={company.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full px-6 py-3 rounded-lg font-bold bg-[#00488d]/10 text-[#00488d] hover:bg-[#00488d]/20 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <span className="material-symbols-outlined">open_in_new</span>
+                    Trang web
+                  </a>
+                )}
               </div>
 
               {/* Info Card */}
@@ -440,17 +221,37 @@ const SeekerCompanyDetail = () => {
                   <span className="material-symbols-outlined text-[#00488d]">location_on</span>
                   <span className="text-sm text-on-surface">{company.location}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[#00488d]">language</span>
-                  <a
-                    href={company.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-[#00488d] hover:underline"
-                  >
-                    {company.website}
-                  </a>
-                </div>
+                {company.employees && (
+                  <div className="flex items-center gap-2 pb-3 border-b border-[#00488d]/20">
+                    <span className="material-symbols-outlined text-[#00488d]">group</span>
+                    <span className="text-sm text-on-surface">{company.employees} nhân viên</span>
+                  </div>
+                )}
+                {company.founded && (
+                  <div className="flex items-center gap-2 pb-3 border-b border-[#00488d]/20">
+                    <span className="material-symbols-outlined text-[#00488d]">calendar_today</span>
+                    <span className="text-sm text-on-surface">Thành lập {company.founded}</span>
+                  </div>
+                )}
+                {company.openPositions > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[#00488d]">work</span>
+                    <span className="text-sm font-bold text-[#00488d]">{company.openPositions} vị trí đang tuyển</span>
+                  </div>
+                )}
+                {company.website && (
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[#00488d]">language</span>
+                    <a
+                      href={company.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-[#00488d] hover:underline truncate"
+                    >
+                      {company.website.replace(/^https?:\/\//, '')}
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -460,39 +261,22 @@ const SeekerCompanyDetail = () => {
         <section className="space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold tracking-tight text-on-surface">
-              Việc làm đang tuyển ({filteredJobs.length})
+              Việc làm đang tuyển ({filteredJobs?.length ?? 0})
             </h2>
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => setSelectedJobType('all')}
-                className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
-                  selectedJobType === 'all'
-                    ? 'bg-[#00488d] text-white'
-                    : 'bg-surface-container-high text-on-surface hover:bg-surface-dim'
-                }`}
-              >
-                Tất cả
-              </button>
-              <button
-                onClick={() => setSelectedJobType('full-time')}
-                className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
-                  selectedJobType === 'full-time'
-                    ? 'bg-[#00488d] text-white'
-                    : 'bg-surface-container-high text-on-surface hover:bg-surface-dim'
-                }`}
-              >
-                Full-time
-              </button>
-              <button
-                onClick={() => setSelectedJobType('part-time')}
-                className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
-                  selectedJobType === 'part-time'
-                    ? 'bg-[#00488d] text-white'
-                    : 'bg-surface-container-high text-on-surface hover:bg-surface-dim'
-                }`}
-              >
-                Part-time
-              </button>
+              {['all', 'full-time', 'part-time'].map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setSelectedJobType(type)}
+                  className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
+                    selectedJobType === type
+                      ? 'bg-[#00488d] text-white'
+                      : 'bg-surface-container-high text-on-surface hover:bg-surface-dim'
+                  }`}
+                >
+                  {type === 'all' ? 'Tất cả' : type === 'full-time' ? 'Full-time' : 'Part-time'}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -525,57 +309,42 @@ const SeekerCompanyDetail = () => {
                     </span>
                   </div>
 
-                  {/* Job Details */}
                   <div className="flex items-center gap-4 mb-4 text-sm text-on-surface-variant">
-                    <span className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-sm">business_center</span>
-                      {job.experience}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-sm">schedule</span>
-                      {job.postedDate}
-                    </span>
+                    {job.experience && (
+                      <span className="flex items-center gap-1">
+                        <span className="material-symbols-outlined text-sm">business_center</span>
+                        {job.experience}
+                      </span>
+                    )}
+                    {job.postedDate && (
+                      <span className="flex items-center gap-1">
+                        <span className="material-symbols-outlined text-sm">schedule</span>
+                        {job.postedDate}
+                      </span>
+                    )}
                   </div>
 
-                  {/* Footer */}
                   <div className="flex items-center justify-between pt-4 border-t border-outline-variant/10">
-                    <span className="text-[#00488d] dark:text-[#005fb8] font-bold">{job.salary}</span>
-                    <div className="bg-[#00cc00]/20 text-[#00cc00] px-2 py-1 rounded-full text-xs font-bold">
-                      Khớp {job.matchScore}%
-                    </div>
+                    <span className="text-[#00488d] font-bold">{job.salary}</span>
+                    <span className="text-xs text-on-surface-variant">Xem chi tiết →</span>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            /* Empty State */
             <div className="bg-surface-container-lowest rounded-xl p-12 text-center">
               <span className="material-symbols-outlined text-8xl text-outline-variant/30 block mb-4">
                 work_off
               </span>
               <h3 className="text-xl font-bold text-on-surface mb-2">Không có vị trí tuyển dụng</h3>
               <p className="text-on-surface-variant">
-                Công ty này hiện không có vị trí {selectedJobType !== 'all' ? selectedJobType : ''} đang tuyển dụng.
+                Công ty này hiện không có vị trí{' '}
+                {selectedJobType !== 'all' ? selectedJobType : ''} đang tuyển dụng.
               </p>
             </div>
           )}
         </section>
 
-        {/* CTA Section */}
-        <section className="bg-gradient-to-r from-[#00488d] to-[#0066cc] rounded-xl p-8 text-white text-center">
-          <h2 className="text-3xl font-bold mb-2">Quan tâm đến công ty này?</h2>
-          <p className="text-white/80 mb-6">
-            Hãy theo dõi công ty để nhận thông báo về các vị trí tuyển dụng mới.
-          </p>
-          <button
-            onClick={toggleFollow}
-            className={`px-8 py-3 rounded-lg font-bold transition-all ${
-              followed ? 'bg-white text-[#00488d]' : 'bg-white/20 hover:bg-white/30 text-white'
-            }`}
-          >
-            {followed ? 'Đã theo dõi ✓' : 'Theo dõi công ty'}
-          </button>
-        </section>
       </main>
     </div>
   );

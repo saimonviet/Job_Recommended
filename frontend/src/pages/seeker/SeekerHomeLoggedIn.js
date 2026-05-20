@@ -1,12 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import TopNavBar from '../../components/TopNavBar';
+import TopNavBar from '../../components/SeekerTopNavBar';
 import API from '../../services/api';
 import { formatSalaryRange } from '../../utils/dataFormatter';
+import { buildJobSearchParams } from '../../utils/searchHelper';
 
 const createJobLogo = (seed) => `https://api.dicebear.com/7.x/icons/svg?seed=${encodeURIComponent(seed || 'job')}`;
 
-const formatSalary = (job) => job.salary || formatSalaryRange(job.salary_min ?? job.min_salary, job.salary_max ?? job.max_salary);
+const normalizeSalaryField = (salary, min, max) => {
+  const rawSalary = salary === null || salary === undefined ? '' : String(salary).trim();
+  if (rawSalary) {
+    if (/triệu|vnd/i.test(rawSalary)) {
+      return rawSalary;
+    }
+
+    const rangeMatch = rawSalary.match(/^\s*([0-9,.]+)\s*-\s*([0-9,.]+)\s*$/);
+    if (rangeMatch) {
+      return formatSalaryRange(rangeMatch[1], rangeMatch[2]);
+    }
+
+    const numeric = rawSalary.replace(/[^0-9]/g, '');
+    if (numeric) {
+      return formatSalaryRange(numeric, numeric);
+    }
+  }
+
+  return formatSalaryRange(min, max);
+};
+
+const formatSalary = (job) => normalizeSalaryField(job.salary, job.salary_min ?? job.min_salary, job.salary_max ?? job.max_salary);
 
 const normalizeJob = (job) => ({
   id: job.id,
@@ -75,6 +97,7 @@ const SeekerHomeLoggedIn = () => {
   const [profileLoading, setProfileLoading] = useState(true);
   const [loadingRecommendations, setLoadingRecommendations] = useState(true);
   const [latestJobsLoaded, setLatestJobsLoaded] = useState(false);
+  const [jobsLoading, setJobsLoading] = useState(true);
   const [searchActive, setSearchActive] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -104,6 +127,7 @@ const SeekerHomeLoggedIn = () => {
   }, [navigate]);
 
   const loadLatestJobs = async () => {
+    setJobsLoading(true);
     try {
       // Kiểm tra cache trước
       const cached = getCachedData(CACHE_KEY_LATEST_JOBS);
@@ -111,6 +135,7 @@ const SeekerHomeLoggedIn = () => {
         setLatestJobs(cached.jobs);
         setTotalPages(cached.pages);
         setLatestJobsLoaded(true);
+        setJobsLoading(false);
         return;
       }
 
@@ -130,6 +155,7 @@ const SeekerHomeLoggedIn = () => {
       setLatestJobs([]);
     } finally {
       setLatestJobsLoaded(true);
+      setJobsLoading(false);
     }
   };
 
@@ -199,6 +225,7 @@ const SeekerHomeLoggedIn = () => {
   const handleSearch = async () => {
     try {
       setCurrentPage(1); // Reset to page 1 for new search
+      setJobsLoading(true);
       
       // If no search criteria are selected, restore the latest jobs
       if (!searchQuery && !filterLocation && !filterSalary && !filterExperience && !filterIndustry) {
@@ -206,33 +233,15 @@ const SeekerHomeLoggedIn = () => {
         return;
       }
 
-      // Build query params from filters
-      const params = { page: 1, per_page: 12 };
-      if (searchQuery) {
-        params.search = searchQuery.trim();
-      }
-      
-      if (filterLocation) {
-        params.location = filterLocation;
-      }
-      
-      if (filterSalary) {
-        const [minStr, maxStr] = filterSalary.split('-');
-        if (minStr && minStr !== '0') {
-          params.salary_min = parseInt(minStr) * 1000000;
-        }
-        if (maxStr && maxStr !== '+') {
-          params.salary_max = parseInt(maxStr) * 1000000;
-        }
-      }
-      
-      if (filterExperience) {
-        params.exp_min = parseInt(filterExperience);
-      }
-      
-      if (filterIndustry) {
-        params.industries = filterIndustry;
-      }
+      const params = buildJobSearchParams({
+        page: 1,
+        perPage: 6,
+        searchQuery,
+        filterLocation,
+        filterSalary,
+        filterExperience,
+        filterIndustry,
+      });
 
       // Call API with filters
       const response = await API.get('/jobs', { params });
@@ -246,39 +255,25 @@ const SeekerHomeLoggedIn = () => {
       setFilteredJobs([]);
       setTotalPages(1);
       setSearchActive(true);
+    } finally {
+      setJobsLoading(false);
     }
   };
 
   const handlePageChange = async (newPage) => {
     try {
       setCurrentPage(newPage);
+      setJobsLoading(true);
       
-      const params = { page: newPage, per_page: 12 };
-      if (searchQuery) {
-        params.search = searchQuery.trim();
-      }
-      
-      if (filterLocation) {
-        params.location = filterLocation;
-      }
-      
-      if (filterSalary) {
-        const [minStr, maxStr] = filterSalary.split('-');
-        if (minStr && minStr !== '0') {
-          params.salary_min = parseInt(minStr) * 1000000;
-        }
-        if (maxStr && maxStr !== '+') {
-          params.salary_max = parseInt(maxStr) * 1000000;
-        }
-      }
-      
-      if (filterExperience) {
-        params.exp_min = parseInt(filterExperience);
-      }
-      
-      if (filterIndustry) {
-        params.industries = filterIndustry;
-      }
+      const params = buildJobSearchParams({
+        page: newPage,
+        perPage: 6,
+        searchQuery,
+        filterLocation,
+        filterSalary,
+        filterExperience,
+        filterIndustry,
+      });
 
       const response = await API.get('/jobs', { params });
       const results = (response.data?.jobs || []).map(toLatestJob);
@@ -294,6 +289,8 @@ const SeekerHomeLoggedIn = () => {
       window.scrollTo({ top: document.querySelector('section')?.offsetTop - 100, behavior: 'smooth' });
     } catch (error) {
       console.error('Failed to change page:', error);
+    } finally {
+      setJobsLoading(false);
     }
   };
 
@@ -583,12 +580,19 @@ const SeekerHomeLoggedIn = () => {
                 >
                   Xóa bộ lọc
                 </button>
-                <button 
+                <button
                   onClick={handleSearch}
-                  className="bg-gradient-to-br from-[#00488d] to-[#0066cc] text-white px-8 py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition-all hover:shadow-md"
+                  disabled={jobsLoading}
+                  className={`bg-gradient-to-br from-[#00488d] to-[#0066cc] text-white px-8 py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition-all ${jobsLoading ? 'opacity-70 cursor-wait' : 'hover:shadow-md'}`}
                 >
-                  <span className="material-symbols-outlined">search</span>
-                  Tìm kiếm
+                  {jobsLoading ? (
+                    <span className="material-symbols-outlined animate-spin">autorenew</span>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined">search</span>
+                      Tìm kiếm
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -628,14 +632,16 @@ const SeekerHomeLoggedIn = () => {
                         </div>
                         <button
                           onClick={(e) => toggleSaveJob(e, job.id)}
-                          className="flex-shrink-0 mt-0 transition-transform hover:scale-110"
+                          className={`flex items-center gap-2 font-semibold ${
+                            savedJobIds.includes(job.id)
+                              ? 'bg-primary text-on-primary'
+                              : 'text-on-surface-variant'
+                          }`}
                           title={savedJobIds.includes(job.id) ? 'Bỏ lưu công việc' : 'Lưu công việc'}
                         >
-                          <img
-                            src={savedJobIds.includes(job.id) ? '/assets/star2.png' : '/assets/star1.png'}
-                            alt="Save job"
-                            className="w-6 h-6"
-                          />
+                          <span className="material-symbols-outlined text-lg">
+                            {savedJobIds.includes(job.id) ? 'bookmark_remove' : 'bookmark'}
+                          </span>
                         </button>
                       </div>
                       <div className="flex-1 overflow-hidden">
@@ -651,7 +657,7 @@ const SeekerHomeLoggedIn = () => {
                     </div>
                   ))
                 ) : null
-              ) : (
+              ) : jobsLoading ? (
                 // Loading skeleton
                 <div className="col-span-full bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 animate-pulse space-y-4">
                   <div className="flex gap-4">
@@ -667,18 +673,18 @@ const SeekerHomeLoggedIn = () => {
                     <div className="h-4 w-20 rounded bg-surface-container-low" />
                   </div>
                 </div>
-              )}
+              ) : null}
             </div>
 
             {/* Empty state message (outside ternary) */}
-            {latestJobsLoaded && !displayJobs.length && (
+            {!jobsLoading && latestJobsLoaded && !displayJobs.length && (
               <div className="col-span-full rounded-xl border border-dashed border-outline-variant/30 bg-surface-container-lowest p-6 text-center text-sm text-on-surface-variant">
                 {searchActive ? 'Không tìm thấy việc làm phù hợp với tiêu chí tìm kiếm.' : 'Chưa có dữ liệu việc làm mới nhất.'}
               </div>
             )}
 
             {/* Pagination Controls (after grid) */}
-            {latestJobsLoaded && displayJobs.length > 0 && totalPages > 1 && (
+            {!jobsLoading && displayJobs.length > 0 && totalPages > 1 && (
               <div className="flex items-center justify-center gap-4 mt-8">
                 <button
                   onClick={() => handlePageChange(Math.max(1, currentPage - 1))}

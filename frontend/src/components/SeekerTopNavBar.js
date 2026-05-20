@@ -47,7 +47,7 @@ const TopNavBar = ({ currentPage = 'home' }) => {
             href="#"
             onClick={(e) => {
               e.preventDefault();
-              navigate('/seeker/companies');
+              navigate('/seeker/company');
             }}
           >
             Công ty

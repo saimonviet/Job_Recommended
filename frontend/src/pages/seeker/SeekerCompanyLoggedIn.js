@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import GuestTopNavBar from '../../components/GuestTopNavBar';
+import TopNavBar from '../../components/SeekerTopNavBar';
 import API from '../../services/api';
 import { buildCompanySearchParams } from '../../utils/searchHelper';
 
-const SeekerCompany = () => {
+const SeekerCompanyLoggedIn = () => {
   const navigate = useNavigate();
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -93,7 +93,7 @@ const SeekerCompany = () => {
 
       <div className=" text-on-surface min-h-screen flex flex-col">
         {/* TopNavBar */}
-        <GuestTopNavBar currentPage="companies" />
+        <TopNavBar currentPage="companies" />
 
         <main className="mt-24 flex-grow container mx-auto px-6 max-w-7xl">
           {/* Hero Search Section */}
@@ -304,4 +304,4 @@ const SeekerCompany = () => {
   );
 };
 
-export default SeekerCompany;
+export default SeekerCompanyLoggedIn;

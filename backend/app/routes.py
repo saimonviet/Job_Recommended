@@ -503,10 +503,17 @@ def _job_logo_seed(job):
     return getattr(job, 'company_name', None) or getattr(job, 'job_title', None) or str(getattr(job, 'id', ''))
 
 def _serialize_job(job, score=None):
+    company_name = getattr(job, 'employer', None)
+    if company_name and getattr(job.employer, 'company_name', None):
+        company_name = job.employer.company_name
+    else:
+        company_name = job.company_name
+
     payload = {
         'id': job.id,
         'title': job.job_title,
-        'company': job.company_name,
+        'company': company_name,
+        'employer_id': job.employer_id,
         'location': job.job_address,
         'job_detail_address': getattr(job, 'job_detail_address', None),
         'benefits': getattr(job, 'benefits', None),
@@ -698,6 +705,64 @@ def get_companies():
         "total": pagination.total,
         "pages": pagination.pages,
         "current_page": page,
+    })
+
+@main.route('/companies/<int:company_id>', methods=['GET'])
+def get_company(company_id):
+    employer = Employer.query.get(company_id)
+    if not employer or not employer.is_active:
+        return jsonify({"error": "Company not found"}), 404
+
+    job_count = Job.query.filter(
+        Job.employer_id == employer.id,
+        Job.is_active == True
+    ).count()
+
+    return jsonify({
+        "company": {
+            "id": employer.id,
+            "company_name": employer.company_name,
+            "industry": employer.industry,
+            "address": employer.address,
+            "description": employer.description,
+            "logo_path": employer.logo_path,
+            "website": employer.website,
+            "email": employer.email,
+            "phone": employer.phone,
+            "job_count": job_count,
+            "created_at": employer.created_at.isoformat() if employer.created_at else None,
+        }
+    })
+
+@main.route('/companies/<int:company_id>/jobs', methods=['GET'])
+def get_company_jobs(company_id):
+    employer = Employer.query.get(company_id)
+    if not employer or not employer.is_active:
+        return jsonify({"error": "Company not found"}), 404
+
+    jobs_query = Job.query.filter(
+        Job.employer_id == employer.id,
+        Job.is_active == True
+    ).order_by(Job.created_at.desc())
+
+    jobs = [{
+        "id": job.id,
+        "job_title": job.job_title,
+        "company_name": job.company_name,
+        "job_address": job.job_address,
+        "salary_min": job.salary_min,
+        "salary_max": job.salary_max,
+        "deadline": job.deadline.isoformat() if job.deadline else None,
+        "employment_type": job.employment_type,
+        "experience_required": job.exp_min,
+        "experience": job.exp_min,
+        "created_at": job.created_at.isoformat() if job.created_at else None,
+        "industries": job.industries,
+        "job_description": job.job_description,
+    } for job in jobs_query]
+
+    return jsonify({
+        "jobs": jobs,
     })
 
 # Recommendations endpoint moved to routes_seeker.py: GET /seeker/recommendations

@@ -219,27 +219,33 @@ const SeekerHome = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         <h4 className={`font-bold text-on-surface group-hover:text-primary transition-colors mb-1 ${
           viewMode === 'list' ? 'text-lg' : 'text-xl'
-        }`}>
+        } line-clamp-2 overflow-hidden`}>
           {job.job_title}
         </h4>
 
-        <p className="text-sm font-medium text-on-surface-variant mb-3">
-          {job.company_name} {job.job_address && `• ${job.job_address}`}
-        </p>
+        <div className="text-sm font-medium text-on-surface-variant mb-3 space-y-1">
+          <p className="line-clamp-1 overflow-hidden truncate">{job.company_name}</p>
+          {job.job_address && (
+            <div className="flex items-center gap-2 text-sm text-on-surface-variant mt-4 pt-2">
+              <span className="material-symbols-outlined text-[16px] text-outline">location_on</span>
+              <span className="line-clamp-2 overflow-hidden">{job.job_address}</span>
+            </div>
+          )}
+        </div>
 
         {/* Tags - chỉ hiển thị khi grid view */}
         {viewMode === 'grid' && (
           <div className="flex flex-wrap gap-2 mb-8">
             {job.job_function && (
-              <span className="px-2 py-1 bg-surface-container text-xs rounded-md text-on-surface-variant">
+              <span className="px-2 py-1 bg-surface-container text-xs rounded-md text-on-surface-variant line-clamp-1 overflow-hidden">
                 {job.job_function}
               </span>
             )}
             {job.employment_type && (
-              <span className="px-2 py-1 bg-surface-container text-xs rounded-md text-on-surface-variant">
+              <span className="px-2 py-1 bg-surface-container text-xs rounded-md text-on-surface-variant line-clamp-1 overflow-hidden">
                 {job.employment_type}
               </span>
             )}
@@ -250,12 +256,12 @@ const SeekerHome = () => {
         {viewMode === 'list' && (
           <div className="flex flex-wrap gap-2">
             {job.job_function && (
-              <span className="px-2 py-0.5 bg-surface-container text-xs rounded-md text-on-surface-variant">
+              <span className="px-2 py-0.5 bg-surface-container text-xs rounded-md text-on-surface-variant line-clamp-1 overflow-hidden">
                 {job.job_function}
               </span>
             )}
             {job.employment_type && (
-              <span className="px-2 py-0.5 bg-surface-container text-xs rounded-md text-on-surface-variant">
+              <span className="px-2 py-0.5 bg-surface-container text-xs rounded-md text-on-surface-variant line-clamp-1 overflow-hidden">
                 {job.employment_type}
               </span>
             )}
@@ -267,7 +273,7 @@ const SeekerHome = () => {
       <div className={`flex ${viewMode === 'list' ? 'flex-col items-end gap-3' : 'pt-6 justify-between items-center border-t border-surface-container w-full'}`}>
         <div className={`font-bold text-on-surface ${viewMode === 'list' ? 'text-right whitespace-nowrap' : ''}`}>
           <div className="text-sm text-on-surface-variant">Mức lương</div>
-          {formatSalaryRange(job.salary_min, job.salary_max)}
+          <span className="block line-clamp-1 overflow-hidden">{formatSalaryRange(job.salary_min, job.salary_max)}</span>
         </div>
         <button
           onClick={() => navigate(`/jobs/${job.id}`)}
@@ -280,9 +286,6 @@ const SeekerHome = () => {
           {viewMode === 'list' ? 'Chi tiết' : 'Xem chi tiết'}
         </button>
       </div>
-
-      {/* Phù hợp badge - chỉ grid view */}
-   
     </div>
   );
 
@@ -338,64 +341,24 @@ const SeekerHome = () => {
               )}
               <button
                 type="submit"
-                className="hero-gradient text-on-primary px-10 py-4 rounded-full font-bold flex items-center justify-center gap-2 transition-all hover:shadow-xl"
+                disabled={loading}
+                className={`hero-gradient text-on-primary px-10 py-4 rounded-full font-bold flex items-center justify-center gap-2 transition-all hover:shadow-xl ${loading ? 'opacity-70 cursor-wait' : ''}`}
               >
-                <span className="material-symbols-outlined">search</span>
-                <span className="hidden sm:inline">Tìm</span>
+                {loading ? (
+                  <>
+                    <span className="material-symbols-outlined animate-spin">autorenew</span>
+                    <span>Đang tìm</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined">search</span>
+                    <span className="hidden sm:inline">Tìm</span>
+                  </>
+                )}
               </button>
             </form>
 
-            {/* Search Suggestions */}
-            {showSuggestions && (suggestions.length > 0 || searchHistory.length > 0) && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg z-50 max-h-96 overflow-y-auto">
-                {suggestions.length > 0 && (
-                  <div className="border-b border-outline-variant/20">
-                    <p className="px-4 py-2 text-xs font-bold text-outline-variant uppercase">Gợi ý</p>
-                    {suggestions.map((title, i) => (
-                      <button
-                        key={i}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setSearchQuery(title);
-                          handleSearch(e, title);
-                        }}
-                        className="w-full text-left px-4 py-3 hover:bg-surface-container-low transition-colors flex items-center gap-3"
-                      >
-                        <span className="material-symbols-outlined text-sm text-primary">trending_up</span>
-                        <span className="text-on-surface">{title}</span>
-                      </button>
-                    ))}
                   </div>
-                )}
-                {searchHistory.length > 0 && !suggestions.length && (
-                  <div>
-                    <p className="px-4 py-2 text-xs font-bold text-outline-variant uppercase">Lịch sử tìm kiếm</p>
-                    {searchHistory.map((query, i) => (
-                      <div key={i} className="flex items-center justify-between px-4 py-3 hover:bg-surface-container-low transition-colors">
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setSearchQuery(query);
-                            handleSearch(e, query);
-                          }}
-                          className="flex-1 text-left flex items-center gap-3"
-                        >
-                          <span className="material-symbols-outlined text-sm text-on-surface-variant">history</span>
-                          <span className="text-on-surface">{query}</span>
-                        </button>
-                        <button
-                          onClick={() => deleteHistory(query)}
-                          className="text-outline-variant hover:text-error transition-colors"
-                        >
-                          <span className="material-symbols-outlined text-sm">close</span>
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
         </section>
 
         {/* Bento Grid: Market Forecast & Trends */}
@@ -575,8 +538,9 @@ const SeekerHome = () => {
           {/* Job Card Grid */}
           <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8' : 'space-y-3'}>
             {loading ? (
-              <div style={{ textAlign: 'center', padding: '3rem', color: '#666' }}>
-                ⏳ Đang tải dữ liệu công việc...
+              <div className="text-center py-12 text-on-surface-variant">
+                <span className="material-symbols-outlined text-4xl text-primary animate-spin">autorenew</span>
+                <p className="mt-4">Đang tải dữ liệu công việc...</p>
               </div>
             ) : jobs.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '3rem', color: '#666' }}>

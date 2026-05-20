@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import TopNavBar from '../../components/TopNavBar';
-import SideNavBar from '../../components/SideNavBar';
+import TopNavBar from '../../components/SeekerTopNavBar';
+import SideNavBar from '../../components/SeekerSideNavBar';
 import PersonalInfo from '../../components/profile/PersonalInfo';
 import Experience from '../../components/profile/Experience';
 import Projects from '../../components/profile/Projects';

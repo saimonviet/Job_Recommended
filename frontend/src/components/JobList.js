@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import API from "../services/api";
 import { formatSalaryRange } from "../utils/dataFormatter";
+import { buildJobSearchParams } from "../utils/searchHelper";
 
 const JobList = () => {
   const [jobs, setJobs] = useState([]);
@@ -18,13 +19,11 @@ const JobList = () => {
     setLoading(true);
     setError(null);
     try {
-      const params = {
-        page: page,
-        per_page: 12,
-      };
-      if (search) {
-        params.search = search;
-      }
+      const params = buildJobSearchParams({
+        query: search,
+        page,
+        perPage: 12,
+      });
 
       const response = await API.get("/jobs", { params });
       setJobs(response.data.jobs || []);

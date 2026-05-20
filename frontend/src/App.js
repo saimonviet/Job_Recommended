@@ -21,8 +21,8 @@ import EmployerCreatePost from "./pages/employer/EmployerCreatePost";
 import EmployerCandidates from "./pages/employer/EmployerCandidates";
 import EmployerAnalytics from "./pages/employer/EmployerAnalytics";
 import EmployerSettings from "./pages/employer/EmployerSettings";
+import SeekerCompanyLoggedIn from "./pages/seeker/SeekerCompanyLoggedIn";
 import SeekerCompany from "./pages/seeker/SeekerCompany";
-import SeekerCompanies from "./pages/seeker/SeekerCompanies";
 import SeekerCompanyDetail from "./pages/seeker/SeekerCompanyDetail";
 import SeekerApplications from "./pages/seeker/SeekerApplications";
 import SeekerAbout from "./pages/seeker/SeekerAbout";
@@ -49,8 +49,8 @@ function App() {
         <Route path="/seeker/saved-jobs" element={<SeekerSavedJobsPage />} />
         <Route path="/seeker/profile" element={<UserProfile />} />
         <Route path="/seeker/profile/:tab" element={<UserProfile />} />
-        <Route path="/seeker/companies" element={<SeekerCompanies />} />
-        <Route path="/seeker/companies/:companyId" element={<SeekerCompanyDetail />} />
+        <Route path="/seeker/company" element={<SeekerCompanyLoggedIn />} />
+        <Route path="/seeker/company/:companyId" element={<SeekerCompanyDetail />} />
         <Route path="/seeker/applications" element={<SeekerApplications />} />
 
         {/* Admin Routes */}

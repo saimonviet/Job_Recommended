@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
-import TopNavBar from '../../components/TopNavBar';
+import TopNavBar from '../../components/SeekerTopNavBar';
 import { formatTextWithJustify, formatSalaryRange, formatExperienceRange, formatEmploymentType, formatDate as formatDateUtil } from '../../utils/dataFormatter';
 
 const JobDetailPage = () => {
@@ -17,12 +17,35 @@ const JobDetailPage = () => {
 
   const API_URL = 'http://127.0.0.1:5000';
 
+  const normalizeSavedJobs = (savedJobs) => {
+    if (!savedJobs) return [];
+    if (Array.isArray(savedJobs)) {
+      return savedJobs.map((id) => Number(id)).filter(Boolean);
+    }
+    if (typeof savedJobs === 'string') {
+      try {
+        const parsed = JSON.parse(savedJobs);
+        return Array.isArray(parsed) ? parsed.map((id) => Number(id)).filter(Boolean) : [];
+      } catch {
+        return savedJobs.split(',').map((id) => Number(id.trim())).filter(Boolean);
+      }
+    }
+    return [];
+  };
+
+  const updateStoredUserSavedJobs = (savedJobs) => {
+    const nextUser = { ...user, saved_jobs: savedJobs };
+    setUser(nextUser);
+    localStorage.setItem('user', JSON.stringify(nextUser));
+  };
+
   // Check if user is logged in from localStorage
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
       } catch (e) {
         console.error('Error parsing stored user:', e);
       }
@@ -31,26 +54,32 @@ const JobDetailPage = () => {
 
   useEffect(() => {
     if (user && job) {
-        setIsSaved(user.saved_jobs && user.saved_jobs.includes(job.id));
+      const savedJobs = normalizeSavedJobs(user.saved_jobs);
+      setIsSaved(savedJobs.includes(job.id));
     }
   }, [user, job]);
 
   const handleSaveToggle = async () => {
     if (!user) {
-        navigate('/login-seeker');
-        return;
+      navigate('/login-seeker');
+      return;
     }
 
     try {
-        if (isSaved) {
-            await api.unsaveJob(jobId);
-            setIsSaved(false);
-        } else {
-            await api.saveJob(jobId);
-            setIsSaved(true);
-        }
+      const savedJobs = normalizeSavedJobs(user.saved_jobs);
+      if (isSaved) {
+        await api.unsaveJob(jobId);
+        const nextSavedJobs = savedJobs.filter((id) => id !== job.id && id !== Number(jobId));
+        updateStoredUserSavedJobs(nextSavedJobs);
+        setIsSaved(false);
+      } else {
+        await api.saveJob(jobId);
+        const nextSavedJobs = [...savedJobs, job.id];
+        updateStoredUserSavedJobs(nextSavedJobs);
+        setIsSaved(true);
+      }
     } catch (error) {
-        console.error('Error saving/unsaving job:', error);
+      console.error('Error saving/unsaving job:', error);
     }
   };
 
@@ -237,7 +266,18 @@ const JobDetailPage = () => {
                 <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-on-surface mb-2">
                   {job.title}
                 </h1>
-                <p className="text-xl text-primary font-medium">{job.company}</p>
+                {job.employer_id ? (
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/seeker/company/${job.employer_id}`)}
+                    className="text-xl text-primary font-medium hover:text-primary-container transition-colors text-left"
+                    title="Xem trang công ty"
+                  >
+                    {job.company}
+                  </button>
+                ) : (
+                  <p className="text-xl text-primary font-medium">{job.company}</p>
+                )}
               </div>
             </div>
 
@@ -270,8 +310,8 @@ const JobDetailPage = () => {
                         : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest'
                 }`}
               >
-                <span className="material-symbols-outlined">{isSaved ? 'bookmark_added' : 'bookmark'}</span> 
-                {isSaved ? 'Đã lưu' : 'Lưu'}
+                <span className="material-symbols-outlined">{isSaved ? 'bookmark_remove' : 'bookmark'}</span> 
+                {isSaved ? 'Bỏ lưu' : 'Lưu'}
               </button>
               <button className="flex-1 bg-surface-container-high py-3 rounded-xl flex items-center justify-center gap-2 font-semibold text-on-surface-variant hover:bg-surface-container-highest transition-colors">
                 <span className="material-symbols-outlined">share</span> Chia sẻ

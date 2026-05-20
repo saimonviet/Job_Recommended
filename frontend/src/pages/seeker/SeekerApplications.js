@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import TopNavBar from '../../components/TopNavBar';
+import TopNavBar from '../../components/SeekerTopNavBar';
 import API from '../../services/api';
 
 const statusTextMap = {
@@ -49,7 +49,7 @@ const SeekerApplications = () => {
       const items = response.data?.applications || [];
       const mappedApplications = items.map((app) => ({
         id: app.id,
-        jobId: app.job_id,
+        jobId: app.job?.id,
         title: app.job?.job_title || 'Chưa có tiêu đề',
         company: app.job?.company_name || 'Chưa cập nhật công ty',
         logo: `https://api.dicebear.com/7.x/icons/svg?seed=${encodeURIComponent(app.job?.company_name || app.job?.job_title || app.id)}`,
@@ -127,15 +127,6 @@ const SeekerApplications = () => {
       <TopNavBar currentPage="applications" />
 
       <main className="flex-grow pt-24 pb-20 px-4 md:px-8 max-w-7xl mx-auto w-full">
-        {/* Hero Title Section */}
-        <header className="mb-12">
-          <h1 className="text-5xl font-extrabold tracking-tight text-primary mb-4">
-            Lịch sử ứng tuyển
-          </h1>
-          <p className="text-on-surface-variant max-w-2xl text-lg">
-            Theo dõi hành trình sự nghiệp và các cơ hội bạn đã nắm bắt. Dữ liệu được cập nhật theo thời gian thực từ nhà tuyển dụng.
-          </p>
-        </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           {/* Left Content: Job List & Filters */}
@@ -189,11 +180,8 @@ const SeekerApplications = () => {
                       />
                     </div>
                     <div className="flex-grow">
-                      <div className="flex justify-between items-start mb-2">
+                      <div className="mb-2">
                         <h3 className="text-xl font-bold text-primary">{app.title}</h3>
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusBadgeStyle(app.status)}`}>
-                          {app.statusText}
-                        </span>
                       </div>
                       <p className="text-on-surface font-medium mb-4">
                         {app.company} • <span className="text-on-surface-variant font-normal">Đã ứng tuyển {app.appliedDate}</span>
@@ -209,22 +197,27 @@ const SeekerApplications = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="flex md:flex-col justify-end gap-2">
-                      <button
-                        onClick={() => handleDetailClick(app.jobId)}
-                        className="text-primary hover:bg-surface-container-low px-4 py-2 rounded-md text-sm font-semibold transition-colors"
-                      >
-                        Chi tiết
-                      </button>
-                      {app.status === 'pending' && (
+                    <div className="flex flex-col md:items-end justify-end gap-2">
+                      <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusBadgeStyle(app.status)}`}>
+                        {app.statusText}
+                      </span>
+                      <div className="flex md:flex-col justify-end gap-2 w-full">
                         <button
-                          onClick={() => handleWithdrawClick(app.id)}
-                          disabled={withdrawingId === app.id}
-                          className="text-on-surface-variant hover:bg-surface-container-low px-4 py-2 rounded-md text-sm font-semibold transition-colors disabled:opacity-50"
+                          onClick={() => handleDetailClick(app.jobId)}
+                          className="text-primary hover:bg-surface-container-low  py-2 rounded-md text-sm font-semibold transition-colors"
                         >
-                          {withdrawingId === app.id ? 'Đang rút...' : 'Rút đơn'}
+                          Chi tiết
                         </button>
-                      )}
+                        {app.status === 'pending' && (
+                          <button
+                            onClick={() => handleWithdrawClick(app.id)}
+                            disabled={withdrawingId === app.id}
+                            className="text-on-surface-variant hover:bg-surface-container-low px-4 py-2 rounded-md text-sm font-semibold transition-colors disabled:opacity-50"
+                          >
+                            {withdrawingId === app.id ? 'Đang rút...' : 'Rút đơn'}
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))
@@ -276,26 +269,6 @@ const SeekerApplications = () => {
               </div>
             </div>
 
-            {/* Suggestion Widget */}
-            <div className="bg-primary-container p-8 rounded-xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <span
-                  className="material-symbols-outlined text-9xl leading-none"
-                  style={{ fontVariationSettings: "'FILL' 1" }}
-                >
-                  insights
-                </span>
-              </div>
-              <h4 className="font-headline font-bold text-lg text-on-primary-fixed mb-4">
-                Gợi ý tối ưu hồ sơ
-              </h4>
-              <p className="text-on-primary-fixed text-sm mb-6 leading-relaxed">
-                Cập nhật kỹ năng <b>"Python"</b> và <b>"Tableau"</b> vào hồ sơ để tăng 45% tỷ lệ nhận lời mời phỏng vấn cho các vị trí Data Analyst.
-              </p>
-              <button className="w-full bg-surface-container-lowest text-primary font-bold py-3 rounded-md hover:bg-surface-bright transition-all active:scale-95">
-                Cập nhật hồ sơ ngay
-              </button>
-            </div>
           </aside>
         </div>
       </main>

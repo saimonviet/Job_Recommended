@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import TopNavBar from '../../components/TopNavBar';
+import TopNavBar from '../../components/SeekerTopNavBar';
 import api from '../../services/api';
 
 const createJobLogo = (seed) => `https://api.dicebear.com/7.x/icons/svg?seed=${encodeURIComponent(seed || 'job')}`;
