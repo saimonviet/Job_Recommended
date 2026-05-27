@@ -6,15 +6,8 @@ from app.models import db
 from app.config import Config
 
 # Legacy routes (job listing, GNN, user-profile, saved-jobs cũ)
-from app.routes import (
-    main,
-    # _ensure_user_recommendations_column,
-    # _ensure_user_saved_jobs_column,
-    # _ensure_infor_experience_column,
-    # _ensure_job_embedding_column,
-    # _ensure_and_cache_all_job_embeddings,
-    _get_recommendation_model,
-)
+from app.routes import main
+from app.embedding_pipeline import _get_recommendation_model
 
 from app.routes_auth import auth_bp
 from app.routes_seeker import seeker_bp

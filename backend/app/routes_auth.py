@@ -1,6 +1,4 @@
 """
-routes_auth.py — Đăng ký / Đăng nhập / Đổi mật khẩu
-
 Endpoints:
     POST /auth/seeker/register
     POST /auth/seeker/login
@@ -16,6 +14,7 @@ from .auth import (
     hash_password, check_password,
     generate_token, login_required,
 )
+
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -53,6 +52,8 @@ def seeker_register():
     infor = InforUser(id=user.id, username=username)
     db.session.add(infor)
     db.session.commit()
+
+
 
     token = generate_token(user.id, 'seeker')
     return jsonify({

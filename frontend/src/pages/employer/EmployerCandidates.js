@@ -33,7 +33,14 @@ const NEXT_STATUSES = {
 };
 
 const JOBS_CACHE_KEY_PREFIX = "employer_candidates_jobs_cache";
+const ANALYTICS_CACHE_KEY_PREFIX = "employer_analytics_cache";
 const JOBS_CACHE_DURATION = 24 * 60 * 60 * 1000;
+
+const clearEmployerAnalyticsCache = () => {
+  const token = getEmployerToken();
+  if (!token) return;
+  sessionStorage.removeItem(`${ANALYTICS_CACHE_KEY_PREFIX}:${token}`);
+};
 
 const fmtDate = (v) => {
   if (!v) return "—";
@@ -96,6 +103,7 @@ function CandidateModal({ appId, onClose, onStatusChange }) {
         status: newStatus,
         employer_note: note,
       });
+      clearEmployerAnalyticsCache();
       setData((prev) => ({ ...prev, status: newStatus, employer_note: note }));
       onStatusChange(appId, newStatus, note);
       setNoteEditing(false);
@@ -113,6 +121,7 @@ function CandidateModal({ appId, onClose, onStatusChange }) {
         status: data.status,
         employer_note: note,
       });
+      clearEmployerAnalyticsCache();
       setData((prev) => ({ ...prev, employer_note: note }));
       onStatusChange(appId, data.status, note);
       setNoteEditing(false);

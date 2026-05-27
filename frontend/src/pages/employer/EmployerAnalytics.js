@@ -42,8 +42,8 @@ const writeAnalyticsCache = (token, data) => {
 const STATUS_COLOR = {
   accepted: "bg-emerald-500",
   interview: "bg-blue-500",
-  reviewed: "bg-yellow-500",
-  pending: "bg-indigo-500",
+  reviewed: "bg-blue-500",
+  pending: "bg-blue-500",
   rejected: "bg-red-500",
 };
 
@@ -149,19 +149,8 @@ function EmployerAnalytics() {
       iconColor: "text-blue-600 dark:text-blue-400",
       badgeBg: "bg-blue-50 dark:bg-blue-900/30",
       badgeColor: "text-blue-600 dark:text-blue-400",
-      badge: `${processingRate.toFixed(1)}%`,
       title: "Tỷ lệ xử lý hồ sơ",
       value: `${processingRate.toFixed(1)}%`,
-    },
-    {
-      icon: "schedule",
-      iconBg: "bg-purple-100 dark:bg-purple-900/30",
-      iconColor: "text-purple-600 dark:text-purple-400",
-      badgeBg: "bg-purple-50 dark:bg-purple-900/30",
-      badgeColor: "text-purple-600 dark:text-purple-400",
-      badge: avgHiringDays !== null ? `${avgHiringDays} ngày` : "Chưa có",
-      title: "Thời gian tuyển trung bình",
-      value: avgHiringDays !== null ? `${avgHiringDays} ngày` : "Chưa có",
     },
     {
       icon: "attach_money",
@@ -169,7 +158,6 @@ function EmployerAnalytics() {
       iconColor: "text-orange-600 dark:text-orange-400",
       badgeBg: "bg-orange-50 dark:bg-orange-900/30",
       badgeColor: "text-orange-600 dark:text-orange-400",
-      badge: avgSalaryText,
       title: "Mức lương trung bình",
       value: avgSalaryText,
     },
@@ -198,7 +186,7 @@ function EmployerAnalytics() {
           )}
 
           {/* KPI Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
             {kpiCards.map((card) => (
               <div key={card.title} className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm hover:shadow-md transition-all">
                 <div className="flex justify-between items-start mb-4 gap-2">
@@ -216,28 +204,7 @@ function EmployerAnalytics() {
           </div>
 
           {/* Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Growth Chart */}
-            <div className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-sm">
-              <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-6">Tăng trưởng ứng viên</h3>
-
-              <div className="h-64 flex items-end justify-between gap-3 px-2">
-                {monthlyChartData.length > 0 ? monthlyChartData.map((item) => (
-                  <div key={item.label} className="flex-1 flex flex-col items-center gap-3">
-                    <div
-                      className="w-full bg-blue-200 dark:bg-blue-900/40 rounded-t-lg transition-all duration-500 hover:bg-blue-300"
-                      style={{ height: `${item.height}%` }}
-                      title={`${item.label}: ${item.value}`}
-                    ></div>
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">{item.label}</span>
-                  </div>
-                )) : (
-                  <div className="w-full h-full flex items-center justify-center text-sm text-slate-500 dark:text-slate-400">
-                    Chưa có dữ liệu ứng tuyển.
-                  </div>
-                )}
-              </div>
-            </div>
+          <div className="gap-8">
 
             {/* Application Status Distribution */}
             <div className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-sm">

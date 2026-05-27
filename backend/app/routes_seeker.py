@@ -21,15 +21,18 @@ import traceback
 from flask import Blueprint, request, jsonify
 from datetime import datetime
 from werkzeug.utils import secure_filename
+
+from .embedding_pipeline import score_jobs_for_user
 from .models import db, User, InforUser, Job, Application
 import numpy as np
 from .auth import seeker_required, login_required
 from .routes import (
-    _get_infor_for_user, _get_user_context, _get_profile_missing_fields, 
-   _deserialize_recommendations_cache,
-    _score_jobs_via_embeddings,
-    _save_recommendations_cache, _serialize_job
+    _get_infor_for_user, _get_user_context, _get_profile_missing_fields,
+    _deserialize_recommendations_cache,
+    _save_recommendations_cache, _serialize_job,
 )
+from .embedding_utils import generate_and_save_user_embedding
+
 
 seeker_bp = Blueprint('seeker', __name__, url_prefix='/seeker')
 
@@ -321,6 +324,8 @@ def save_profile():
 
     try:
         db.session.commit()
+        generate_and_save_user_embedding(user, infor, commit=True)
+
         return jsonify({"message": "Cập nhật hồ sơ thành công"})
     except Exception as e:
         db.session.rollback()
@@ -454,7 +459,7 @@ def get_recommendations():
         # --- Cache hit ---
         logger.info(f"[seeker/recommendations][{request_tag}] Profile complete, checking cache...")
         cached = _deserialize_recommendations_cache(user.recommendations)
-        if cached is not None:
+        if cached is not None and len(cached) > 0:
             logger.info(f"[seeker/recommendations][{request_tag}] Cache hit! Returning {len(cached)} recommendations")
             return jsonify({
                 "profile_complete": True,
@@ -463,7 +468,6 @@ def get_recommendations():
                 "total_jobs_considered": 0,
                 "cached": True,
             })
-
         # --- Cache miss: score all jobs via subgraph ---
         logger.info(f"[seeker/recommendations][{request_tag}] Cache miss, loading jobs from DB...")
         jobs = Job.query.order_by(Job.id.desc()).all()
@@ -472,40 +476,26 @@ def get_recommendations():
         if not jobs:
             return jsonify({"profile_complete": True, "recommendations": []})
 
+        # score_jobs_for_user tự build feature từ raw data — không cần đọc embedding từ DB
         BATCH_SIZE = 2000
         all_scored = []
         infor = _get_infor_for_user(user)
-        
+
         for i in range(0, len(jobs), BATCH_SIZE):
             batch = jobs[i:i + BATCH_SIZE]
-            
-            if infor and infor.user_embedding:
-                try:
-                    user_emb = json.loads(infor.user_embedding)
-                    # Collect embeddings for all jobs in batch
-                    job_embs_list = []
-                    valid_batch_jobs = []
-                    for job in batch:
-                        if job.job_embedding:
-                            try:
-                                job_emb = json.loads(job.job_embedding)
-                                job_embs_list.append(job_emb)
-                                valid_batch_jobs.append(job)
-                            except Exception:
-                                pass
-                    
-                    if job_embs_list:
-                        batch_scores = _score_jobs_via_embeddings(user_emb, np.array(job_embs_list))
-                        all_scored.extend(zip(batch_scores.tolist(), valid_batch_jobs))
-                except Exception as e:
-                    logger.exception(f"[seeker/recommendations] Error scoring batch: {e}")
-        
-            # Fall back to all jobs if no embeddings available
-            if not all_scored:
+            try:
+                batch_scores = score_jobs_for_user(user, infor, batch)
+                all_scored.extend(zip(batch_scores.tolist(), batch))
+            except Exception as e:
+                logger.exception(f"[seeker/recommendations] Error scoring batch: {e}")
                 all_scored.extend([(0.5, job) for job in batch])
             logger.debug(
                 f"[seeker/recommendations][{request_tag}] Progress: {min(i+BATCH_SIZE, len(jobs))}/{len(jobs)} jobs scored"
             )
+
+        # Fallback nếu toàn bộ batch đều lỗi
+        if not all_scored:
+            all_scored = [(0.5, job) for job in jobs]
 
         # Sort descending và lấy top 5
         all_scored.sort(key=lambda x: x[0], reverse=True)
