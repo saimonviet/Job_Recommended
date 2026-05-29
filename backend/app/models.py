@@ -108,3 +108,20 @@ class Application(db.Model):
     __table_args__ = (
         db.UniqueConstraint('user_id', 'job_id', name='uq_user_job_application'),
     )
+
+
+class SystemSetting(db.Model):
+    key = db.Column(db.String(100), primary_key=True)
+    value = db.Column(db.Text, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, index=True)
+
+class Admin(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False, index=True)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    display_name = db.Column(db.String(100), nullable=False, default="Quản trị viên")
+    password = db.Column(db.String(64), nullable=False)
+    avatar_path = db.Column(db.String(255))
+    is_active = db.Column(db.Boolean, default=True, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

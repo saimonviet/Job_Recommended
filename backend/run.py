@@ -1,8 +1,8 @@
 
-from flask import Flask
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-from app.models import db
+from app.models import db, SystemSetting
 from app.config import Config
 
 # Legacy routes (job listing, GNN, user-profile, saved-jobs cũ)
@@ -22,6 +22,14 @@ from app.routes_employer import employer_bp
 from app.routes_admin import admin_bp
 
 
+MAINTENANCE_KEY = 'maintenance_mode'
+
+
+def _maintenance_mode_enabled():
+    setting = SystemSetting.query.get(MAINTENANCE_KEY)
+    return bool(setting and setting.value == 'true')
+
+
 def create_app(config_object=Config):
     app = Flask(__name__)
     app.config.from_object(config_object)
@@ -29,6 +37,27 @@ def create_app(config_object=Config):
     # Extensions
     db.init_app(app)
     CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
+
+    @app.route('/maintenance-status', methods=['GET'])
+    def maintenance_status():
+        return jsonify({"maintenanceMode": _maintenance_mode_enabled()}), 200
+
+    @app.before_request
+    def block_requests_during_maintenance():
+        if request.method == 'OPTIONS':
+            return None
+
+        path = request.path or ''
+        if path == '/maintenance-status' or path == '/admin' or path.startswith('/admin/'):
+            return None
+
+        if _maintenance_mode_enabled():
+            return jsonify({
+                "maintenance": True,
+                "message": "Website dang bao tri. Vui long quay lai sau.",
+            }), 503
+
+        return None
 
     # Đăng ký blueprint
     app.register_blueprint(main)           # /jobs, /recommendations, /user-profile, ...

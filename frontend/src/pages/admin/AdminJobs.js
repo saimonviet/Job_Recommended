@@ -191,29 +191,29 @@ function AdminJobs() {
 
   const paginationButtons = () => {
     const buttons = [];
-    const maxShow = 5;
-    const halfShow = Math.floor(maxShow / 2);
+    const maxVisible = 5;
 
-    let startPage = Math.max(1, currentPage - halfShow);
-    let endPage = Math.min(totalPages, startPage + maxShow - 1);
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + maxVisible - 1);
 
-    if (endPage - startPage + 1 < maxShow) {
-      startPage = Math.max(1, endPage - maxShow + 1);
+    if (endPage - startPage < maxVisible - 1) {
+      startPage = Math.max(1, endPage - maxVisible + 1);
     }
 
     if (startPage > 1) {
       buttons.push(
         <button
-          key="first"
+          key={1}
           onClick={() => setCurrentPage(1)}
-          className="px-3 py-1 rounded text-sm font-semibold text-blue-600 hover:bg-blue-50"
+          className="min-w-[40px] h-10 rounded-lg text-sm font-bold bg-white text-slate-600 border border-slate-200 hover:bg-blue-50 hover:text-blue-600"
         >
           1
         </button>
       );
+
       if (startPage > 2) {
         buttons.push(
-          <span key="dots1" className="px-2">
+          <span key="start-dots" className="px-1 text-slate-400">
             ...
           </span>
         );
@@ -225,10 +225,10 @@ function AdminJobs() {
         <button
           key={i}
           onClick={() => setCurrentPage(i)}
-          className={`px-3 py-1 rounded text-sm font-semibold ${
+          className={`min-w-[40px] h-10 rounded-lg text-sm font-bold transition-all ${
             i === currentPage
-              ? "bg-blue-600 text-white"
-              : "text-blue-600 hover:bg-blue-50"
+              ? "bg-blue-600 text-white shadow-sm"
+              : "bg-white text-slate-600 border border-slate-200 hover:bg-blue-50 hover:text-blue-600"
           }`}
         >
           {i}
@@ -239,16 +239,17 @@ function AdminJobs() {
     if (endPage < totalPages) {
       if (endPage < totalPages - 1) {
         buttons.push(
-          <span key="dots2" className="px-2">
+          <span key="end-dots" className="px-1 text-slate-400">
             ...
           </span>
         );
       }
+
       buttons.push(
         <button
-          key="last"
+          key={totalPages}
           onClick={() => setCurrentPage(totalPages)}
-          className="px-3 py-1 rounded text-sm font-semibold text-blue-600 hover:bg-blue-50"
+          className="min-w-[40px] h-10 rounded-lg text-sm font-bold bg-white text-slate-600 border border-slate-200 hover:bg-blue-50 hover:text-blue-600"
         >
           {totalPages}
         </button>
@@ -273,26 +274,32 @@ function AdminJobs() {
                 Quản lý bài đăng tuyển dụng
               </h2>
               <p className="text-on-surface-variant max-w-lg">
-                Tổng {totalJobs} bài đăng trong hệ thống - Xem chi tiết, khóa, ẩn, xóa và tìm kiếm bài đăng.
+                Xem chi tiết, khóa, ẩn, xóa và tìm kiếm bài đăng.
               </p>
             </div>
           </div>
 
           {/* Dashboard Summary */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
             <div className="bg-white p-6 rounded-xl shadow-sm border-b-4 border-blue-600">
               <p className="text-sm font-semibold text-slate-500 mb-1">Tổng bài đăng</p>
-              <h3 className="text-4xl font-black text-on-surface">{stats.total_jobs.toLocaleString()}</h3>
+              <h3 className="text-4xl font-black text-slate-900">
+                {stats.total_jobs.toLocaleString()}
+              </h3>
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-sm border-b-4 border-orange-600">
               <p className="text-sm font-semibold text-slate-500 mb-1">Đã khóa</p>
-              <h3 className="text-4xl font-black text-on-surface">{stats.locked_jobs.toLocaleString()}</h3>
+              <h3 className="text-4xl font-black text-slate-900">
+                {stats.locked_jobs.toLocaleString()}
+              </h3>
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-sm border-b-4 border-slate-600">
               <p className="text-sm font-semibold text-slate-500 mb-1">Đã ẩn</p>
-              <h3 className="text-4xl font-black text-on-surface">{stats.hidden_jobs.toLocaleString()}</h3>
+              <h3 className="text-4xl font-black text-slate-900">
+                {stats.hidden_jobs.toLocaleString()}
+              </h3>
             </div>
           </div>
 
@@ -304,7 +311,7 @@ function AdminJobs() {
           )}
 
           {/* Table Container */}
-          <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-100">
             {/* Filters Bar */}
             <div className="p-6 bg-gray-50 flex flex-wrap items-center justify-between gap-4">
               <div className="flex flex-wrap items-center gap-3 flex-1">
@@ -313,13 +320,13 @@ function AdminJobs() {
                   placeholder="Tìm kiếm theo tiêu đề hoặc công ty..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="appearance-none bg-white border border-gray-300 text-sm rounded-lg pl-4 pr-4 py-2.5 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                  className="w-full md:w-[420px] appearance-none bg-white border border-gray-300 text-sm rounded-xl pl-4 pr-4 py-3 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none"
                 />
 
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="appearance-none bg-white border border-gray-300 text-sm rounded-lg pl-4 pr-10 py-2.5 focus:ring-2 focus:ring-blue-600 focus:border-transparent cursor-pointer"
+                  className="appearance-none bg-white border border-gray-300 text-sm rounded-xl pl-4 pr-10 py-3 focus:ring-2 focus:ring-blue-600 focus:border-transparent cursor-pointer outline-none"
                 >
                   <option value="all">Tất cả trạng thái</option>
                   <option value="active">Hoạt động</option>
@@ -335,94 +342,152 @@ function AdminJobs() {
                 </div>
               )}
             </div>
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-gray-50">
-                    <th className="px-3 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest flex-1">
-                      Tiêu đề / Công ty
-                    </th>
-                    <th className="px-3 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">
-                      Ngày đăng
-                    </th>
-                    <th className="px-3 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">
-                      Trạng thái
-                    </th>
-                    <th className="px-3 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest text-right whitespace-nowrap">
-                      Thao tác
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {jobs.length === 0 ? (
-                    <tr>
-                      <td colSpan="4" className="px-3 py-8 text-center text-slate-500">
-                        {loading ? "Đang tải..." : "Không tìm thấy bài đăng nào"}
-                      </td>
+              <div className="overflow-x-auto">
+                <table className="w-full table-fixed text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-100">
+                      <th className="w-[42%] px-7 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest">
+                        Tiêu đề / Công ty
+                      </th>
+
+                      <th className="w-[14%] px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
+                        Ngày đăng
+                      </th>
+
+                      <th className="w-[14%] px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
+                        Trạng thái
+                      </th>
+
+                      <th className="w-[30%] px-7 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
+                        Hành động
+                      </th>
                     </tr>
-                  ) : (
-                    jobs.map((job) => (
-                      <tr key={job.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-3 py-4">
-                          <div>
-                            <p className="font-semibold text-on-surface text-sm line-clamp-2">{job.title}</p>
-                            <p className="text-xs text-slate-500 mt-1">{job.company}</p>
-                            <p className="text-xs text-slate-400 mt-0.5">ID: POST-{job.id}</p>
-                          </div>
+                  </thead>
+
+                  <tbody className="divide-y divide-gray-100">
+                    {jobs.length === 0 ? (
+                      <tr>
+                        <td colSpan="4" className="px-6 py-8 text-center text-slate-500">
+                          {loading ? "Đang tải..." : "Không tìm thấy bài đăng nào"}
                         </td>
-                        <td className="px-3 py-4 whitespace-nowrap">
-                          <p className="text-sm text-slate-600">
+                      </tr>
+                    ) : (
+                      jobs.map((job) => (
+                        <tr key={job.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="px-7 py-5">
+                            <div className="min-w-0">
+                              <p className="font-bold text-slate-900 truncate">
+                                {job.title}
+                              </p>
+
+                              <p className="text-sm text-slate-500 truncate mt-1">
+                                {job.company}
+                              </p>
+
+                              <p className="text-xs text-slate-400 mt-1">
+                                ID: POST-{job.id}
+                              </p>
+                            </div>
+                          </td>
+
+                          <td className="px-6 py-5 text-center text-sm text-slate-600 whitespace-nowrap">
                             {job.posted_date
                               ? new Date(job.posted_date).toLocaleDateString("vi-VN")
                               : "-"}
-                          </p>
-                        </td>
-                        <td className="px-3 py-4 whitespace-nowrap">
-                          <span className={`text-xs font-bold px-2 py-1 rounded-full inline-block ${getStatusColor(job)}`}>
-                            {getStatusText(job)}
-                          </span>
-                        </td>
-                        <td className="px-3 py-4 whitespace-nowrap">
-                          <div className="flex gap-1 justify-end">
-                            <button
-                              onClick={() => handleViewDetail(job.id)}
-                              className="px-2 py-1.5 text-xs font-semibold text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                              title="Xem chi tiết"
+                          </td>
+
+                          <td className="px-6 py-5 text-center">
+                            <span
+                              className={`inline-flex items-center justify-center min-w-[96px] px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap ${getStatusColor(
+                                job
+                              )}`}
                             >
-                              Xem
-                            </button>
-                            <button
-                              onClick={() => handleToggleLock(job.id, job.is_locked || false)}
-                              className="px-2 py-1.5 text-xs font-semibold text-orange-600 hover:bg-orange-50 rounded transition-colors"
-                              title={job.is_locked ? "Mở khóa" : "Khóa"}
-                            >
-                              {job.is_locked ? "Mở" : "Khóa"}
-                            </button>
-                            <button
-                              onClick={() => handleToggleHidden(job.id, job.is_hidden || false)}
-                              className="px-2 py-1.5 text-xs font-semibold text-purple-600 hover:bg-purple-50 rounded transition-colors"
-                              title={job.is_hidden ? "Hiển thị" : "Ẩn"}
-                            >
-                              {job.is_hidden ? "Hiện" : "Ẩn"}
-                            </button>
-                            <button
-                              onClick={() => handleSoftDeleteJob(job.id)}
-                              className="px-2 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 rounded transition-colors"
-                              title="Xóa bài đăng"
-                            >
-                              Xóa
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                              {getStatusText(job)}
+                            </span>
+                          </td>
+
+                          <td className="px-7 py-5">
+                            <div className="flex items-center justify-end gap-2 whitespace-nowrap">
+                              <button
+                                onClick={() => handleViewDetail(job.id)}
+                                className="min-w-[70px] px-3 py-2 rounded-full text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all"
+                              >
+                                Xem
+                              </button>
+
+                              <button
+                                onClick={() => handleToggleLock(job.id, job.is_locked || false)}
+                                className={`min-w-[70px] px-3 py-2 rounded-full text-xs font-bold text-white transition-all ${
+                                  job.is_locked
+                                    ? "bg-emerald-600 hover:bg-emerald-700"
+                                    : "bg-orange-600 hover:bg-orange-700"
+                                }`}
+                              >
+                                {job.is_locked ? "Mở" : "Khóa"}
+                              </button>
+
+                              <button
+                                onClick={() => handleToggleHidden(job.id, job.is_hidden || false)}
+                                className={`min-w-[70px] px-3 py-2 rounded-full text-xs font-bold text-white transition-all ${
+                                  job.is_hidden
+                                    ? "bg-slate-600 hover:bg-slate-700"
+                                    : "bg-purple-600 hover:bg-purple-700"
+                                }`}
+                              >
+                                {job.is_hidden ? "Hiện" : "Ẩn"}
+                              </button>
+
+                              <button
+                                onClick={() => handleSoftDeleteJob(job.id)}
+                                className="min-w-[70px] px-3 py-2 rounded-full text-xs font-bold text-white bg-red-600 hover:bg-red-700 transition-all"
+                              >
+                                Xóa
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="p-6 bg-gray-50 flex items-center justify-center gap-2">
-                {paginationButtons()}
+              <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                <p className="text-sm text-slate-500">
+                  Trang{" "}
+                  <span className="font-bold text-slate-700">{currentPage}</span> /{" "}
+                  <span className="font-bold text-slate-700">{totalPages}</span>
+                </p>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                      currentPage === 1
+                        ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                        : "bg-white text-slate-700 border border-slate-200 hover:bg-blue-50 hover:text-blue-600"
+                    }`}
+                  >
+                    Trước
+                  </button>
+
+                  {paginationButtons()}
+
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                      currentPage === totalPages
+                        ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                        : "bg-white text-slate-700 border border-slate-200 hover:bg-blue-50 hover:text-blue-600"
+                    }`}
+                  >
+                    Sau
+                  </button>
+                </div>
               </div>
             )}
           </div>

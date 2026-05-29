@@ -83,8 +83,9 @@ const Experience = () => {
   };
 
   return (
-    <div className="p-12 max-w-4xl">
-      <header className="mb-12 flex justify-between items-end">
+    <div className="min-h-screen w-full flex justify-center bg-[#f6f8fc] py-10 px-6">
+  <div className="w-full max-w-7xl bg-white rounded-2xl shadow-sm p-10 lg:p-14">
+      <header className="mb-14 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
         <div>
           <h1 className="text-5xl font-extrabold tracking-tight text-on-surface mb-2">Kinh nghiệm làm việc</h1>
           <p className="text-on-surface-variant text-lg">Hãy chia sẻ quá trình sự nghiệp của bạn để công ty hiểu rõ hơn về năng lực.</p>
@@ -98,9 +99,12 @@ const Experience = () => {
         </button>
       </header>
 
-      <div className="space-y-6">
+      <div className="space-y-8">
         {experiences.map((exp) => (
-          <div key={exp.id} className="bg-surface-container-lowest p-8 rounded-xl">
+          <div
+              key={exp.id}
+              className="bg-surface-container-lowest p-10 rounded-2xl border border-gray-100 shadow-sm"
+            >
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h3 className="text-2xl font-bold text-on-surface">{exp.position}</h3>
@@ -135,7 +139,7 @@ const Experience = () => {
         ))}
 
         {isEditing && (
-          <div className="bg-surface-container-lowest p-8 rounded-xl border-2 border-dashed border-outline-variant/30">
+          <div className="bg-surface-container-lowest p-10 rounded-2xl border-2 border-dashed border-outline-variant/20 shadow-sm">
             <h3 className="text-xl font-bold text-on-surface mb-6">Thêm kinh nghiệm mới</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -250,6 +254,7 @@ const Experience = () => {
         )}
       </div>
     </div>
+  </div>
   );
 };
 

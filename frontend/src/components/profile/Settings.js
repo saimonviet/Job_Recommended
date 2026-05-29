@@ -88,15 +88,16 @@ const Settings = () => {
   };
 
   return (
-    <div className="p-12 max-w-4xl">
-      <header className="mb-12">
+    <div className="min-h-screen w-full flex justify-center bg-[#f6f8fc] py-10 px-6">
+  <div className="w-full max-w-7xl bg-white rounded-2xl shadow-sm p-10 lg:p-14">
+      <header className="mb-14">
         <h1 className="text-4xl font-headline font-extrabold text-on-surface tracking-tight mb-2">Cài đặt hệ thống</h1>
         <p className="text-on-surface-variant font-body">Quản lý trải nghiệm, bảo mật và các kết nối cá nhân của bạn.</p>
       </header>
 
       <div className="space-y-8">
         {/* Notification Settings */}
-        <section className="bg-surface-container-lowest rounded-xl p-8 transition-shadow hover:shadow-sm">
+        <section className="bg-surface-container-lowest rounded-2xl p-10 border border-gray-100 shadow-sm transition-shadow hover:shadow-md">
           <div className="flex items-center gap-4 mb-8">
             <div className="w-12 h-12 rounded-lg bg-primary-fixed flex items-center justify-center">
               <span className="material-symbols-outlined text-primary">notifications_active</span>
@@ -137,7 +138,7 @@ const Settings = () => {
         </section>
 
         {/* Privacy & Security */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Privacy */}
           <section className="bg-surface-container-lowest rounded-xl p-8">
             <div className="flex items-center gap-4 mb-6">
@@ -246,6 +247,7 @@ const Settings = () => {
           </button>
         </div>
       </div>
+    </div>
     </div>
   );
 };

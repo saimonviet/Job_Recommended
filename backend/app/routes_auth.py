@@ -140,18 +140,19 @@ def employer_register():
         address=address,
         website=website,
         industry=industry,
+        is_active=True,
+        is_verified=False,
     )
     db.session.add(employer)
     db.session.commit()
 
-    token = generate_token(employer.id, 'employer')
     return jsonify({
-        "message": "Đăng ký thành công",
-        "token": token,
+        "message": "Đăng ký thành công. Tài khoản đang chờ admin duyệt.",
         "employer": {
             "id": employer.id,
             "company_name": employer.company_name,
             "email": employer.email,
+            "is_verified": employer.is_verified,
         }
     }), 201
 
@@ -172,6 +173,9 @@ def employer_login():
 
     if not employer.is_active:
         return jsonify({"error": "Tài khoản đã bị khoá"}), 403
+    
+    if not employer.is_verified:
+        return jsonify({"error": "Tài khoản nhà tuyển dụng đang chờ admin duyệt"}), 403
 
     token = generate_token(employer.id, 'employer')
     return jsonify({

@@ -103,7 +103,8 @@ const PersonalInfo = () => {
   };
 
   return (
-    <div className="p-12 max-w-4xl">
+    <div className="min-h-screen w-full flex justify-center bg-[#f6f8fc] py-10 px-6">
+      <div className="w-full max-w-7xl bg-white rounded-2xl shadow-sm p-10 lg:p-14">
       <header className="mb-12 flex justify-between items-end">
         <div>
           <h1 className="text-5xl font-extrabold tracking-tight text-on-surface mb-2">Thông tin cá nhân</h1>
@@ -119,10 +120,10 @@ const PersonalInfo = () => {
         )}
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-10 items-start">
         {/* Avatar Section */}
         <div className="md:col-span-1">
-          <div className="bg-surface-container-lowest p-8 rounded-xl text-center">
+          <div className="bg-surface-container-lowest p-10 rounded-2xl text-center border border-gray-100 shadow-sm sticky top-6">
             <div className="w-32 h-32 mx-auto mb-6 rounded-full bg-[#f2f3fb] dark:bg-[#2e3036] overflow-hidden ring-4 ring-primary/10">
               <img
                 alt="User Avatar"
@@ -154,8 +155,8 @@ const PersonalInfo = () => {
         </div>
 
         {/* Form Section */}
-        <div className="md:col-span-2 space-y-6">
-          <div className="bg-surface-container-lowest p-8 rounded-xl space-y-6">
+        <div className="xl:col-span-3 space-y-6">
+          <div className="bg-surface-container-lowest p-10 rounded-2xl space-y-8 border border-gray-100 shadow-sm">
             {/* Display user's name & email (read-only, stored in User) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -402,7 +403,8 @@ const PersonalInfo = () => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+</div>
   );
 };
 

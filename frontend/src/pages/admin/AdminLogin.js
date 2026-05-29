@@ -133,18 +133,6 @@ function AdminLogin() {
                 </div>
               </div>
 
-              {/* Security Notice */}
-              <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <span className="material-symbols-outlined text-blue-600 text-lg flex-shrink-0 mt-0.5">
-                  info
-                </span>
-                <div className="text-[11px] leading-relaxed text-blue-700">
-                  <p className="font-semibold mb-1">🔐 Test Credentials (Development):</p>
-                  <p>Username: <code className="font-mono bg-white px-1 rounded">admin</code></p>
-                  <p>Password: <code className="font-mono bg-white px-1 rounded">admin123</code></p>
-                </div>
-              </div>
-
               {/* Submit Button */}
               <button
                 type="submit"

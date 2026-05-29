@@ -49,17 +49,20 @@ const RegisterEmployer = () => {
         website: formData.website || null,
       });
 
-      if (response.data.token) {
-        const user = {
-          ...response.data.user,
-          token: response.data.token,
-          access_token: response.data.token,
-        };
-        localStorage.setItem('user', JSON.stringify(user));
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('employerToken', response.data.token);
-        navigate('/employer/dashboard');
-      }
+      // if (response.data.token) {
+      //   const user = {
+      //     ...response.data.user,
+      //     token: response.data.token,
+      //     access_token: response.data.token,
+      //   };
+      //   localStorage.setItem('user', JSON.stringify(user));
+      //   localStorage.setItem('token', response.data.token);
+      //   localStorage.setItem('employerToken', response.data.token);
+      //   navigate('/employer/dashboard');
+      // }
+      alert("Đăng ký thành công. Tài khoản của bạn đang chờ admin duyệt.");
+      navigate('/login-employer');
+      
     } catch (err) {
       setError(err.response?.data?.error || 'Đăng ký thất bại. Vui lòng thử lại.');
       setLoading(false);

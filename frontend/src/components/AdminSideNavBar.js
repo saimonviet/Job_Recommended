@@ -28,7 +28,18 @@ function AdminSideNavBar() {
           }`}
         >
           <span className="material-symbols-outlined text-lg">group</span>
-          <span>Quản lý người dùng</span>
+          <span>Quản lý ứng viên</span>
+        </Link>
+        <Link
+          to="/admin/employers"
+          className={`px-4 py-3 flex items-center gap-3 rounded-lg font-medium text-sm transition-all duration-300 ${
+            isActive("/admin/employers")
+              ? "bg-white dark:bg-slate-800 text-blue-700 dark:text-blue-400 font-bold shadow-sm"
+              : "text-slate-600 dark:text-slate-400 hover:translate-x-1 hover:text-blue-600 dark:hover:text-blue-300"
+          }`}
+        >
+          <span className="material-symbols-outlined text-lg">business_center</span>
+          <span>Quản lý nhà tuyển dụng</span>
         </Link>
 
         <Link
@@ -69,13 +80,6 @@ function AdminSideNavBar() {
       </nav>
 
       <div className="mt-auto border-t border-slate-200 dark:border-slate-800 pt-4 flex flex-col gap-1">
-        <a
-          href="#"
-          className="text-slate-600 dark:text-slate-400 px-4 py-3 flex items-center gap-3 hover:translate-x-1 transition-transform hover:text-blue-600 dark:hover:text-blue-300 font-medium text-sm"
-        >
-          <span className="material-symbols-outlined text-lg">help</span>
-          <span>Trợ giúp</span>
-        </a>
         <button
           onClick={handleLogout}
           className="text-slate-600 dark:text-slate-400 px-4 py-3 flex items-center gap-3 hover:translate-x-1 transition-transform hover:text-blue-600 dark:hover:text-blue-300 font-medium text-sm text-left"
