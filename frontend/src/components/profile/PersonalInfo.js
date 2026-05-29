@@ -2,10 +2,64 @@ import React, { useEffect, useRef, useState } from 'react';
 import api from '../../services/api';
 import { PROVINCES_LIST } from '../../constants/dropdownOptions';
 
+/* ── Reusable field components ── */
+const FieldLabel = ({ children }) => (
+  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">{children}</p>
+);
+
+const FieldValue = ({ children, placeholder = '—' }) => (
+  <p className="text-sm font-medium text-gray-800">{children || <span className="text-gray-300">{placeholder}</span>}</p>
+);
+
+const InputField = ({ type = 'text', name, value, onChange, placeholder, min }) => (
+  <input
+    type={type}
+    name={name}
+    value={value}
+    onChange={onChange}
+    placeholder={placeholder}
+    min={min}
+    className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00488d] focus:ring-2 focus:ring-[#00488d]/10 outline-none transition-all"
+  />
+);
+
+const SelectField = ({ name, value, onChange, children }) => (
+  <select
+    name={name}
+    value={value}
+    onChange={onChange}
+    className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00488d] focus:ring-2 focus:ring-[#00488d]/10 outline-none transition-all appearance-none"
+  >
+    {children}
+  </select>
+);
+
+/* ── Section card wrapper ── */
+const Section = ({ icon, title, children }) => (
+  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-gray-50 bg-gray-50/50">
+      <span className="material-symbols-outlined text-[18px] text-[#00488d]">{icon}</span>
+      <h2 className="text-xs font-bold uppercase tracking-widest text-[#00488d]">{title}</h2>
+    </div>
+    <div className="p-5">{children}</div>
+  </div>
+);
+
+/* ── Grid row helper ── */
+const Row = ({ children, cols = 2 }) => (
+  <div className={`grid grid-cols-1 ${cols === 2 ? 'md:grid-cols-2' : 'md:grid-cols-3'} gap-x-6 gap-y-4`}>
+    {children}
+  </div>
+);
+
+/* ══════════════════════════════════════════════ */
+
 const PersonalInfo = () => {
   const [user] = useState(JSON.parse(localStorage.getItem('user')) || { name: 'Nguyễn Văn A' });
   const fileInputRef = useRef(null);
   const [avatarFile, setAvatarFile] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState('https://api.dicebear.com/7.x/avataaars/svg?seed=Felix');
   const [formData, setFormData] = useState({
     phone: '',
     workplace_desired: '',
@@ -22,8 +76,6 @@ const PersonalInfo = () => {
     exp_min: '',
     exp_max: '',
   });
-  const [isEditing, setIsEditing] = useState(false);
-  const [avatarPreview, setAvatarPreview] = useState('https://api.dicebear.com/7.x/avataaars/svg?seed=Felix');
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -53,354 +105,249 @@ const PersonalInfo = () => {
         console.error('Failed to fetch profile:', error);
       }
     };
-
     fetchProfile();
   }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleAvatarClick = () => {
-    fileInputRef.current?.click();
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleAvatarChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     setAvatarFile(file);
-    const previewUrl = URL.createObjectURL(file);
-    setAvatarPreview(previewUrl);
+    setAvatarPreview(URL.createObjectURL(file));
   };
 
   const handleSave = async () => {
     const data = new FormData();
-    
-    Object.keys(formData).forEach(key => {
-        data.append(key, formData[key]);
-    });
-
-    if (avatarFile) {
-        data.append('avatar', avatarFile);
-    }
-
+    Object.keys(formData).forEach((key) => data.append(key, formData[key]));
+    if (avatarFile) data.append('avatar', avatarFile);
     try {
-        await api.request('/seeker/profile', {
-            method: 'POST',
-            body: data,
-            headers: {
-                'Content-Type': null, // Let browser set content type for FormData
-            },
-        });
-        setIsEditing(false);
-        alert('Lưu thông tin thành công!');
+      await api.request('/seeker/profile', {
+        method: 'POST',
+        body: data,
+        headers: { 'Content-Type': null },
+      });
+      setIsEditing(false);
+      alert('Lưu thông tin thành công!');
     } catch (error) {
-        console.error('Failed to save profile:', error);
-        alert('Lưu thông tin thất bại.');
+      console.error('Failed to save profile:', error);
+      alert('Lưu thông tin thất bại.');
     }
   };
 
   return (
-    <div className="p-12 max-w-4xl">
-      <header className="mb-12 flex justify-between items-end">
-        <div>
-          <h1 className="text-5xl font-extrabold tracking-tight text-on-surface mb-2">Thông tin cá nhân</h1>
-          <p className="text-on-surface-variant text-lg">Cập nhật hồ sơ của bạn để tăng cơ hội nhận được lời đề nghị từ nhà tuyển dụng.</p>
-        </div>
-        {!isEditing && (
-          <button
-            onClick={() => setIsEditing(true)}
-            className="flex items-center gap-2 px-3 py-1 bg-[#00488d] text-white rounded-lg font-semibold hover:shadow-lg transition-all text-sm"
-          >
-            Chỉnh sửa
-          </button>
-        )}
-      </header>
+    <div className="min-h-screen bg-gray-50/50 py-10 px-2 md:px-5">
+      <div className="max-w-5xl mx-auto space-y-6">
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Avatar Section */}
-        <div className="md:col-span-1">
-          <div className="bg-surface-container-lowest p-8 rounded-xl text-center">
-            <div className="w-32 h-32 mx-auto mb-6 rounded-full bg-[#f2f3fb] dark:bg-[#2e3036] overflow-hidden ring-4 ring-primary/10">
-              <img
-                alt="User Avatar"
-                className="w-full h-full object-cover"
-                src={avatarPreview}
-              />
-            </div>
-            {isEditing && (
-              <>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarChange}
-                  className="hidden"
-                />
-                <button
-                  type="button"
-                  onClick={handleAvatarClick}
-                  className="w-full flex items-center justify-center gap-2 bg-surface-container-high text-on-surface px-4 py-2 rounded-lg font-semibold hover:bg-surface-variant transition-colors mb-4"
-                >
-                  <span className="material-symbols-outlined text-sm leading-none">upload</span>
-                  <span>Đổi ảnh</span>
-                </button>
-              </>
-            )}
-            <p className="text-sm text-on-surface-variant">Ảnh đại diện giúp nhà tuyển dụng nhận biết bạn tốt hơn</p>
+        {/* ── Page Header ── */}
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold tracking-widest text-[#00488d] uppercase mb-1">Hồ sơ cá nhân</p>
+            <p className="text-sm text-gray-500 mt-1">Cập nhật hồ sơ để tăng cơ hội nhận được lời mời từ nhà tuyển dụng.</p>
           </div>
+          {!isEditing && (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-[#00488d] text-white hover:bg-[#003b76] shadow-md shadow-[#00488d]/20 transition-all"
+            >
+              <span className="material-symbols-outlined text-[18px]">edit</span>
+              Chỉnh sửa
+            </button>
+          )}
         </div>
 
-        {/* Form Section */}
-        <div className="md:col-span-2 space-y-6">
-          <div className="bg-surface-container-lowest p-8 rounded-xl space-y-6">
-            {/* Display user's name & email (read-only, stored in User) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-on-surface-variant mb-2 uppercase tracking-wider">Họ và tên</label>
-                <p className="text-on-surface font-semibold">{user.username}</p>
+        {/* ── Avatar + Identity ── */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <div className="flex items-center gap-5">
+            {/* avatar */}
+            <div className="relative flex-shrink-0">
+              <div className="w-20 h-20 rounded-2xl overflow-hidden ring-2 ring-[#00488d]/10 bg-gray-100">
+                <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
               </div>
-              <div>
-                <label className="block text-xs font-bold text-on-surface-variant mb-2 uppercase tracking-wider">Email</label>
-                <p className="text-on-surface font-semibold">{user.email}</p>
-              </div>
-            </div>
-
-            {/* Phone & Location */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-on-surface-variant mb-2 uppercase tracking-wider">Điện thoại</label>
-                {isEditing ? (
+              {isEditing && (
+                <>
                   <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    className="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-lg px-4 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="hidden"
                   />
-                ) : (
-                  <p className="text-on-surface font-semibold">{formData.phone}</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-on-surface-variant mb-2 uppercase tracking-wider">Địa điểm</label>
-                {isEditing ? (
-                  <select
-                    name="workplace_desired"
-                    value={formData.workplace_desired}
-                    onChange={handleChange}
-                    className="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-lg px-4 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute -bottom-2 -right-2 w-7 h-7 bg-[#00488d] text-white rounded-full flex items-center justify-center shadow-md hover:bg-[#003b76] transition-colors"
                   >
-                    <option value="">Chọn tỉnh/thành phố</option>
-                    {PROVINCES_LIST.map((province) => (
-                      <option key={province} value={province}>
-                        {province}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <p className="text-on-surface font-semibold">{formData.workplace_desired}</p>
-                )}
-              </div>
-            </div>
-
-            {/* Desired job & Skills (model fields) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-on-surface-variant mb-2 uppercase tracking-wider">Chức vụ mong muốn</label>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    name="desired_job"
-                    value={formData.desired_job}
-                    onChange={handleChange}
-                    className="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-lg px-4 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
-                  />
-                ) : (
-                  <p className="text-on-surface font-semibold">{formData.desired_job}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-on-surface-variant mb-2 uppercase tracking-wider">Ngành nghề</label>
-                {isEditing ? (
-                  <select
-                    name="industry"
-                    value={formData.industry}
-                    onChange={handleChange}
-                    className="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-lg px-4 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
-                  >
-                    <option value="">Chọn ngành nghề</option>
-                    <option value="Công nghệ thông tin">Công nghệ thông tin</option>
-                    <option value="Tài chính - Kế toán">Tài chính - Kế toán</option>
-                    <option value="Kinh doanh - Bán hàng">Kinh doanh - Bán hàng</option>
-                    <option value="Marketing - Truyền thông">Marketing - Truyền thông</option>
-                    <option value="Kỹ thuật - Sản xuất">Kỹ thuật - Sản xuất</option>
-                    <option value="Xây dựng - BĐS">Xây dựng - BĐS</option>
-                    <option value="Dịch vụ - F&B - Làm đẹp">Dịch vụ - F&B - Làm đẹp</option>
-                    <option value="Vận tải - Logistics">Vận tải - Logistics</option>
-                    <option value="Y tế - Dược">Y tế - Dược</option>
-                    <option value="Hành chính - Nhân sự">Hành chính - Nhân sự</option>
-                    <option value="Giáo dục - Đào tạo">Giáo dục - Đào tạo</option>
-                    <option value="Lao động phổ thông">Lao động phổ thông</option>
-                    <option value="Nông - Lâm - Ngư nghiệp">Nông - Lâm - Ngư nghiệp</option>
-                  </select>
-                ) : (
-                  <p className="text-on-surface font-semibold">{formData.industry}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-on-surface-variant mb-2 uppercase tracking-wider">Mức lương mong muốn</label>
-                {isEditing ? (
-                  <select
-                    name="desired_salary"
-                    value={formData.desired_salary}
-                    onChange={handleChange}
-                    className="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-lg px-4 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
-                  >
-                    <option value="">Chọn khoảng lương</option>
-                    <option value="0-5">Dưới 5 triệu</option>
-                    <option value="5-10">5 - 10 triệu</option>
-                    <option value="10-15">10 - 15 triệu</option>
-                    <option value="15-20">15 - 20 triệu</option>
-                    <option value="20-30">20 - 30 triệu</option>
-                    <option value="30-50">30 - 50 triệu</option>
-                    <option value="50+">Trên 50 triệu</option>
-                  </select>
-                ) : (
-                  <p className="text-on-surface font-semibold">{formData.desired_salary || 'Thoả thuận'}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-on-surface-variant mb-2 uppercase tracking-wider">Kỹ năng</label>
-                {isEditing ? (
-                  <textarea
-                    name="skills"
-                    value={formData.skills}
-                    onChange={handleChange}
-                    rows="3"
-                    className="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-lg px-4 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all resize-none"
-                  />
-                ) : (
-                  <p className="text-on-surface">{formData.skills}</p>
-                )}
-              </div>
-
-            </div>
-
-            {/* Age / Gender / Marriage / Degree */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-on-surface-variant mb-2 uppercase tracking-wider">Tuổi</label>
-                {isEditing ? (
-                  <input
-                    type="number"
-                    name="age"
-                    value={formData.age}
-                    onChange={handleChange}
-                    min="0"
-                    className="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
-                  />
-                ) : (
-                  <p className="text-on-surface">{formData.age}</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-on-surface-variant mb-2 uppercase tracking-wider">Giới tính</label>
-                {isEditing ? (
-                  <select
-                    name="gender"
-                    value={formData.gender}
-                    onChange={handleChange}
-                    className="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
-                  >
-                    <option value="Nam">Nam</option>
-                    <option value="Nữ">Nữ</option>
-                    <option value="Khác">Khác</option>
-                  </select>
-                ) : (
-                  <p className="text-on-surface">{formData.gender}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-on-surface-variant mb-2 uppercase tracking-wider">Tình trạng</label>
-                {isEditing ? (
-                  <select
-                    name="marriage"
-                    value={formData.marriage}
-                    onChange={handleChange}
-                    className="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
-                  >
-                    <option value="Độc thân">Độc thân</option>
-                    <option value="Đã kết hôn">Đã kết hôn</option>
-                    <option value="Khác">Khác</option>
-                  </select>
-                ) : (
-                  <p className="text-on-surface">{formData.marriage}</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-on-surface-variant mb-2 uppercase tracking-wider">Bằng cấp</label>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    name="degree"
-                    value={formData.degree}
-                    onChange={handleChange}
-                    className="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-lg px-3 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
-                  />
-                ) : (
-                  <p className="text-on-surface">{formData.degree}</p>
-                )}
-              </div>
-            </div>
-
-            {/* Bio */}
-            <div>
-              <label className="block text-xs font-bold text-on-surface-variant mb-2 uppercase tracking-wider">Giới thiệu bản thân</label>
-              {isEditing ? (
-                <textarea
-                  name="target"
-                  value={formData.target}
-                  onChange={handleChange}
-                  rows="4"
-                  className="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-lg px-4 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all resize-none"
-                />
-              ) : (
-                <p className="text-on-surface">{formData.target}</p>
+                    <span className="material-symbols-outlined text-[14px]">photo_camera</span>
+                  </button>
+                </>
               )}
             </div>
 
-            {/* Save Button */}
-            {isEditing && (
-              <div className="flex gap-4">
-                <button
-                  onClick={() => setIsEditing(false)}
-                  className="px-4 py-2 bg-surface-container-high text-on-surface rounded-lg font-semibold hover:bg-surface-variant transition-colors"
-                >
-                  Hủy
-                </button>
-                <button
-                  onClick={handleSave}
-                  className="flex-1 bg-gradient-to-br from-[#00488d] to-[#0066cc] text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all"
-                >
-                  Lưu thay đổi
-                </button>
-              </div>
-            )}
+            {/* name + email */}
+            <div className="min-w-0 flex-1">
+              <h2 className="text-lg font-bold text-gray-900 truncate">{user.username || user.name}</h2>
+              <p className="text-sm text-gray-500 mt-0.5">{user.email}</p>
+            </div>
           </div>
         </div>
+
+
+        {/* ── Thông tin cá nhân ── */}
+        <Section icon="person" title="Thông tin cá nhân">
+          <Row cols={3}>
+            <div>
+              <FieldLabel>Điện thoại</FieldLabel>
+              {isEditing ? (
+                <InputField type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="0900 000 000" />
+              ) : (
+                <FieldValue>{formData.phone}</FieldValue>
+              )}
+            </div>
+            <div>
+              <FieldLabel>Địa điểm làm việc</FieldLabel>
+              {isEditing ? (
+                <SelectField name="workplace_desired" value={formData.workplace_desired} onChange={handleChange}>
+                  <option value="">Chọn tỉnh/thành phố</option>
+                  {PROVINCES_LIST.map((province) => (
+                    <option key={province} value={province}>{province}</option>
+                  ))}
+                </SelectField>
+              ) : (
+                <FieldValue>{formData.workplace_desired}</FieldValue>
+              )}
+            </div>
+
+            <div>
+              <FieldLabel>Tuổi</FieldLabel>
+              {isEditing ? (
+                <InputField type="number" name="age" value={formData.age} onChange={handleChange} min="0" placeholder="VD: 25" />
+              ) : (
+                <FieldValue>{formData.age}</FieldValue>
+              )}
+            </div>
+            <div>
+              <FieldLabel>Giới tính</FieldLabel>
+              {isEditing ? (
+                <SelectField name="gender" value={formData.gender} onChange={handleChange}>
+                  <option value="Nam">Nam</option>
+                  <option value="Nữ">Nữ</option>
+                  <option value="Khác">Khác</option>
+                </SelectField>
+              ) : (
+                <FieldValue>{formData.gender}</FieldValue>
+              )}
+            </div>
+            <div>
+              <FieldLabel>Tình trạng hôn nhân</FieldLabel>
+              {isEditing ? (
+                <SelectField name="marriage" value={formData.marriage} onChange={handleChange}>
+                  <option value="Độc thân">Độc thân</option>
+                  <option value="Đã kết hôn">Đã kết hôn</option>
+                  <option value="Khác">Khác</option>
+                </SelectField>
+              ) : (
+                <FieldValue>{formData.marriage}</FieldValue>
+              )}
+            </div>
+            <div>
+              <FieldLabel>Bằng cấp</FieldLabel>
+              {isEditing ? (
+                <InputField name="degree" value={formData.degree} onChange={handleChange} placeholder="VD: Đại học, Cao đẳng..." />
+              ) : (
+                <FieldValue>{formData.degree}</FieldValue>
+              )}
+            </div>
+          </Row>
+        </Section>
+
+        {/* ── Mục tiêu nghề nghiệp ── */}
+        <Section icon="track_changes" title="Mục tiêu nghề nghiệp">
+          <Row cols={3}>
+            <div>
+              <FieldLabel>Chức vụ mong muốn</FieldLabel>
+              {isEditing ? (
+                <InputField name="desired_job" value={formData.desired_job} onChange={handleChange} placeholder="Vị trí bạn muốn ứng tuyển" />
+              ) : (
+                <FieldValue>{formData.desired_job}</FieldValue>
+              )}
+            </div>
+            <div>
+              <FieldLabel>Ngành nghề</FieldLabel>
+              {isEditing ? (
+                <SelectField name="industry" value={formData.industry} onChange={handleChange}>
+                  <option value="">Chọn ngành nghề</option>
+                  {[
+                    'Công nghệ thông tin', 'Tài chính - Kế toán', 'Kinh doanh - Bán hàng',
+                    'Marketing - Truyền thông', 'Kỹ thuật - Sản xuất', 'Xây dựng - BĐS',
+                    'Dịch vụ - F&B - Làm đẹp', 'Vận tải - Logistics', 'Y tế - Dược',
+                    'Hành chính - Nhân sự', 'Giáo dục - Đào tạo', 'Lao động phổ thông',
+                    'Nông - Lâm - Ngư nghiệp',
+                  ].map((v) => <option key={v} value={v}>{v}</option>)}
+                </SelectField>
+              ) : (
+                <FieldValue>{formData.industry}</FieldValue>
+              )}
+            </div>
+            <div className="mt-4">
+              <FieldLabel>Mức lương mong muốn</FieldLabel>
+              {isEditing ? (
+                <SelectField name="desired_salary" value={formData.desired_salary} onChange={handleChange}>
+                  <option value="">Chọn khoảng lương</option>
+                  {[
+                    ['0-5', 'Dưới 5 triệu'], ['5-10', '5 – 10 triệu'], ['10-15', '10 – 15 triệu'],
+                    ['15-20', '15 – 20 triệu'], ['20-30', '20 – 30 triệu'], ['30-50', '30 – 50 triệu'],
+                    ['50+', 'Trên 50 triệu'],
+                  ].map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                </SelectField>
+              ) : (
+                <FieldValue>{formData.desired_salary || 'Thoả thuận'}</FieldValue>
+              )}
+            </div>
+          </Row>
+        </Section>
+
+ 
+
+        {/* ── Giới thiệu bản thân ── */}
+        <Section icon="description" title="Giới thiệu bản thân">
+          {isEditing ? (
+            <textarea
+              name="target"
+              value={formData.target}
+              onChange={handleChange}
+              rows="4"
+              placeholder="Mô tả ngắn về bản thân, điểm mạnh và định hướng nghề nghiệp..."
+              className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00488d] focus:ring-2 focus:ring-[#00488d]/10 outline-none transition-all resize-none"
+            />
+          ) : (
+            <p className="text-sm text-gray-700 leading-relaxed">
+              {formData.target || <span className="text-gray-300">Chưa có giới thiệu bản thân.</span>}
+            </p>
+          )}
+        </Section>
+
+        {/* ── Action buttons ── */}
+        {isEditing && (
+          <div className="flex gap-3 pb-4">
+            <button
+              onClick={() => setIsEditing(false)}
+              className="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
+            >
+              Hủy
+            </button>
+            <button
+              onClick={handleSave}
+              className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#00488d] hover:bg-[#003b76] shadow-md shadow-[#00488d]/20 active:scale-[0.99] transition-all"
+            >
+              Lưu thay đổi
+            </button>
+          </div>
+        )}
+
       </div>
     </div>
   );

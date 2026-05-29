@@ -1,24 +1,3 @@
-"""
-embedding_pipeline.py
-=====================
-Inference pipeline khớp 100% với model_train.ipynb.
-
-KIẾN TRÚC INFERENCE ĐÚNG:
-  Lúc training: GNN dùng graph edges (ai apply job nào) để học contextual embeddings.
-  Lúc inference: không có graph → chỉ dùng proj + out_proj (linear layers đã train).
-
-  Flow:
-    raw features (267D/265D)
-    → encoder.proj[node_type]     → 128D  (Linear, đã train)
-    → encoder.out_proj[node_type] → 64D   (Linear, đã train)
-    → lưu DB dưới dạng JSON
-
-  Score:
-    z_user (64D) + z_job (64D)
-    → EdgePredictor.lin           → 1 logit
-    → sigmoid                     → score [0,1]
-"""
-
 import os
 import re
 import logging
@@ -255,8 +234,29 @@ def _get_recommendation_model():
         state = torch.load(MODEL_PATH, map_location='cpu', weights_only=False)
         if isinstance(state, dict) and 'state_dict' in state:
             state = state['state_dict']
-        model.load_state_dict(state, strict=False)
-        logger.info("[_get_recommendation_model] Model loaded OK")
+
+        # Robust load cho trường hợp mismatch kích thước layer
+        # (ví dụ do bạn đang dùng model cấu hình hidden_channels khác với checkpoint)
+        # state_dict() của model có thể chứa một số buffer/param chưa được khởi tạo hết.
+        # Duyệt và chỉ load phần match về shape để tránh crash.
+        model_sd = model.state_dict()
+
+        # Tạo danh sách keys match shape một cách an toàn
+        filtered = {}
+        for k, v in state.items():
+            if k not in model_sd:
+                continue
+            try:
+                if model_sd[k].shape == v.shape:
+                    filtered[k] = v
+            except Exception:
+                continue
+
+        model.load_state_dict(filtered, strict=False)
+        logger.info(
+            "[_get_recommendation_model] Model loaded OK (filtered mismatched params). "
+            f"Loaded={len(filtered)}/{len(model_sd)} params"
+        )
     except Exception as e:
         logger.warning(f"[_get_recommendation_model] Không thể load {MODEL_PATH}: {e}")
     model.eval()
@@ -269,12 +269,25 @@ def _get_recommendation_model():
 # ============================================================
 
 def _build_user_feat(user, infor) -> torch.Tensor:
-    """Tạo X_user (267,): [5 num | 6 cat | 256 TF-IDF]"""
     _load_artifacts()
 
-    skills     = (infor.skills  or '') if infor else ''
+    # skills     = (infor.skills  or '') if infor else ''
     target     = (infor.target  or '') if infor else ''
-    clean_text = advanced_clean_text(f"{skills} {target}")
+    
+    exp_text = ""
+    if infor and infor.experience:
+        try:
+            exp_list = json.loads(infor.experience)
+            for exp in exp_list:
+                pos = exp.get('position', '')
+                desc = exp.get('description', '')
+                exp_skills = " ".join(exp.get('skills', []))
+                exp_text += f" {pos} {desc} {exp_skills}"
+        except Exception as e:
+            logger.warning(f"[_build_user_feat] Lỗi parse experience JSON: {e}")
+            exp_text = str(infor.experience) # Fallback nếu không phải JSON
+            
+    clean_text = advanced_clean_text(f"{target} {exp_text}")
 
     if _tfidf is not None:
         text_emb = _tfidf.transform([clean_text]).toarray().astype(np.float32)

@@ -30,19 +30,7 @@ EMBEDDING_DIM = 64  # out_channels của GNNEncoder
 # ---------------------------------------------------------------------------
 
 def generate_and_save_user_embedding(user, infor, commit=True):
-    """
-    Encode user → 64D embedding → lưu vào infor.user_embedding (JSON).
 
-    Parameters
-    ----------
-    user   : User model instance
-    infor  : InforUser model instance  (phải khác None)
-    commit : nếu True thì db.session.commit() sau khi lưu
-
-    Returns
-    -------
-    numpy array (64,) nếu thành công, None nếu lỗi.
-    """
     if infor is None:
         logger.warning(
             f"[generate_user_embedding] user_id={getattr(user, 'id', '?')}: "
@@ -98,18 +86,6 @@ def generate_and_save_user_embedding(user, infor, commit=True):
 
 
 def generate_and_save_job_embedding(job, commit=True):
-    """
-    Encode job → 64D embedding → lưu vào job.job_embedding (JSON).
-
-    Parameters
-    ----------
-    job    : Job model instance
-    commit : nếu True thì db.session.commit() sau khi lưu
-
-    Returns
-    -------
-    numpy array (64,) nếu thành công, None nếu lỗi.
-    """
     try:
         try:
             from app.models import db
