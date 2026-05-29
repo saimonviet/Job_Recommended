@@ -199,14 +199,14 @@ function EmployerDashboard() {
                   </p>
                 </div>
               </div>
-              <div className="flex-1 flex items-end justify-between gap-3 px-2">
+              <div className="flex-1 min-h-0 flex items-end justify-between gap-3 px-2">
                 {chartData.map((value, idx) => {
                   const pct = Math.round((value / maxValue) * 100);
                   return (
-                    <div key={idx} className="flex-1 flex flex-col items-center gap-2">
+                    <div key={idx} className="flex-1 h-full flex flex-col items-center justify-end gap-2">
                       <div
                         className="w-full bg-blue-200 dark:bg-blue-900/40 rounded-t-lg transition-all duration-500 hover:bg-blue-400"
-                        style={{ height: `${pct}%`, minHeight: 4 }}
+                        style={{ height: `${pct}%`, minHeight: 16 }}
                       />
                       <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">
                         N{idx + 1}

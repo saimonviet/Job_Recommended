@@ -172,19 +172,7 @@ const SeekerCompanyDetail = () => {
                 <div>
                   <h1 className="text-3xl font-extrabold tracking-tight text-on-surface mb-1">
                     {company.name}
-                  </h1>
-                  <p className="text-on-surface-variant text-lg">{company.industry}</p>
-                  {company.rating !== null && (
-                    <div className="flex items-center gap-1 mt-2">
-                      <span className="material-symbols-outlined text-yellow-500 text-sm">star</span>
-                      <span className="text-sm font-semibold text-on-surface">{company.rating}</span>
-                      {company.reviews > 0 && (
-                        <span className="text-xs text-on-surface-variant">
-                          ({company.reviews} đánh giá)
-                        </span>
-                      )}
-                    </div>
-                  )}
+                  </h1> 
                 </div>
               </div>
 

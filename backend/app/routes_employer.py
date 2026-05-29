@@ -19,9 +19,12 @@ from flask import Blueprint, request, jsonify, current_app, send_from_directory
 from datetime import datetime, timedelta
 from collections import Counter
 from werkzeug.utils import secure_filename
+
 from .models import db, Employer, Job, Application, User, InforUser
 from .auth import employer_required, admin_required
 from sqlalchemy import or_
+from .embedding_utils import generate_and_save_job_embedding
+
 
 employer_bp = Blueprint('employer', __name__, url_prefix='/employer')
 
@@ -320,6 +323,7 @@ def create_job():
         is_active=True,
     )
     db.session.add(job)
+    generate_and_save_job_embedding(job)
     try:
         db.session.commit()
         return jsonify({"message": "Tạo job thành công", "job_id": job.id}), 201
@@ -468,6 +472,8 @@ def update_job(job_id):
 
     if 'is_active' in data:
         job.is_active = bool(data['is_active'])
+    
+    generate_and_save_job_embedding(job)
 
     try:
         db.session.commit()

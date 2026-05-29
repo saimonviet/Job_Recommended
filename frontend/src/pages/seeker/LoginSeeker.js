@@ -108,7 +108,7 @@ const LoginSeeker = () => {
                     <input 
                       type="email"
                       className="w-full pl-12 pr-4 py-3.5 bg-surface-container-low border-none rounded-md focus:ring-1 focus:ring-blue-500 focus:bg-surface-container-lowest transition-all text-on-surface placeholder:text-gray-400"
-                      placeholder="ten@congty.com"
+                      placeholder="email@gmail.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required

@@ -158,7 +158,7 @@ const RegisterSeeker = () => {
                     type="email"
                     name="email"
                     className="w-full px-4 py-3 rounded-md bg-gray-50 border-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder:text-gray-400 disabled:opacity-50"
-                    placeholder="ten@congty.com"
+                    placeholder="email@gmail.com"
                     value={formData.email}
                     onChange={handleChange}
                     disabled={loading}
