@@ -46,7 +46,7 @@ function AdminLogin() {
     <div className="bg-surface text-on-surface min-h-screen flex items-center justify-center p-6">
       {/* Background Texture */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-500/5 blur-[120px]"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-emerald-500/5 blur-[120px]"></div>
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-orange-500/5 blur-[120px]"></div>
       </div>
 
@@ -54,10 +54,10 @@ function AdminLogin() {
       <main className="relative z-10 w-full max-w-md">
         {/* Logo Section */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 mb-6 shadow-xl">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-500 mb-6 shadow-xl">
             <span className="material-symbols-outlined text-white text-2xl">shield</span>
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-blue-600 mb-2">
+          <h1 className="text-3xl font-extrabold tracking-tight text-emerald-600 mb-2">
             Hệ thống Quản trị
           </h1>
           <p className="text-on-surface-variant font-medium tracking-wide uppercase text-xs opacity-70">
@@ -68,7 +68,7 @@ function AdminLogin() {
         {/* Form Container */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           {/* Header Stripe */}
-          <div className="h-1.5 w-full bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600"></div>
+          <div className="h-1.5 w-full bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600"></div>
 
           <div className="p-10">
             <form onSubmit={handleLogin} className="space-y-6">
@@ -94,7 +94,7 @@ function AdminLogin() {
                     onChange={(e) => setIdentity(e.target.value)}
                     placeholder="admin"
                     required
-                    className="block w-full pl-11 pr-4 py-3.5 bg-gray-50 border-none rounded-lg focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all text-on-surface placeholder:text-gray-400"
+                    className="block w-full pl-11 pr-4 py-3.5 bg-gray-50 border-none rounded-lg focus:ring-2 focus:ring-emerald-600/20 focus:bg-white transition-all text-on-surface placeholder:text-gray-400"
                   />
                 </div>
               </div>
@@ -105,7 +105,7 @@ function AdminLogin() {
                   <label className="block text-sm font-semibold text-on-surface">
                     Mật khẩu
                   </label>
-                  <a href="#" className="text-xs font-medium text-blue-600 hover:underline">
+                  <a href="#" className="text-xs font-medium text-emerald-600 hover:underline">
                     Quên mật khẩu?
                   </a>
                 </div>
@@ -119,12 +119,12 @@ function AdminLogin() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Nhập mật khẩu"
                     required
-                    className="block w-full pl-11 pr-12 py-3.5 bg-gray-50 border-none rounded-lg focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all text-on-surface placeholder:text-gray-400"
+                    className="block w-full pl-11 pr-12 py-3.5 bg-gray-50 border-none rounded-lg focus:ring-2 focus:ring-emerald-600/20 focus:bg-white transition-all text-on-surface placeholder:text-gray-400"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-blue-600 transition-colors"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-emerald-600 transition-colors"
                   >
                     <span className="material-symbols-outlined text-lg">
                       {showPassword ? "visibility_off" : "visibility"}
@@ -137,7 +137,7 @@ function AdminLogin() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-lg bg-gradient-to-br from-blue-600 to-blue-500 text-white font-bold text-sm tracking-wide hover:opacity-90 active:scale-[0.98] transition-all shadow-lg shadow-blue-600/20 disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-500 text-white font-bold text-sm tracking-wide hover:opacity-90 active:scale-[0.98] transition-all shadow-lg shadow-emerald-600/20 disabled:opacity-50"
               >
                 <span>{loading ? "Đang xử lý..." : "Đăng nhập quản trị"}</span>
                 {!loading && <span className="material-symbols-outlined text-xl">login</span>}

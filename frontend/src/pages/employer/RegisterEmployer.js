@@ -105,7 +105,7 @@ const RegisterEmployer = () => {
               <div className="max-w-2xl mx-auto space-y-8">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                   <div 
-                    className="text-2xl font-extrabold text-primary font-headline tracking-tight cursor-pointer hover:opacity-80 transition-all"
+                    className="text-2xl font-extrabold text-orange-600 font-headline tracking-tight cursor-pointer hover:opacity-80 transition-all"
                   >
 
                   </div>
@@ -113,7 +113,7 @@ const RegisterEmployer = () => {
                     <span className="text-slate-600 font-label text-xs">Đã có tài khoản?</span>
                     <button 
                       onClick={() => navigate('/login-employer')}
-                      className="text-primary font-bold font-headline text-sm hover:underline bg-none border-none cursor-pointer p-0"
+                      className="text-orange-600 font-bold font-headline text-sm hover:underline bg-none border-none cursor-pointer p-0"
                     >
                       Đăng nhập
                     </button>
@@ -129,14 +129,14 @@ const RegisterEmployer = () => {
                   
                   {/* Login Information */}
                   <div className="space-y-5">
-                    <h3 className="text-sm font-bold text-primary uppercase tracking-widest border-b border-outline-variant/30 pb-2">1. Thông tin đăng nhập</h3>
+                    <h3 className="text-sm font-bold text-orange-600 uppercase tracking-widest border-b border-outline-variant/30 pb-2">1. Thông tin đăng nhập</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider pl-1">Email doanh nghiệp</label>
                         <input 
                           type="email"
                           name="email"
-                          className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm disabled:opacity-50"
+                          className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-orange-600/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm disabled:opacity-50"
                           placeholder="name@company.com"
                           value={formData.email}
                           onChange={handleChange}
@@ -149,7 +149,7 @@ const RegisterEmployer = () => {
                         <input 
                           type="password"
                           name="password"
-                          className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm disabled:opacity-50"
+                          className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-orange-600/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm disabled:opacity-50"
                           placeholder="••••••••"
                           value={formData.password}
                           onChange={handleChange}
@@ -162,13 +162,13 @@ const RegisterEmployer = () => {
 
                   {/* Business Information */}
                   <div className="space-y-5">
-                    <h3 className="text-sm font-bold text-primary uppercase tracking-widest border-b border-outline-variant/30 pb-2">2. Thông tin doanh nghiệp</h3>
+                    <h3 className="text-sm font-bold text-orange-600 uppercase tracking-widest border-b border-outline-variant/30 pb-2">2. Thông tin doanh nghiệp</h3>
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider pl-1">Tên công ty</label>
                       <input 
                         type="text"
                         name="companyName"
-                        className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm disabled:opacity-50"
+                        className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-orange-600/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm disabled:opacity-50"
                         placeholder="Ví dụ: Công ty Cổ phần Công nghệ Toàn cầu"
                         value={formData.companyName}
                         onChange={handleChange}
@@ -182,7 +182,7 @@ const RegisterEmployer = () => {
                         <input 
                           type="text"
                           name="address"
-                          className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm disabled:opacity-50"
+                          className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-orange-600/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm disabled:opacity-50"
                           placeholder="Số nhà, tên đường, Quận/Huyện, Tỉnh/TP"
                           value={formData.address}
                           onChange={handleChange}
@@ -195,7 +195,7 @@ const RegisterEmployer = () => {
                         <input
                           type="tel"
                           name="phone"
-                          className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm disabled:opacity-50"
+                          className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-orange-600/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm disabled:opacity-50"
                           placeholder="Ví dụ: +84 912 345 678"
                           value={formData.phone}
                           onChange={handleChange}
@@ -209,7 +209,7 @@ const RegisterEmployer = () => {
                         <input
                           type="url"
                           name="website"
-                          className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm disabled:opacity-50"
+                          className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-orange-600/20 focus:bg-white transition-all duration-300 rounded-md py-3 px-4 text-sm disabled:opacity-50"
                           placeholder="https://yourcompany.com"
                           value={formData.website}
                           onChange={handleChange}
@@ -225,21 +225,21 @@ const RegisterEmployer = () => {
                       type="checkbox"
                       id="terms"
                       name="agreeTerms"
-                      className="mt-1 rounded border-outline-variant text-primary focus:ring-primary disabled:opacity-50"
+                      className="mt-1 rounded border-outline-variant text-orange-600 focus:ring-orange-600 disabled:opacity-50"
                       checked={formData.agreeTerms}
                       onChange={handleChange}
                       disabled={loading}
                       required
                     />
                     <label htmlFor="terms" className="text-xs text-on-surface-variant leading-relaxed">
-                      Tôi đồng ý với <a className="text-primary hover:underline font-semibold cursor-pointer">Điều khoản Dịch vụ</a> và <a className="text-primary hover:underline font-semibold cursor-pointer">Chính sách Bảo mật</a> của Career Authority.
+                      Tôi đồng ý với <a className="text-orange-600 hover:underline font-semibold cursor-pointer">Điều khoản Dịch vụ</a> và <a className="text-orange-600 hover:underline font-semibold cursor-pointer">Chính sách Bảo mật</a> của Career Authority.
                     </label>
                   </div>
 
                   <button 
                     type="submit"
                     disabled={loading}
-                    className="w-full py-4 bg-gradient-to-r from-primary to-primary-container text-on-primary font-headline font-bold rounded-md shadow-md hover:shadow-lg hover:opacity-90 transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    className="w-full py-4 bg-gradient-to-r from-orange-600 to-orange-500 text-white font-headline font-bold rounded-md shadow-md hover:shadow-lg hover:opacity-90 transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   >
                     {loading ? 'ĐANG ĐĂNG KÝ...' : 'Đăng ký tài khoản doanh nghiệp'}
                   </button>

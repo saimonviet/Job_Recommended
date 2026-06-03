@@ -156,7 +156,7 @@ function AdminSettings() {
 
         <div className="p-8 max-w-6xl mx-auto">
           <div className="mb-10">
-            <h2 className="text-3xl font-black text-blue-600 tracking-tight mb-2">
+            <h2 className="text-3xl font-black text-emerald-600 tracking-tight mb-2">
               Cài đặt hệ thống
             </h2>
             <p className="text-on-surface-variant max-w-2xl">
@@ -169,7 +169,7 @@ function AdminSettings() {
               className={`mb-6 rounded-xl px-4 py-3 text-sm font-semibold ${
                 error
                   ? "bg-red-50 text-red-700 border border-red-200"
-                  : "bg-blue-50 text-blue-700 border border-blue-200"
+                  : "bg-emerald-50 text-emerald-700 border border-emerald-200"
               }`}
             >
               {error ||
@@ -184,8 +184,8 @@ function AdminSettings() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <section className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-blue-600">
+                <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-emerald-600">
                     admin_panel_settings
                   </span>
                 </div>
@@ -263,7 +263,7 @@ function AdminSettings() {
                   onClick={handleToggleMaintenance}
                   disabled={loading || saving}
                   className={`w-14 h-7 rounded-full relative transition-all ${
-                    settings.maintenanceMode ? "bg-blue-600" : "bg-slate-300"
+                    settings.maintenanceMode ? "bg-emerald-600" : "bg-slate-300"
                   }`}
                 >
                   <span
@@ -289,8 +289,8 @@ function AdminSettings() {
 
             <section className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-emerald-600">
+                <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-red-600">
                     lock_reset
                   </span>
                 </div>
@@ -312,7 +312,7 @@ function AdminSettings() {
                   value={passwordForm.current_password}
                   onChange={handlePasswordChange}
                   placeholder="Mật khẩu hiện tại"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-600"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-emerald-600"
                   required
                 />
 
@@ -322,7 +322,7 @@ function AdminSettings() {
                   value={passwordForm.new_password}
                   onChange={handlePasswordChange}
                   placeholder="Mật khẩu mới"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-600"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-emerald-600"
                   required
                 />
 
@@ -332,14 +332,14 @@ function AdminSettings() {
                   value={passwordForm.confirm_password}
                   onChange={handlePasswordChange}
                   placeholder="Xác nhận mật khẩu mới"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-600"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-emerald-600"
                   required
                 />
 
                 <button
                   type="submit"
                   disabled={saving}
-                  className="w-full py-3 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 disabled:opacity-50"
+                  className="w-full py-3 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 disabled:opacity-50"
                 >
                   {saving ? "Đang đổi..." : "Đổi mật khẩu"}
                 </button>

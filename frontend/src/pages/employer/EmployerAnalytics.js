@@ -41,9 +41,9 @@ const writeAnalyticsCache = (token, data) => {
 
 const STATUS_COLOR = {
   accepted: "bg-emerald-500",
-  interview: "bg-blue-500",
-  reviewed: "bg-blue-500",
-  pending: "bg-blue-500",
+  interview: "bg-orange-600",
+  reviewed: "bg-orange-600",
+  pending: "bg-orange-600",
   rejected: "bg-red-500",
 };
 
@@ -145,10 +145,10 @@ function EmployerAnalytics() {
     },
     {
       icon: "task_alt",
-      iconBg: "bg-blue-100 dark:bg-blue-900/30",
-      iconColor: "text-blue-600 dark:text-blue-400",
-      badgeBg: "bg-blue-50 dark:bg-blue-900/30",
-      badgeColor: "text-blue-600 dark:text-blue-400",
+      iconBg: "bg-orange-100 dark:bg-orange-900/30",
+      iconColor: "text-orange-600 dark:text-orange-400",
+      badgeBg: "bg-orange-50 dark:bg-orange-900/30",
+      badgeColor: "text-orange-600 dark:text-orange-400",
       title: "Tỷ lệ xử lý hồ sơ",
       value: `${processingRate.toFixed(1)}%`,
     },

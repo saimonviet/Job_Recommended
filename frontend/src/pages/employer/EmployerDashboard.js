@@ -135,7 +135,7 @@ function EmployerDashboard() {
             </button>
             <button
               onClick={() => navigate("/employer/post")}
-              className="flex items-center gap-2 bg-gradient-to-br from-blue-600 to-blue-500 text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:shadow-lg transition-all"
+              className="flex items-center gap-2 bg-gradient-to-br from-orange-600 to-orange-500 text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:shadow-lg transition-all"
             >
               <span className="material-symbols-outlined text-lg">add</span>
               Đăng tin mới
@@ -147,7 +147,7 @@ function EmployerDashboard() {
             {/* Active Postings */}
             <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm hover:shadow-md transition-all">
               <div className="flex justify-between items-start mb-2">
-                <div className="p-2.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
+                <div className="p-2.5 bg-orange-100 dark:bg-orange-900/30 rounded-lg text-orange-600 dark:text-orange-400">
                   <span className="material-symbols-outlined text-xl">campaign</span>
                 </div>
               </div>
@@ -179,7 +179,7 @@ function EmployerDashboard() {
                 <div className="p-2.5 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg text-emerald-600 dark:text-emerald-400">
                   <span className="material-symbols-outlined text-xl">groups</span>
                 </div>
-                <span className="material-symbols-outlined text-slate-400 dark:text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                <span className="material-symbols-outlined text-slate-400 dark:text-slate-500 group-hover:text-orange-600 dark:group-hover:text-orange-500 transition-colors">
                   arrow_forward
                 </span>
               </div>
@@ -205,7 +205,7 @@ function EmployerDashboard() {
                   return (
                     <div key={idx} className="flex-1 h-full flex flex-col items-center justify-end gap-2">
                       <div
-                        className="w-full bg-blue-200 dark:bg-blue-900/40 rounded-t-lg transition-all duration-500 hover:bg-blue-400"
+                        className="w-full bg-orange-200 dark:bg-orange-900/30 rounded-t-lg transition-all duration-500 hover:bg-orange-700"
                         style={{ height: `${pct}%`, minHeight: 16 }}
                       />
                       <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">
@@ -238,7 +238,7 @@ function EmployerDashboard() {
                         <p className="text-xs text-slate-500 dark:text-slate-400">
                           {job.employment_type || "—"}
                         </p>
-                        <span className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-full">
+                        <span className="text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30 px-2 py-0.5 rounded-full">
                           {job.total_applications} CV
                         </span>
                       </div>

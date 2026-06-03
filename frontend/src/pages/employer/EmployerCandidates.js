@@ -17,7 +17,7 @@ const STATUS_LABEL = {
 };
 
 const STATUS_STYLE = {
-  pending: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
+  pending: "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400",
   reviewed: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400",
   interview: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400",
   accepted: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400",
@@ -168,7 +168,7 @@ function CandidateModal({ appId, onClose, onStatusChange }) {
             <div className="space-y-6">
               {/* Seeker Info */}
               <div className="flex items-start gap-4">
-                <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                <div className="w-16 h-16 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center flex-shrink-0">
                   {seeker?.avatar_path ? (
                     <img
                       src={seeker.avatar_path}
@@ -176,7 +176,7 @@ function CandidateModal({ appId, onClose, onStatusChange }) {
                       className="w-16 h-16 rounded-full object-cover"
                     />
                   ) : (
-                    <span className="material-symbols-outlined text-blue-600 dark:text-blue-400 text-3xl">person</span>
+                    <span className="material-symbols-outlined text-orange-600 dark:text-orange-400 text-3xl">person</span>
                   )}
                 </div>
                 <div className="flex-1">
@@ -185,7 +185,7 @@ function CandidateModal({ appId, onClose, onStatusChange }) {
                   </h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400">{seeker?.email}</p>
                   {seeker?.desired_job && (
-                    <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">🎯 {seeker.desired_job}</p>
+                    <p className="text-sm text-orange-600 dark:text-orange-400 mt-1">🎯 {seeker.desired_job}</p>
                   )}
                   {/* Current Status Badge */}
                   <span
@@ -252,7 +252,7 @@ function CandidateModal({ appId, onClose, onStatusChange }) {
                         {Array.isArray(exp.skills) && exp.skills.length > 0 && (
                           <div className="flex flex-wrap gap-2 mt-3">
                             {exp.skills.map((skill) => (
-                              <span key={`${index}-${skill}`} className="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+                              <span key={`${index}-${skill}`} className="px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
                                 {skill}
                               </span>
                             ))}
@@ -303,7 +303,7 @@ function CandidateModal({ appId, onClose, onStatusChange }) {
               {data.cover_letter && (
                 <div>
                   <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Thư xin việc</p>
-                  <p className="text-sm text-slate-700 dark:text-slate-300 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-100 dark:border-blue-800">
+                  <p className="text-sm text-slate-700 dark:text-slate-300 bg-orange-50 dark:bg-orange-900/30 p-3 rounded-lg border border-orange-100 dark:border-orange-800">
                     {data.cover_letter}
                   </p>
                 </div>
@@ -317,7 +317,7 @@ function CandidateModal({ appId, onClose, onStatusChange }) {
                     href={data.cv_path}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-semibold hover:bg-orange-700 transition-colors"
                   >
                     <span className="material-symbols-outlined text-lg">download</span>
                     Tải CV
@@ -337,7 +337,7 @@ function CandidateModal({ appId, onClose, onStatusChange }) {
                   {!noteEditing && (
                     <button
                       onClick={() => setNoteEditing(true)}
-                      className="text-xs text-blue-600 dark:text-blue-400 font-medium hover:underline"
+                      className="text-xs text-orange-600 dark:text-orange-400 font-medium hover:underline"
                     >
                       {note ? "Chỉnh sửa" : "Thêm ghi chú"}
                     </button>
@@ -350,13 +350,13 @@ function CandidateModal({ appId, onClose, onStatusChange }) {
                       onChange={(e) => setNote(e.target.value)}
                       rows="3"
                       placeholder="Ghi chú về ứng viên này..."
-                      className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-700 rounded-lg text-sm text-slate-900 dark:text-white border-none outline-none focus:ring-2 focus:ring-blue-600/20 resize-none"
+                      className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-700 rounded-lg text-sm text-slate-900 dark:text-white border-none outline-none focus:ring-2 focus:ring-orange-600/20 resize-none"
                     />
                     <div className="flex gap-2">
                       <button
                         onClick={handleSaveNote}
                         disabled={updatingStatus}
-                        className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 disabled:opacity-60"
+                        className="px-4 py-1.5 bg-orange-600 text-white rounded-lg text-xs font-bold hover:bg-orange-700 disabled:opacity-60"
                       >
                         Lưu
                       </button>
@@ -390,7 +390,7 @@ function CandidateModal({ appId, onClose, onStatusChange }) {
                         className={`px-4 py-2 rounded-lg text-sm font-bold transition-all disabled:opacity-60 ${
                           s === "rejected"
                             ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200"
-                            : "bg-blue-600 text-white hover:bg-blue-700"
+                            : "bg-orange-600 text-white hover:bg-orange-700"
                         }`}
                       >
                         {updatingStatus ? "..." : `→ ${STATUS_LABEL[s]}`}
@@ -548,7 +548,7 @@ function EmployerCandidates() {
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
             {[
-              { label: "Tổng ứng viên", value: totalCandidates, color: "text-blue-600 dark:text-blue-400" },
+              { label: "Tổng ứng viên", value: totalCandidates, color: "text-orange-600 dark:text-orange-400" },
               { label: "Chờ xử lý", value: pendingCount, color: "text-slate-900 dark:text-white" },
               { label: "Đang phỏng vấn", value: interviewCount, color: "text-purple-600 dark:text-purple-400" },
               { label: "Đã tuyển", value: hiredCount, color: "text-emerald-600 dark:text-emerald-400" },
@@ -571,7 +571,7 @@ function EmployerCandidates() {
                   onClick={() => setStatusFilter(s)}
                   className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
                     statusFilter === s
-                      ? "bg-blue-600 dark:bg-blue-500 text-white"
+                      ? "bg-orange-600 dark:bg-orange-500 text-white"
                       : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
                   }`}
                 >
@@ -588,7 +588,7 @@ function EmployerCandidates() {
               <select
                 value={selectedJobId || ""}
                 onChange={(e) => setSelectedJobId(Number(e.target.value))}
-                className="w-full max-w-xl bg-slate-100 dark:bg-slate-700 border-none rounded-lg text-sm p-3 focus:ring-2 focus:ring-blue-600/20 text-slate-900 dark:text-white"
+                className="w-full max-w-xl bg-slate-100 dark:bg-slate-700 border-none rounded-lg text-sm p-3 focus:ring-2 focus:ring-orange-600/20 text-slate-900 dark:text-white"
               >
                 {loadingJobs ? (
                   <option>Đang tải...</option>
@@ -637,11 +637,11 @@ function EmployerCandidates() {
                     <tr key={c.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                          <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center flex-shrink-0">
                             {c.avatar ? (
                               <img src={c.avatar} alt={c.name} className="w-10 h-10 rounded-full object-cover" />
                             ) : (
-                              <span className="material-symbols-outlined text-blue-600 dark:text-blue-400">person</span>
+                              <span className="material-symbols-outlined text-orange-600 dark:text-orange-400">person</span>
                             )}
                           </div>
                           <div>
@@ -664,7 +664,7 @@ function EmployerCandidates() {
                       <td className="px-6 py-5 text-right">
                         <button
                           onClick={() => setModalAppId(c.id)}
-                          className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold text-sm"
+                          className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-400 font-semibold text-sm"
                         >
                           Xem hồ sơ
                         </button>

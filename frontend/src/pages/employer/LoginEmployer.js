@@ -51,7 +51,7 @@ const LoginEmployer = () => {
         }
         h1, h2, h3 { font-family: 'Manrope', sans-serif; }
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-        .hero-gradient { background: linear-gradient(135deg, #00488d 0%, #005fb8 100%); }
+        .hero-gradient { background: linear-gradient(135deg, #f4510b 0%, #ff6a14 100%); }
       `}</style>
 
       <div className="min-h-screen flex items-center justify-center p-4 bg-surface">
@@ -65,7 +65,7 @@ const LoginEmployer = () => {
 
         <div className="w-full max-w-6xl grid md:grid-cols-2 bg-surface-container-lowest rounded-xl overflow-hidden shadow-[0_20px_40px_rgba(25,28,33,0.06)]">
           {/* Left Panel (AI Features) */}
-          <div className="hidden md:flex flex-col justify-center p-12 hero-gradient text-on-primary relative overflow-hidden">
+          <div className="hidden md:flex flex-col justify-center p-12 hero-gradient text-white relative overflow-hidden">
             <div className="relative z-10">
               <h1 className="text-4xl font-extrabold font-headline leading-tight tracking-tight mb-6">
                 Kiến tạo đội ngũ <br/>với sức mạnh AI
@@ -88,20 +88,15 @@ const LoginEmployer = () => {
                 </div>
               </div>
             </div>
-            <img 
-              alt="Corporate Recruitment" 
-              className="absolute bottom-0 right-0 w-2/3 opacity-10 mix-blend-overlay grayscale" 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuDSn_lMI1gh4BF69FnH1hNxoLuoR_Cc9tuJTo9EC8iUUHQBXgmz8WbQJD8TNsklq1_3s4wAr0xDKNxxSmKG0F-QOe6HgGYLaSbxGIT5aSd4mj6h0q48jUeKHODBiSXxByrBRH7uBA7sOGFCTehFK9SyFGX331eC2TfabQYvts7w0t1r0CzcsRtBqN3wN-42I6KOA5B9EoB_4Ene_Ihgy7h5_fgh2IS6vnsv6NFrV1nP4HhYWvt6__Rht_AmaK4sQmkjc3RJQLpsjMTE"
-            />
           </div>
 
           {/* Right Panel (Login Form) */}
           <div className="p-8 md:p-16 flex flex-col justify-center">
             <header className="mb-10">
                 <h2 className="font-headline text-3xl font-bold text-on-surface mb-4">Chào mừng trở lại</h2>
-                <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-lg mb-4">
-                  <span className="material-symbols-outlined text-primary text-lg">person_search</span>
-                  <p className="text-primary font-headline font-bold text-base">Đăng nhập với tư cách là Nhà tuyển dụng</p>
+                <div className="inline-flex items-center gap-2 bg-orange-100 px-4 py-2 rounded-lg mb-4">
+                  <span className="material-symbols-outlined text-orange-600 text-lg">person_search</span>
+                  <p className="text-orange-600 font-headline font-bold text-base">Đăng nhập với tư cách là Nhà tuyển dụng</p>
                 </div>
             </header>
 
@@ -116,7 +111,7 @@ const LoginEmployer = () => {
                 <label className="block text-sm font-semibold text-on-surface-variant mb-2 ml-1">Email doanh nghiệp</label>
                 <input 
                   type="email"
-                  className="w-full px-4 py-4 bg-surface-container-low border border-transparent rounded-md focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest focus:border-primary/30 transition-all placeholder:text-outline-variant"
+                  className="w-full px-4 py-4 bg-surface-container-low border border-transparent rounded-md focus:ring-2 focus:ring-orange-600/20 focus:bg-surface-container-lowest focus:border-orange-600/30 transition-all placeholder:text-outline-variant"
                   placeholder="example@company.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -128,11 +123,11 @@ const LoginEmployer = () => {
               <div>
                 <div className="flex justify-between items-center mb-2 ml-1">
                   <label className="block text-sm font-semibold text-on-surface-variant">Mật khẩu</label>
-                  <a className="text-xs font-semibold text-primary hover:underline cursor-pointer">Quên mật khẩu?</a>
+                  <a className="text-xs font-semibold text-orange-600 hover:underline cursor-pointer">Quên mật khẩu?</a>
                 </div>
                 <input 
                   type="password"
-                  className="w-full px-4 py-4 bg-surface-container-low border border-transparent rounded-md focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest focus:border-primary/30 transition-all placeholder:text-outline-variant"
+                  className="w-full px-4 py-4 bg-surface-container-low border border-transparent rounded-md focus:ring-2 focus:ring-orange-600/20 focus:bg-surface-container-lowest focus:border-orange-600/30 transition-all placeholder:text-outline-variant"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -145,7 +140,7 @@ const LoginEmployer = () => {
                 <input 
                   type="checkbox"
                   id="remember"
-                  className="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary"
+                  className="w-4 h-4 rounded border-outline-variant text-orange-600 focus:ring-orange-600"
                   checked={remember}
                   onChange={(e) => setRemember(e.target.checked)}
                   disabled={loading}
@@ -156,7 +151,7 @@ const LoginEmployer = () => {
               <button 
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 hero-gradient text-on-primary rounded-md font-headline font-extrabold tracking-wide hover:shadow-lg hover:opacity-95 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-4 hero-gradient text-white rounded-md font-headline font-extrabold tracking-wide hover:shadow-lg hover:opacity-95 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'ĐANG ĐĂNG NHẬP...' : 'ĐĂNG NHẬP VÀO HỆ THỐNG'}
               </button>
@@ -176,7 +171,7 @@ const LoginEmployer = () => {
               Chưa có tài khoản Nhà tuyển dụng? 
               <button 
                 onClick={() => navigate('/register-employer')}
-                className="text-primary font-bold hover:underline ml-1 bg-none border-none cursor-pointer p-0"
+                className="text-orange-600 font-bold hover:underline ml-1 bg-none border-none cursor-pointer p-0"
               >
                 Đăng ký ngay
               </button>

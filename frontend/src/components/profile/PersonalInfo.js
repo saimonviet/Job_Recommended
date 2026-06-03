@@ -145,8 +145,8 @@ const PersonalInfo = () => {
         {/* ── Page Header ── */}
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold tracking-widest text-[#00488d] uppercase mb-1">Hồ sơ cá nhân</p>
-            <p className="text-sm text-gray-500 mt-1">Cập nhật hồ sơ để tăng cơ hội nhận được lời mời từ nhà tuyển dụng.</p>
+            <p className="text-xl font-semibold tracking-widest text-[#00488d] uppercase mb-1">Hồ sơ cá nhân</p>
+            <p className="text-lg text-gray-500 mt-1">Cập nhật hồ sơ để tăng cơ hội nhận được lời mời từ nhà tuyển dụng.</p>
           </div>
           {!isEditing && (
             <button
@@ -292,7 +292,7 @@ const PersonalInfo = () => {
                 <FieldValue>{formData.industry}</FieldValue>
               )}
             </div>
-            <div className="mt-4">
+            <div>
               <FieldLabel>Mức lương mong muốn</FieldLabel>
               {isEditing ? (
                 <SelectField name="desired_salary" value={formData.desired_salary} onChange={handleChange}>

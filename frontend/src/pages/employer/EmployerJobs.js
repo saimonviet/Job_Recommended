@@ -355,7 +355,7 @@ function EmployerJobs() {
               </button>
               <button
                 onClick={() => navigate("/employer/post")}
-                className="flex items-center gap-2 bg-gradient-to-br from-blue-600 to-blue-500 text-white px-6 py-3 rounded-lg font-bold text-sm shadow-lg hover:shadow-blue-600/20 transition-all"
+                className="flex items-center gap-2 bg-gradient-to-br from-orange-600 to-orange-500 text-white px-6 py-3 rounded-lg font-bold text-sm shadow-lg hover:shadow-orange-600/20 transition-all"
               >
                 <span className="material-symbols-outlined text-lg">add</span>
                 Đăng tin mới
@@ -377,7 +377,7 @@ function EmployerJobs() {
                   onClick={() => handleFilterChange(opt.value)}
                   className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
                     statusFilter === opt.value
-                      ? "bg-blue-600 text-white"
+                      ? "bg-orange-600 text-white"
                       : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
                   }`}
                 >
@@ -423,7 +423,7 @@ function EmployerJobs() {
                   jobs.map((job) => (
                     <tr key={job.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
                       <td className="px-6 py-5">
-                        <h4 className="font-bold text-blue-600 dark:text-blue-400 text-sm group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors">
+                        <h4 className="font-bold text-orange-600 dark:text-orange-400 text-sm group-hover:text-orange-700 dark:group-hover:text-orange-500 transition-colors">
                           {job.job_title}
                         </h4>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -439,7 +439,7 @@ function EmployerJobs() {
                       <td className="px-6 py-5 text-sm text-center font-semibold text-slate-900 dark:text-white">
                         <button
                           onClick={() => navigate(`/employer/candidates?job=${job.id}`)}
-                          className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                          className="hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
                         >
                           {job.total_applications ?? 0}
                         </button>
@@ -461,7 +461,7 @@ function EmployerJobs() {
                         <div className="flex gap-3 justify-end">
                           <button
                             onClick={() => navigate(`/employer/candidates?job=${job.id}`)}
-                            className="text-blue-600 dark:text-blue-400 hover:text-blue-700 font-semibold text-sm"
+                            className="text-orange-600 dark:text-orange-400 hover:text-orange-700 font-semibold text-sm"
                           >
                             Ứng viên
                           </button>
@@ -515,7 +515,7 @@ function EmployerJobs() {
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-3xl w-full max-h-screen overflow-y-auto">
               <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-8 py-6 flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                <h2 className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                   Sửa bài đăng tuyển dụng
                 </h2>
                 <button
@@ -744,7 +744,7 @@ function EmployerJobs() {
                 <button
                   onClick={handleSaveEdit}
                   disabled={editLoading}
-                  className="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors disabled:opacity-50 flex items-center gap-2"
+                  className="px-6 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-semibold transition-colors disabled:opacity-50 flex items-center gap-2"
                 >
                   {editLoading && <span className="animate-spin">⟳</span>}
                   Lưu thay đổi

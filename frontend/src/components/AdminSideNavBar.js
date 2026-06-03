@@ -14,7 +14,7 @@ function AdminSideNavBar() {
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 z-50 bg-slate-50 dark:bg-slate-900 flex flex-col p-4 gap-2">
       <div className="mb-8 px-4 py-2">
-        <h1 className="text-blue-900 dark:text-white font-black text-xl">Predictive Career</h1>
+        <h1 className="text-emerald-900 dark:text-white font-black text-xl">Predictive Career</h1>
         <p className="text-slate-500 text-xs font-medium uppercase tracking-widest mt-1">Admin Authority</p>
       </div>
 
@@ -23,8 +23,8 @@ function AdminSideNavBar() {
           to="/admin/users"
           className={`px-4 py-3 flex items-center gap-3 rounded-lg font-medium text-sm transition-all duration-300 ${
             isActive("/admin/users")
-              ? "bg-white dark:bg-slate-800 text-blue-700 dark:text-blue-400 font-bold shadow-sm"
-              : "text-slate-600 dark:text-slate-400 hover:translate-x-1 hover:text-blue-600 dark:hover:text-blue-300"
+              ? "bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 font-bold shadow-sm"
+              : "text-slate-600 dark:text-slate-400 hover:translate-x-1 hover:text-emerald-600 dark:hover:text-emerald-300"
           }`}
         >
           <span className="material-symbols-outlined text-lg">group</span>
@@ -34,8 +34,8 @@ function AdminSideNavBar() {
           to="/admin/employers"
           className={`px-4 py-3 flex items-center gap-3 rounded-lg font-medium text-sm transition-all duration-300 ${
             isActive("/admin/employers")
-              ? "bg-white dark:bg-slate-800 text-blue-700 dark:text-blue-400 font-bold shadow-sm"
-              : "text-slate-600 dark:text-slate-400 hover:translate-x-1 hover:text-blue-600 dark:hover:text-blue-300"
+              ? "bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 font-bold shadow-sm"
+              : "text-slate-600 dark:text-slate-400 hover:translate-x-1 hover:text-emerald-600 dark:hover:text-emerald-300"
           }`}
         >
           <span className="material-symbols-outlined text-lg">business_center</span>
@@ -46,8 +46,8 @@ function AdminSideNavBar() {
           to="/admin/jobs"
           className={`px-4 py-3 flex items-center gap-3 rounded-lg font-medium text-sm transition-all duration-300 ${
             isActive("/admin/jobs")
-              ? "bg-white dark:bg-slate-800 text-blue-700 dark:text-blue-400 font-bold shadow-sm"
-              : "text-slate-600 dark:text-slate-400 hover:translate-x-1 hover:text-blue-600 dark:hover:text-blue-300"
+              ? "bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 font-bold shadow-sm"
+              : "text-slate-600 dark:text-slate-400 hover:translate-x-1 hover:text-emerald-600 dark:hover:text-emerald-300"
           }`}
         >
           <span className="material-symbols-outlined text-lg">article</span>
@@ -58,8 +58,8 @@ function AdminSideNavBar() {
           to="/admin/analytics"
           className={`px-4 py-3 flex items-center gap-3 rounded-lg font-medium text-sm transition-all duration-300 ${
             isActive("/admin/analytics")
-              ? "bg-white dark:bg-slate-800 text-blue-700 dark:text-blue-400 font-bold shadow-sm"
-              : "text-slate-600 dark:text-slate-400 hover:translate-x-1 hover:text-blue-600 dark:hover:text-blue-300"
+              ? "bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 font-bold shadow-sm"
+              : "text-slate-600 dark:text-slate-400 hover:translate-x-1 hover:text-emerald-600 dark:hover:text-emerald-300"
           }`}
         >
           <span className="material-symbols-outlined text-lg">analytics</span>
@@ -70,8 +70,8 @@ function AdminSideNavBar() {
           to="/admin/settings"
           className={`px-4 py-3 flex items-center gap-3 rounded-lg font-medium text-sm transition-all duration-300 ${
             isActive("/admin/settings")
-              ? "bg-white dark:bg-slate-800 text-blue-700 dark:text-blue-400 font-bold shadow-sm"
-              : "text-slate-600 dark:text-slate-400 hover:translate-x-1 hover:text-blue-600 dark:hover:text-blue-300"
+              ? "bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 font-bold shadow-sm"
+              : "text-slate-600 dark:text-slate-400 hover:translate-x-1 hover:text-emerald-600 dark:hover:text-emerald-300"
           }`}
         >
           <span className="material-symbols-outlined text-lg">settings</span>
@@ -82,7 +82,7 @@ function AdminSideNavBar() {
       <div className="mt-auto border-t border-slate-200 dark:border-slate-800 pt-4 flex flex-col gap-1">
         <button
           onClick={handleLogout}
-          className="text-slate-600 dark:text-slate-400 px-4 py-3 flex items-center gap-3 hover:translate-x-1 transition-transform hover:text-blue-600 dark:hover:text-blue-300 font-medium text-sm text-left"
+          className="text-red-600 dark:text-red-400 px-4 py-3 flex items-center gap-3 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300 transition-all duration-300 font-medium text-sm text-left"
         >
           <span className="material-symbols-outlined text-lg">logout</span>
           <span>Đăng xuất</span>
