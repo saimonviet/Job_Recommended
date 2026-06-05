@@ -115,7 +115,7 @@ function ChangePasswordModal({ onClose }) {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
           <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <span className="material-symbols-outlined text-blue-600 dark:text-blue-400">lock_reset</span>
+            <span className="material-symbols-outlined text-orange-600 dark:text-orange-400">lock_reset</span>
             Đổi mật khẩu
           </h2>
           <button
@@ -150,7 +150,7 @@ function ChangePasswordModal({ onClose }) {
                 value={form.current_password}
                 onChange={(e) => handleChange("current_password", e.target.value)}
                 placeholder="Nhập mật khẩu hiện tại"
-                className="w-full px-4 py-3 pr-12 bg-slate-100 dark:bg-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-600/20"
+                className="w-full px-4 py-3 pr-12 bg-slate-100 dark:bg-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-orange-600/20"
               />
               <button
                 type="button"
@@ -175,7 +175,7 @@ function ChangePasswordModal({ onClose }) {
                 value={form.new_password}
                 onChange={(e) => handleChange("new_password", e.target.value)}
                 placeholder="Ít nhất 6 ký tự"
-                className="w-full px-4 py-3 pr-12 bg-slate-100 dark:bg-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-600/20"
+                className="w-full px-4 py-3 pr-12 bg-slate-100 dark:bg-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-orange-600/20"
               />
               <button
                 type="button"
@@ -208,7 +208,7 @@ function ChangePasswordModal({ onClose }) {
                             : strength <= 2
                             ? "bg-yellow-500"
                             : strength <= 3
-                            ? "bg-blue-500"
+                            ? "bg-orange-600"
                             : "bg-green-500"
                           : "bg-slate-200 dark:bg-slate-600"
                       }`}
@@ -232,7 +232,7 @@ function ChangePasswordModal({ onClose }) {
               className={`w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none focus:ring-2 ${
                 form.confirm_password && form.new_password !== form.confirm_password
                   ? "ring-2 ring-red-400 focus:ring-red-400"
-                  : "focus:ring-blue-600/20"
+                  : "focus:ring-orange-600/20"
               }`}
             />
             {form.confirm_password && form.new_password !== form.confirm_password && (
@@ -252,7 +252,7 @@ function ChangePasswordModal({ onClose }) {
           <button
             onClick={handleSubmit}
             disabled={saving}
-            className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg font-semibold text-sm hover:bg-blue-700 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-3 bg-orange-600 text-white rounded-lg font-semibold text-sm hover:bg-orange-700 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
           >
             {saving && (
               <span className="animate-spin material-symbols-outlined text-base">
@@ -506,13 +506,13 @@ function EmployerSettings() {
               <section className="col-span-12 lg:col-span-8 bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm">
                 <div className="flex justify-between items-center mb-8">
                   <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <span className="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">domain</span>
+                    <span className="material-symbols-outlined text-2xl text-orange-600 dark:text-orange-400">domain</span>
                     Hồ sơ công ty
                   </h2>
                   <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="px-6 py-2 bg-gradient-to-br from-blue-600 to-blue-500 text-white rounded-lg font-bold text-sm hover:opacity-90 transition-all disabled:opacity-60 flex items-center gap-2"
+                    className="px-6 py-2 bg-gradient-to-br from-orange-600 to-orange-500 text-white rounded-lg font-bold text-sm hover:opacity-90 transition-all disabled:opacity-60 flex items-center gap-2"
                   >
                     {saving && (
                       <span className="animate-spin material-symbols-outlined text-base">progress_activity</span>
@@ -550,7 +550,7 @@ function EmployerSettings() {
                       <h3 className="font-bold text-slate-900 dark:text-white">Logo doanh nghiệp</h3>
                       <p className="text-sm text-slate-600 dark:text-slate-400">Khuyên dùng 512×512px. PNG, JPG.</p>
                       {logoFile && (
-                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">Đã chọn: {logoFile.name}</p>
+                        <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">Đã chọn: {logoFile.name}</p>
                       )}
                     </div>
                   </div>
@@ -562,7 +562,7 @@ function EmployerSettings() {
                       type="text"
                       value={settings.company_name}
                       onChange={(e) => handleChange("company_name", e.target.value)}
-                      className="w-full bg-slate-100 dark:bg-slate-700 border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-600/20 text-slate-900 dark:text-white outline-none"
+                      className="w-full bg-slate-100 dark:bg-slate-700 border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-600/20 text-slate-900 dark:text-white outline-none"
                     />
                   </div>
 
@@ -573,7 +573,7 @@ function EmployerSettings() {
                       type="text"
                       value={settings.phone}
                       onChange={(e) => handleChange("phone", e.target.value)}
-                      className="w-full bg-slate-100 dark:bg-slate-700 border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-600/20 text-slate-900 dark:text-white outline-none"
+                      className="w-full bg-slate-100 dark:bg-slate-700 border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-600/20 text-slate-900 dark:text-white outline-none"
                     />
                   </div>
 
@@ -584,7 +584,7 @@ function EmployerSettings() {
                       type="url"
                       value={settings.website}
                       onChange={(e) => handleChange("website", e.target.value)}
-                      className="w-full bg-slate-100 dark:bg-slate-700 border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-600/20 text-slate-900 dark:text-white outline-none"
+                      className="w-full bg-slate-100 dark:bg-slate-700 border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-600/20 text-slate-900 dark:text-white outline-none"
                     />
                   </div>
 
@@ -594,7 +594,7 @@ function EmployerSettings() {
                     <select
                       value={settings.industry}
                       onChange={(e) => handleChange("industry", e.target.value)}
-                      className="w-full bg-slate-100 dark:bg-slate-700 border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-600/20 text-slate-900 dark:text-white outline-none"
+                      className="w-full bg-slate-100 dark:bg-slate-700 border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-600/20 text-slate-900 dark:text-white outline-none"
                     >
                       <option value="">Chọn ngành nghề</option>
                       {INDUSTRIES_LIST.map((industry) => (
@@ -611,7 +611,7 @@ function EmployerSettings() {
                       value={settings.address}
                       onChange={(e) => handleChange("address", e.target.value)}
                       placeholder="Địa chỉ văn phòng"
-                      className="w-full bg-slate-100 dark:bg-slate-700 border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-600/20 text-slate-900 dark:text-white outline-none"
+                      className="w-full bg-slate-100 dark:bg-slate-700 border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-600/20 text-slate-900 dark:text-white outline-none"
                     />
                   </div>
 
@@ -622,7 +622,7 @@ function EmployerSettings() {
                       value={settings.description}
                       onChange={(e) => handleChange("description", e.target.value)}
                       rows="4"
-                      className="w-full bg-slate-100 dark:bg-slate-700 border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-600/20 text-slate-900 dark:text-white resize-none outline-none"
+                      className="w-full bg-slate-100 dark:bg-slate-700 border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-600/20 text-slate-900 dark:text-white resize-none outline-none"
                     />
                   </div>
                 </div>
@@ -635,7 +635,7 @@ function EmployerSettings() {
                 {/* Bảo mật */}
                 <div className="bg-white dark:bg-slate-800 rounded-xl p-8 shadow-sm">
                   <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-6">
-                    <span className="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">security</span>
+                    <span className="material-symbols-outlined text-2xl text-orange-600 dark:text-orange-400">security</span>
                     Bảo mật
                   </h2>
                   <div className="space-y-4">
@@ -648,7 +648,7 @@ function EmployerSettings() {
                         <p className="font-bold text-slate-900 dark:text-white">Đổi mật khẩu</p>
                         <p className="text-xs text-slate-600 dark:text-slate-400">Thay đổi định kỳ để bảo mật</p>
                       </div>
-                      <span className="material-symbols-outlined text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      <span className="material-symbols-outlined text-slate-400 group-hover:text-orange-600 dark:group-hover:text-orange-500 transition-colors">
                         chevron_right
                       </span>
                     </button>
@@ -656,9 +656,9 @@ function EmployerSettings() {
                 </div>
 
                 {/* Thông báo email */}
-                <div className="bg-white dark:bg-slate-800 rounded-xl p-8 shadow-sm border-t-4 border-blue-600 dark:border-blue-400">
+                <div className="bg-white dark:bg-slate-800 rounded-xl p-8 shadow-sm border-t-4 border-orange-600 dark:border-orange-800">
                   <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-6">
-                    <span className="material-symbols-outlined text-2xl text-blue-600 dark:text-blue-400">mail</span>
+                    <span className="material-symbols-outlined text-2xl text-orange-600 dark:text-orange-400">mail</span>
                     Thông báo email
                   </h2>
                   <div className="space-y-6">
@@ -683,9 +683,9 @@ function EmployerSettings() {
                           onClick={() => handleToggleEmailNotification(key)}
                           aria-checked={settings.emailNotifications[key]}
                           role="switch"
-                          className={`relative inline-flex items-center cursor-pointer h-6 w-11 rounded-full transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-blue-600/30 ${
+                          className={`relative inline-flex items-center cursor-pointer h-6 w-11 rounded-full transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-orange-600/30 ${
                             settings.emailNotifications[key]
-                              ? "bg-blue-600"
+                              ? "bg-orange-600"
                               : "bg-slate-300 dark:bg-slate-600"
                           }`}
                         >

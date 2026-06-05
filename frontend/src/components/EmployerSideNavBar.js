@@ -32,7 +32,7 @@ function EmployerSideNavBar() {
       <div className="pt-5 px-4 mb-4 flex items-center justify-between">
         {!collapsed && (
           <div>
-            <h1 className="text-blue-900 dark:text-white font-black text-xl whitespace-nowrap">
+            <h1 className="text-orange-600 dark:text-white font-black text-xl whitespace-nowrap">
               Career Authority
             </h1>
             <p className="text-slate-500 text-xs font-medium uppercase tracking-widest mt-1">
@@ -43,7 +43,7 @@ function EmployerSideNavBar() {
 
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-800 transition"
+          className="p-2 rounded-lg hover:bg-orange-50 dark:hover:bg-slate-800 transition"
         >
           <span className="material-symbols-outlined text-slate-600 dark:text-slate-300">
             {collapsed ? "menu" : "menu_open"}
@@ -61,8 +61,8 @@ function EmployerSideNavBar() {
               ${collapsed ? "justify-center" : "gap-3"}
               ${
                 isActive(item.path)
-                  ? "bg-blue-50 dark:bg-slate-800 text-blue-700 dark:text-blue-400 font-bold shadow-sm"
-                  : "text-slate-600 dark:text-slate-400 hover:translate-x-1 hover:text-blue-600 dark:hover:text-blue-300"
+                  ? "bg-orange-50 dark:bg-slate-800 text-orange-600 dark:text-orange-400 font-bold shadow-sm"
+                  : "text-slate-600 dark:text-slate-400 hover:translate-x-1 hover:text-orange-600 dark:hover:text-orange-400"
               }`}
           >
             <span className="material-symbols-outlined text-lg">

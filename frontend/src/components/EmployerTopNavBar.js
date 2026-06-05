@@ -55,7 +55,7 @@ function EmployerTopNavBar() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Tìm kiếm bài đăng..."
-            className="pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-full text-sm w-72 focus:ring-2 focus:ring-blue-600/20 transition-all"
+            className="pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-full text-sm w-72 focus:ring-2 focus:ring-orange-600/20 transition-all"
           />
         </div> */}
       </div>
@@ -99,7 +99,7 @@ function EmployerTopNavBar() {
                 }}
               />
               <div className="text-left hidden sm:block">
-                <p className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">{employerProfile.company_name}</p>
+                <p className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-500">{employerProfile.company_name}</p>
               </div>
             </div>
           </div>

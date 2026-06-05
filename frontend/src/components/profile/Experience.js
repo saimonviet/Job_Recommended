@@ -129,8 +129,8 @@ const Experience = () => {
         {/* ── Page Header ── */}
         <div className="flex items-center justify-between mb-10">
           <div>
-            <h2 className="text-xl font-bold tracking-widest text-[#00488d] uppercase mb-1">Hồ sơ cá nhân</h2>
-            <p className="text-sm text-gray-500 mt-1">Quá trình sự nghiệp giúp nhà tuyển dụng hiểu rõ năng lực của bạn.</p>
+            <p className="text-xl font-semibold tracking-widest text-[#00488d] uppercase mb-1">Hồ sơ cá nhân</p>
+            <p className="text-lg text-gray-500 mt-1">Quá trình sự nghiệp giúp nhà tuyển dụng hiểu rõ năng lực của bạn.</p>
           </div>
           <button
             onClick={() => isFormOpen ? handleCancelForm() : setIsFormOpen(true)}

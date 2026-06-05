@@ -294,7 +294,7 @@ function EmployerCreatePost() {
               <div className="col-span-12 lg:col-span-7 space-y-6">
                 <div className="bg-white dark:bg-slate-800 rounded-xl p-8 shadow-sm">
                   <div className="flex justify-between items-center mb-8">
-                    <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                    <h3 className="text-xl font-bold text-orange-600 dark:text-orange-400">
                       {currentStep === 1 && "Bước 1: Thông tin chung"}
                       {currentStep === 2 && "Bước 2: Mô tả công việc"}
                       {currentStep === 3 && "Bước 3: Xem trước & Đăng"}
@@ -316,7 +316,7 @@ function EmployerCreatePost() {
                             value={formData.job_title}
                             onChange={handleChange}
                             placeholder="Ví dụ: Senior Product Designer"
-                            className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none focus:ring-2 focus:ring-blue-600/20 rounded-lg outline-none text-slate-900 dark:text-white"
+                            className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none focus:ring-2 focus:ring-orange-600/20 rounded-lg outline-none text-slate-900 dark:text-white"
                           />
                             {errors.job_title && (
                               <p className="text-red-500 text-xs mt-1">{errors.job_title}</p>
@@ -333,7 +333,7 @@ function EmployerCreatePost() {
                               name="employment_type"
                               value={formData.employment_type}
                               onChange={handleChange}
-                              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-blue-600/20 text-slate-900 dark:text-white"
+                              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-orange-600/20 text-slate-900 dark:text-white"
                             >
                               <option value="">Chọn hình thức</option>
                               {EMPLOYMENT_TYPES.map((type) => (
@@ -353,7 +353,7 @@ function EmployerCreatePost() {
                               name="industries"
                               value={formData.industries}
                               onChange={handleChange}
-                              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-blue-600/20 text-slate-900 dark:text-white"
+                              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-orange-600/20 text-slate-900 dark:text-white"
                             >
                               <option value="">Chọn ngành nghề</option>
                               {INDUSTRIES_LIST.map((industry) => (
@@ -379,7 +379,7 @@ function EmployerCreatePost() {
                               onChange={handleChange}
                               placeholder="Ví dụ: 1"
                               min="1"
-                              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-blue-600/20 text-slate-900 dark:text-white"
+                              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-orange-600/20 text-slate-900 dark:text-white"
                             />
                               {errors.exp_min && (
                                 <p className="text-red-500 text-xs mt-1">{errors.exp_min}</p>
@@ -396,7 +396,7 @@ function EmployerCreatePost() {
                               onChange={handleChange}
                               placeholder="Ví dụ: 3"
                               min="1"
-                              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-blue-600/20 text-slate-900 dark:text-white"
+                              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-orange-600/20 text-slate-900 dark:text-white"
                             />
                               {errors.exp_max && (
                                 <p className="text-red-500 text-xs mt-1">{errors.exp_max}</p>
@@ -417,7 +417,7 @@ function EmployerCreatePost() {
                               onChange={handleChange}
                               placeholder="Ví dụ: 20"
                               min="0"
-                              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-blue-600/20 text-slate-900 dark:text-white"
+                              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-orange-600/20 text-slate-900 dark:text-white"
                             />
                           </div>
                           <div className="space-y-2">
@@ -431,7 +431,7 @@ function EmployerCreatePost() {
                               onChange={handleChange}
                               placeholder="Ví dụ: 50"
                               min="0"
-                              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-blue-600/20 text-slate-900 dark:text-white"
+                              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-orange-600/20 text-slate-900 dark:text-white"
                             />
                           </div>
                           <div className="space-y-2">
@@ -442,7 +442,7 @@ function EmployerCreatePost() {
                               name="salary_currency"
                               value={formData.salary_currency}
                               onChange={handleChange}
-                              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-blue-600/20 text-slate-900 dark:text-white"
+                              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-orange-600/20 text-slate-900 dark:text-white"
                             >
                               <option value="VND">VND (Triệu)</option>
                               <option value="USD">USD</option>
@@ -459,7 +459,7 @@ function EmployerCreatePost() {
                             name="job_address"
                             value={formData.job_address}
                             onChange={handleChange}
-                            className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-blue-600/20 text-slate-900 dark:text-white"
+                            className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-orange-600/20 text-slate-900 dark:text-white"
                           >
                             <option value="">Chọn tỉnh/thành phố</option>
                             {PROVINCES_LIST.map((province) => (
@@ -482,7 +482,7 @@ function EmployerCreatePost() {
                             value={formData.job_detail_address}
                             onChange={handleChange}
                             placeholder="Ví dụ: Tầng 10, Tòa nhà Bitexco, Quận 1"
-                            className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-blue-600/20 text-slate-900 dark:text-white"
+                            className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-orange-600/20 text-slate-900 dark:text-white"
                           />
                         </div>
 
@@ -497,7 +497,7 @@ function EmployerCreatePost() {
                             value={formData.deadline}
                             onChange={handleChange}
                             min={TODAY_DATE}
-                            className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-blue-600/20 text-slate-900 dark:text-white"
+                            className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-orange-600/20 text-slate-900 dark:text-white"
                           />
                             {errors.deadline && (
                               <p className="text-red-500 text-xs mt-1">{errors.deadline}</p>
@@ -519,7 +519,7 @@ function EmployerCreatePost() {
                             onChange={handleChange}
                             placeholder="Nhập mô tả chi tiết về công việc, nhiệm vụ, trách nhiệm..."
                             rows="8"
-                            className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-blue-600/20 text-slate-900 dark:text-white placeholder:text-slate-500"
+                            className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-orange-600/20 text-slate-900 dark:text-white placeholder:text-slate-500"
                           />
                             {errors.job_description && (
                               <p className="text-red-500 text-xs mt-1">{errors.job_description}</p>
@@ -536,7 +536,7 @@ function EmployerCreatePost() {
                             onChange={handleChange}
                             placeholder="Trình độ học vấn, kỹ năng, kinh nghiệm yêu cầu..."
                             rows="6"
-                            className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-blue-600/20 text-slate-900 dark:text-white placeholder:text-slate-500"
+                            className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-orange-600/20 text-slate-900 dark:text-white placeholder:text-slate-500"
                           />
                             {errors.job_requirement && (
                               <p className="text-red-500 text-xs mt-1">{errors.job_requirement}</p>
@@ -553,7 +553,7 @@ function EmployerCreatePost() {
                             onChange={handleChange}
                             placeholder="Bảo hiểm, thưởng, du lịch, môi trường làm việc..."
                             rows="4"
-                            className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-blue-600/20 text-slate-900 dark:text-white placeholder:text-slate-500"
+                            className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-none rounded-lg outline-none focus:ring-2 focus:ring-orange-600/20 text-slate-900 dark:text-white placeholder:text-slate-500"
                           />
                             {errors.benefits && (
                               <p className="text-red-500 text-xs mt-1">{errors.benefits}</p>
@@ -565,8 +565,8 @@ function EmployerCreatePost() {
                     {/* Step 3: Preview & Publish */}
                     {currentStep === 3 && (
                       <div className="space-y-6">
-                        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                          <p className="text-sm text-blue-900 dark:text-blue-300">
+                        <div className="p-4 bg-orange-50 dark:bg-orange-900/30 rounded-lg border border-orange-200 dark:border-orange-800">
+                          <p className="text-sm text-orange-600 dark:text-orange-400">
                             <span className="font-bold">✓ Kiểm tra lại thông tin</span> — Xem lại bài đăng trước khi xuất bản.
                           </p>
                         </div>
@@ -620,7 +620,7 @@ function EmployerCreatePost() {
                   <button
                     onClick={currentStep === 3 ? handleSubmit : handleNextStep}
                     disabled={submitting}
-                    className="px-8 py-3 bg-gradient-to-br from-blue-600 to-blue-500 text-white text-sm font-bold rounded-lg hover:shadow-lg transition-all flex items-center gap-2 disabled:opacity-60"
+                    className="px-8 py-3 bg-gradient-to-br from-orange-600 to-orange-500 text-white text-sm font-bold rounded-lg hover:shadow-lg transition-all flex items-center gap-2 disabled:opacity-60"
                   >
                     {submitting ? (
                       <>
@@ -648,7 +648,7 @@ function EmployerCreatePost() {
                   <h4 className="font-bold text-slate-900 dark:text-white mb-4">Xem trước</h4>
                   <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-4 space-y-4">
                     <div>
-                      <h5 className="font-bold text-base text-blue-600 dark:text-blue-400">
+                      <h5 className="font-bold text-base text-orange-600 dark:text-orange-400">
                         {formData.job_title || "Tên công việc"}
                       </h5>
                       <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{employerName}</p>

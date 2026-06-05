@@ -154,7 +154,7 @@ const TopNavBar = ({ currentPage = 'home' }) => {
                 </button>
 
                 <button
-                  onClick={() => navigate('/seeker/settings')}
+                  onClick={() => navigate('/seeker/profile/settings')}
                   className="w-full text-left px-4 py-2 text-sm text-on-surface hover:bg-[#f2f3fb] rounded transition-colors"
                 >
                   Cài đặt

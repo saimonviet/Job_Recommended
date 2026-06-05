@@ -205,7 +205,7 @@ function AdminJobs() {
         <button
           key={1}
           onClick={() => setCurrentPage(1)}
-          className="min-w-[40px] h-10 rounded-lg text-sm font-bold bg-white text-slate-600 border border-slate-200 hover:bg-blue-50 hover:text-blue-600"
+          className="min-w-[40px] h-10 rounded-lg text-sm font-bold bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50 hover:text-emerald-600"
         >
           1
         </button>
@@ -227,8 +227,8 @@ function AdminJobs() {
           onClick={() => setCurrentPage(i)}
           className={`min-w-[40px] h-10 rounded-lg text-sm font-bold transition-all ${
             i === currentPage
-              ? "bg-blue-600 text-white shadow-sm"
-              : "bg-white text-slate-600 border border-slate-200 hover:bg-blue-50 hover:text-blue-600"
+              ? "bg-emerald-600 text-white shadow-sm"
+              : "bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50 hover:text-emerald-600"
           }`}
         >
           {i}
@@ -249,7 +249,7 @@ function AdminJobs() {
         <button
           key={totalPages}
           onClick={() => setCurrentPage(totalPages)}
-          className="min-w-[40px] h-10 rounded-lg text-sm font-bold bg-white text-slate-600 border border-slate-200 hover:bg-blue-50 hover:text-blue-600"
+          className="min-w-[40px] h-10 rounded-lg text-sm font-bold bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50 hover:text-emerald-600"
         >
           {totalPages}
         </button>
@@ -270,7 +270,7 @@ function AdminJobs() {
           {/* Header */}
           <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
-              <h2 className="text-3xl font-black text-blue-600 tracking-tight mb-2">
+              <h2 className="text-3xl font-black text-emerald-600 tracking-tight mb-2">
                 Quản lý bài đăng tuyển dụng
               </h2>
               <p className="text-on-surface-variant max-w-lg">
@@ -320,13 +320,13 @@ function AdminJobs() {
                   placeholder="Tìm kiếm theo tiêu đề hoặc công ty..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full md:w-[420px] appearance-none bg-white border border-gray-300 text-sm rounded-xl pl-4 pr-4 py-3 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none"
+                  className="w-full md:w-[420px] appearance-none bg-white border border-gray-300 text-sm rounded-xl pl-4 pr-4 py-3 focus:ring-2 focus:ring-emerald-600 focus:border-transparent outline-none"
                 />
 
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="appearance-none bg-white border border-gray-300 text-sm rounded-xl pl-4 pr-10 py-3 focus:ring-2 focus:ring-blue-600 focus:border-transparent cursor-pointer outline-none"
+                  className="appearance-none bg-white border border-gray-300 text-sm rounded-xl pl-4 pr-10 py-3 focus:ring-2 focus:ring-emerald-600 focus:border-transparent cursor-pointer outline-none"
                 >
                   <option value="all">Tất cả trạng thái</option>
                   <option value="active">Hoạt động</option>
@@ -410,7 +410,7 @@ function AdminJobs() {
                             <div className="flex items-center justify-end gap-2 whitespace-nowrap">
                               <button
                                 onClick={() => handleViewDetail(job.id)}
-                                className="min-w-[70px] px-3 py-2 rounded-full text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all"
+                                className="min-w-[70px] px-3 py-2 rounded-full text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-all"
                               >
                                 Xem
                               </button>
@@ -468,7 +468,7 @@ function AdminJobs() {
                     className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
                       currentPage === 1
                         ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                        : "bg-white text-slate-700 border border-slate-200 hover:bg-blue-50 hover:text-blue-600"
+                        : "bg-white text-slate-700 border border-slate-200 hover:bg-emerald-50 hover:text-emerald-600"
                     }`}
                   >
                     Trước
@@ -482,7 +482,7 @@ function AdminJobs() {
                     className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
                       currentPage === totalPages
                         ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                        : "bg-white text-slate-700 border border-slate-200 hover:bg-blue-50 hover:text-blue-600"
+                        : "bg-white text-slate-700 border border-slate-200 hover:bg-emerald-50 hover:text-emerald-600"
                     }`}
                   >
                     Sau
@@ -499,14 +499,14 @@ function AdminJobs() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
-            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-500 text-white px-8 py-6 flex justify-between items-center">
+            <div className="sticky top-0 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white px-8 py-6 flex justify-between items-center">
               <div>
                 <h3 className="text-2xl font-black">{selectedJob.title}</h3>
-                <p className="text-blue-100 text-sm mt-1">{selectedJob.company}</p>
+                <p className="text-emerald-100 text-sm mt-1">{selectedJob.company}</p>
               </div>
               <button
                 onClick={closeModal}
-                className="text-white hover:bg-blue-700 p-2 rounded-lg transition-colors"
+                className="text-white hover:bg-emerald-700 p-2 rounded-lg transition-colors"
               >
                 ✕
               </button>
@@ -563,9 +563,9 @@ function AdminJobs() {
 
               {/* Salary */}
               {(selectedJob.salary_min || selectedJob.salary_max) && (
-                <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-                  <p className="text-xs font-bold text-blue-600 uppercase mb-1">Mức lương</p>
-                  <p className="text-lg font-bold text-blue-600">
+                <div className="mb-6 p-4 bg-emerald-50 rounded-lg">
+                  <p className="text-xs font-bold text-emerald-600 uppercase mb-1">Mức lương</p>
+                  <p className="text-lg font-bold text-emerald-600">
                     {formatSalaryRange(selectedJob.salary_min, selectedJob.salary_max)}
                   </p>
                 </div>
@@ -602,27 +602,27 @@ function AdminJobs() {
                     <p className="text-sm"><span className="font-semibold">Công ty:</span> {selectedJob.employer.company_name}</p>
                     <p className="text-sm"><span className="font-semibold">Email:</span> {selectedJob.employer.email}</p>
                     {selectedJob.employer.phone && <p className="text-sm"><span className="font-semibold">Điện thoại:</span> {selectedJob.employer.phone}</p>}
-                    {selectedJob.employer.website && <p className="text-sm"><span className="font-semibold">Website:</span> <a href={selectedJob.employer.website} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">{selectedJob.employer.website}</a></p>}
+                    {selectedJob.employer.website && <p className="text-sm"><span className="font-semibold">Website:</span> <a href={selectedJob.employer.website} target="_blank" rel="noreferrer" className="text-emerald-600 hover:underline">{selectedJob.employer.website}</a></p>}
                   </div>
                 </div>
               )}
 
               {/* Statistics */}
-              <div className="grid grid-cols-2 gap-4 p-4 bg-blue-50 rounded-lg mb-6">
+              <div className="grid grid-cols-2 gap-4 p-4 bg-emerald-50 rounded-lg mb-6">
                 <div>
-                  <p className="text-xs font-bold text-blue-600 uppercase">Đơn ứng tuyển</p>
-                  <p className="text-2xl font-black text-blue-600">{selectedJob.total_applications || 0}</p>
+                  <p className="text-xs font-bold text-emerald-600 uppercase">Đơn ứng tuyển</p>
+                  <p className="text-2xl font-black text-emerald-600">{selectedJob.total_applications || 0}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-blue-600 uppercase">Mã bài đăng</p>
-                  <p className="text-lg font-bold text-blue-600">POST-{selectedJob.id}</p>
+                  <p className="text-xs font-bold text-emerald-600 uppercase">Mã bài đăng</p>
+                  <p className="text-lg font-bold text-emerald-600">POST-{selectedJob.id}</p>
                 </div>
               </div>
 
               {/* Close Button */}
               <button
                 onClick={closeModal}
-                className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                className="w-full bg-emerald-600 text-white py-2.5 rounded-lg font-semibold hover:bg-emerald-700 transition-colors"
               >
                 Đóng
               </button>

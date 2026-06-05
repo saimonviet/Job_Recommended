@@ -61,7 +61,7 @@ function AdminAnalytics() {
         <div className="p-8 max-w-7xl mx-auto">
           <div className="mb-10 flex items-end justify-between">
             <div>
-              <h2 className="text-3xl font-black text-blue-600 tracking-tight mb-2">
+              <h2 className="text-3xl font-black text-emerald-600 tracking-tight mb-2">
                 Phân tích & Báo cáo
               </h2>
               <p className="text-on-surface-variant max-w-2xl">
@@ -71,7 +71,7 @@ function AdminAnalytics() {
 
             <button
               onClick={fetchAnalytics}
-              className="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700"
+              className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700"
             >
               Làm mới
             </button>
@@ -149,7 +149,7 @@ function AdminAnalytics() {
                       analytics.monthly_users.map((item, idx) => (
                         <div key={idx} className="flex-1 flex flex-col items-center gap-2">
                           <div
-                            className="w-full bg-blue-500 rounded-t-lg hover:bg-blue-600 transition-all"
+                            className="w-full bg-emerald-500 rounded-t-lg hover:bg-emerald-600 transition-all"
                             style={{
                               height: `${Math.max((item.count / maxUserCount) * 100, 8)}%`,
                             }}
@@ -185,14 +185,14 @@ function AdminAnalytics() {
                             <span className="text-sm font-semibold text-slate-700">
                               {statusText[item.status] || item.status}
                             </span>
-                            <span className="text-sm font-bold text-blue-600">
+                            <span className="text-sm font-bold text-emerald-600">
                               {item.percentage}%
                             </span>
                           </div>
 
                           <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-blue-500"
+                              className="h-full bg-emerald-500"
                               style={{ width: `${item.percentage}%` }}
                             ></div>
                           </div>
@@ -221,7 +221,7 @@ function AdminAnalytics() {
                           className="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 font-bold">
+                            <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600 font-bold">
                               {idx + 1}
                             </div>
                             <div>
@@ -234,7 +234,7 @@ function AdminAnalytics() {
                             </div>
                           </div>
 
-                          <span className="text-sm font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                          <span className="text-sm font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
                             {company.count}
                           </span>
                         </div>

@@ -180,7 +180,7 @@ const paginationButtons = () => {
       <button
         key={1}
         onClick={() => setCurrentPage(1)}
-        className="min-w-[40px] h-10 rounded-lg text-sm font-bold bg-white border border-slate-200 hover:bg-blue-50"
+        className="min-w-[40px] h-10 rounded-lg text-sm font-bold bg-white border border-slate-200 hover:bg-emerald-50"
       >
         1
       </button>
@@ -202,8 +202,8 @@ const paginationButtons = () => {
         onClick={() => setCurrentPage(i)}
         className={`min-w-[40px] h-10 rounded-lg text-sm font-bold transition-all ${
           i === currentPage
-            ? "bg-blue-600 text-white shadow-sm"
-            : "bg-white text-slate-600 border border-slate-200 hover:bg-blue-50 hover:text-blue-600"
+            ? "bg-emerald-600 text-white shadow-sm"
+            : "bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50 hover:text-emerald-600"
         }`}
       >
         {i}
@@ -224,7 +224,7 @@ const paginationButtons = () => {
       <button
         key={totalPages}
         onClick={() => setCurrentPage(totalPages)}
-        className="min-w-[40px] h-10 rounded-lg text-sm font-bold bg-white border border-slate-200 hover:bg-blue-50"
+        className="min-w-[40px] h-10 rounded-lg text-sm font-bold bg-white border border-slate-200 hover:bg-emerald-50"
       >
         {totalPages}
       </button>
@@ -311,7 +311,7 @@ const paginationButtons = () => {
                     Website
                   </p>
 
-                  <p className="text-base font-semibold text-blue-600 break-all">
+                  <p className="text-base font-semibold text-emerald-600 break-all">
                     {selectedEmployer.website || "-"}
                   </p>
                 </div>
@@ -391,7 +391,7 @@ const paginationButtons = () => {
         <div className="p-8 max-w-7xl mx-auto">
           <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
-              <h2 className="text-3xl font-black text-blue-600 tracking-tight mb-2">
+              <h2 className="text-3xl font-black text-emerald-600 tracking-tight mb-2">
                 Quản lý nhà tuyển dụng
               </h2>
               <p className="text-on-surface-variant max-w-lg">
@@ -443,12 +443,12 @@ const paginationButtons = () => {
                   placeholder="Tìm kiếm theo tên công ty hoặc email..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full md:w-[420px] appearance-none bg-white border border-gray-300 text-sm rounded-xl pl-4 pr-4 py-3 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none"                />
+                  className="w-full md:w-[420px] appearance-none bg-white border border-gray-300 text-sm rounded-xl pl-4 pr-4 py-3 focus:ring-2 focus:ring-emerald-600 focus:border-transparent outline-none"                />
 
                 <select
                   value={verifiedFilter}
                   onChange={(e) => setVerifiedFilter(e.target.value)}
-                className="w-80 appearance-none bg-white border border-gray-300 text-sm rounded-xl pl-4 pr-4 py-3 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none"                
+                className="w-80 appearance-none bg-white border border-gray-300 text-sm rounded-xl pl-4 pr-4 py-3 focus:ring-2 focus:ring-emerald-600 focus:border-transparent outline-none"                
                 >
                   <option>Tất cả</option>
                   <option>Đã duyệt</option>
@@ -457,7 +457,7 @@ const paginationButtons = () => {
                 <select
                   value={sortFilter}
                   onChange={(e) => setSortFilter(e.target.value)}
-                  className="w-64 appearance-none bg-white border border-gray-300 text-sm rounded-xl pl-4 pr-4 py-3 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none"
+                  className="w-64 appearance-none bg-white border border-gray-300 text-sm rounded-xl pl-4 pr-4 py-3 focus:ring-2 focus:ring-emerald-600 focus:border-transparent outline-none"
                 >
                   <option value="newest">Đăng ký mới nhất</option>
                   <option value="oldest">Đăng ký cũ nhất</option>
@@ -580,7 +580,7 @@ const paginationButtons = () => {
                                 }
                                 className={`min-w-[78px] px-3 py-2 rounded-lg text-xs font-bold text-white transition-all ${
                                   employer.is_active
-                                    ? "bg-blue-600 hover:bg-blue-700"
+                                    ? "bg-emerald-600 hover:bg-emerald-700"
                                     : "bg-emerald-600 hover:bg-emerald-700"
                                 }`}
                               >
@@ -618,7 +618,7 @@ const paginationButtons = () => {
         className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
           currentPage === 1
             ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-            : "bg-white text-slate-700 border border-slate-200 hover:bg-blue-50 hover:text-blue-600"
+            : "bg-white text-slate-700 border border-slate-200 hover:bg-emerald-50 hover:text-emerald-600"
         }`}
       >
         Trước
@@ -632,7 +632,7 @@ const paginationButtons = () => {
         className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
           currentPage === totalPages
             ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-            : "bg-white text-slate-700 border border-slate-200 hover:bg-blue-50 hover:text-blue-600"
+            : "bg-white text-slate-700 border border-slate-200 hover:bg-emerald-50 hover:text-emerald-600"
         }`}
       >
         Sau
