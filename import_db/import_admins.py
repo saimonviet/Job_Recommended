@@ -4,9 +4,9 @@ from datetime import datetime
 
 DB_HOST = "localhost"
 DB_USER = "root"
-DB_PASSWORD = ""
+DB_PASSWORD = "12345"
 DB_NAME = "pbl7"
-DB_PORT = 3306
+DB_PORT = 3308
 
 
 def hash_password(raw_password):

@@ -145,7 +145,7 @@ const PersonalInfo = () => {
         {/* ── Page Header ── */}
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold tracking-widest text-[#00488d] uppercase mb-1">Hồ sơ cá nhân</p>
+            <h2 className="text-xl font-bold tracking-widest text-[#00488d] uppercase mb-1">Hồ sơ cá nhân</h2>
             <p className="text-sm text-gray-500 mt-1">Cập nhật hồ sơ để tăng cơ hội nhận được lời mời từ nhà tuyển dụng.</p>
           </div>
           {!isEditing && (
@@ -292,7 +292,7 @@ const PersonalInfo = () => {
                 <FieldValue>{formData.industry}</FieldValue>
               )}
             </div>
-            <div className="mt-4">
+            <div>
               <FieldLabel>Mức lương mong muốn</FieldLabel>
               {isEditing ? (
                 <SelectField name="desired_salary" value={formData.desired_salary} onChange={handleChange}>
