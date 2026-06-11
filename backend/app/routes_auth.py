@@ -142,18 +142,17 @@ def employer_register():
         website=website,
         industry=industry,
         is_active=True,
-        is_verified=False,
+        is_verified=True,
     )
     db.session.add(employer)
     db.session.commit()
 
     return jsonify({
-        "message": "Đăng ký thành công. Tài khoản đang chờ admin duyệt.",
+        "message": "Đăng ký thành công.",
         "employer": {
             "id": employer.id,
             "company_name": employer.company_name,
             "email": employer.email,
-            "is_verified": employer.is_verified,
         }
     }), 201
 
@@ -174,9 +173,6 @@ def employer_login():
 
     if not employer.is_active:
         return jsonify({"error": "Tài khoản đã bị khoá"}), 403
-    
-    if not employer.is_verified:
-        return jsonify({"error": "Tài khoản nhà tuyển dụng đang chờ admin duyệt"}), 403
 
     token = generate_token(employer.id, 'employer')
     return jsonify({
@@ -186,7 +182,6 @@ def employer_login():
             "id": employer.id,
             "company_name": employer.company_name,
             "email": employer.email,
-            "is_verified": employer.is_verified,
         }
     })
 
@@ -216,7 +211,6 @@ def me():
             "website": employer.website,
             "industry": employer.industry,
             "logo_path": employer.logo_path,
-            "is_verified": employer.is_verified,
         })
 
     user = User.query.get(uid)

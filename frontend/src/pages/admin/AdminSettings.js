@@ -8,18 +8,14 @@ function AdminSettings() {
   const [settings, setSettings] = useState({
     maintenanceMode: false,
   });
-
   const [admin, setAdmin] = useState(null);
-
   const [passwordForm, setPasswordForm] = useState({
     current_password: "",
     new_password: "",
     confirm_password: "",
   });
-
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-
   const [statusMessage, setStatusMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -36,7 +32,6 @@ function AdminSettings() {
       const response = await fetch(`${API_BASE_URL}/admin/settings`, {
         headers: getAdminHeaders(),
       });
-
       const data = await response.json();
 
       if (!response.ok) {
@@ -46,7 +41,6 @@ function AdminSettings() {
       setSettings({
         maintenanceMode: Boolean(data.maintenanceMode),
       });
-
       setAdmin(data.admin || null);
     } catch (err) {
       setError(err.message);
@@ -70,7 +64,6 @@ function AdminSettings() {
         headers: getAdminHeaders(),
         body: JSON.stringify({ maintenanceMode }),
       });
-
       const data = await response.json();
 
       if (!response.ok) {
@@ -80,7 +73,6 @@ function AdminSettings() {
       setSettings({
         maintenanceMode: Boolean(data.maintenanceMode),
       });
-
       setStatusMessage("Đã cập nhật chế độ bảo trì");
     } catch (err) {
       setError(err.message);
@@ -104,18 +96,16 @@ function AdminSettings() {
     saveMaintenanceMode(nextValue);
   };
 
-  const handlePasswordChange = (e) => {
-    const { name, value } = e.target;
-
+  const handlePasswordChange = (event) => {
+    const { name, value } = event.target;
     setPasswordForm((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
-  const handleChangePassword = async (e) => {
-    e.preventDefault();
-
+  const handleChangePassword = async (event) => {
+    event.preventDefault();
     setSaving(true);
     setError("");
     setStatusMessage("");
@@ -126,7 +116,6 @@ function AdminSettings() {
         headers: getAdminHeaders(),
         body: JSON.stringify(passwordForm),
       });
-
       const data = await response.json();
 
       if (!response.ok) {
@@ -138,7 +127,6 @@ function AdminSettings() {
         new_password: "",
         confirm_password: "",
       });
-
       setStatusMessage("Đổi mật khẩu admin thành công");
     } catch (err) {
       setError(err.message);

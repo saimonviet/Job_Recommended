@@ -2,6 +2,22 @@ import React, { useEffect, useRef, useState } from 'react';
 import api from '../../services/api';
 import { PROVINCES_LIST } from '../../constants/dropdownOptions';
 
+const DESIRED_SALARY_OPTIONS = [
+  ['0-5', 'Dưới 5 triệu'],
+  ['5-10', '5 - 10 triệu'],
+  ['10-15', '10 - 15 triệu'],
+  ['15-20', '15 - 20 triệu'],
+  ['20-30', '20 - 30 triệu'],
+  ['30-50', '30 - 50 triệu'],
+  ['50+', 'Trên 50 triệu'],
+];
+
+const formatDesiredSalary = (value) => {
+  if (!value) return 'Thoả thuận';
+  const option = DESIRED_SALARY_OPTIONS.find(([optionValue]) => optionValue === value);
+  return option ? option[1] : value;
+};
+
 /* ── Reusable field components ── */
 const FieldLabel = ({ children }) => (
   <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">{children}</p>
@@ -60,6 +76,7 @@ const PersonalInfo = () => {
   const [avatarFile, setAvatarFile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState('https://api.dicebear.com/10.x/glyphs/svg?seed=Luna');
+  const [profileCompletionPercent, setProfileCompletionPercent] = useState(0);
   const [formData, setFormData] = useState({
     phone: '',
     workplace_desired: '',
@@ -101,6 +118,8 @@ const PersonalInfo = () => {
         if (data.avatar_path) {
           setAvatarPreview(`http://127.0.0.1:5000${data.avatar_path}`);
         }
+        const completionPercent = Number(data.profile_completion_percentage ?? data.profile_completion?.percentage ?? 0);
+        setProfileCompletionPercent(Number.isFinite(completionPercent) ? Math.min(100, Math.max(0, Math.round(completionPercent))) : 0);
       } catch (error) {
         console.error('Failed to fetch profile:', error);
       }
@@ -125,12 +144,15 @@ const PersonalInfo = () => {
     Object.keys(formData).forEach((key) => data.append(key, formData[key]));
     if (avatarFile) data.append('avatar', avatarFile);
     try {
-      await api.request('/seeker/profile', {
+      const result = await api.request('/seeker/profile', {
         method: 'POST',
         body: data,
         headers: { 'Content-Type': null },
       });
-      // Refresh recommendations immediately so home shows updated suggestions
+      const completionPercent = Number(result.profile_completion_percentage ?? result.profile_completion?.percentage ?? 0);
+      if (Number.isFinite(completionPercent)) {
+        setProfileCompletionPercent(Math.min(100, Math.max(0, Math.round(completionPercent))));
+      }
       try {
         await api.request('/seeker/recommendations');
       } catch (err) {
@@ -167,7 +189,7 @@ const PersonalInfo = () => {
 
         {/* ── Avatar + Identity ── */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-          <div className="flex items-center gap-5">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
             {/* avatar */}
             <div className="relative flex-shrink-0">
               <div className="w-20 h-20 rounded-2xl overflow-hidden ring-2 ring-[#00488d]/10 bg-gray-100">
@@ -197,6 +219,18 @@ const PersonalInfo = () => {
             <div className="min-w-0 flex-1">
               <h2 className="text-lg font-bold text-gray-900 truncate">{user.username || user.name}</h2>
               <p className="text-sm text-gray-500 mt-0.5">{user.email}</p>
+            </div>
+            <div className="w-full flex-shrink-0 sm:w-44">
+              <div className="mb-1 flex items-center justify-between text-xs font-semibold text-gray-500">
+                <span>Hồ sơ</span>
+                <span className="text-[#00488d]">{profileCompletionPercent}%</span>
+              </div>
+              <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-[#00488d]"
+                  style={{ width: `${profileCompletionPercent}%` }}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -303,14 +337,10 @@ const PersonalInfo = () => {
               {isEditing ? (
                 <SelectField name="desired_salary" value={formData.desired_salary} onChange={handleChange}>
                   <option value="">Chọn khoảng lương</option>
-                  {[
-                    ['0-5', 'Dưới 5 triệu'], ['5-10', '5 – 10 triệu'], ['10-15', '10 – 15 triệu'],
-                    ['15-20', '15 – 20 triệu'], ['20-30', '20 – 30 triệu'], ['30-50', '30 – 50 triệu'],
-                    ['50+', 'Trên 50 triệu'],
-                  ].map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                  {DESIRED_SALARY_OPTIONS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                 </SelectField>
               ) : (
-                <FieldValue>{formData.desired_salary || 'Thoả thuận'}</FieldValue>
+                <FieldValue>{formatDesiredSalary(formData.desired_salary)}</FieldValue>
               )}
             </div>
           </Row>
@@ -338,13 +368,14 @@ const PersonalInfo = () => {
 
         {/* ── Action buttons ── */}
         {isEditing && (
-          <div className="flex gap-3 pb-4">
+          <div className="flex gap-3">
             <button
               onClick={() => setIsEditing(false)}
-              className="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
+              className="flex-1 px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
             >
               Hủy
             </button>
+
             <button
               onClick={handleSave}
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#00488d] hover:bg-[#003b76] shadow-md shadow-[#00488d]/20 active:scale-[0.99] transition-all"

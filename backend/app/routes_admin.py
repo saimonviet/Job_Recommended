@@ -12,29 +12,27 @@ Endpoints:
     GET    /admin/employers/<employer_id>
     PUT    /admin/employers/<employer_id>
     DELETE /admin/employers/<employer_id>
-    PUT    /admin/employers/<employer_id>/verify
     GET    /admin/jobs/stats
     GET    /admin/jobs
     GET    /admin/jobs/<job_id>
     DELETE /admin/jobs/<job_id>
     PUT    /admin/jobs/<job_id>/lock
-    PUT    /admin/jobs/<job_id>/hidden
-    PUT    /admin/jobs/<job_id>/toggle
     GET    /admin/applications
 """
 import os
 from flask import send_from_directory
 from werkzeug.utils import secure_filename
 from flask import Blueprint, request, jsonify
-from datetime import datetime
 import hashlib
 from .models import db, User, InforUser, Employer, Job, Application, SystemSetting, Admin
 from .auth import admin_required, generate_token
+from .routes import _get_profile_completion
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 AVT_FOLDER = os.path.join(BASE_DIR, "instance")
 MAINTENANCE_KEY = 'maintenance_mode'
+
 def _admin_avatar_url(admin):
     if not admin or not admin.avatar_path:
         return None
@@ -45,6 +43,7 @@ def _admin_avatar_url(admin):
         return avatar_path
 
     return f"http://127.0.0.1:5000{avatar_path}"
+
 
 def _get_bool_setting(key, default=False):
     setting = SystemSetting.query.get(key)
@@ -62,6 +61,7 @@ def _set_bool_setting(key, value):
         setting.value = 'true' if value else 'false'
     db.session.commit()
     return setting
+
 
 def hash_admin_password(raw_password):
     return hashlib.sha256(raw_password.encode("utf-8")).hexdigest()
@@ -132,25 +132,9 @@ def upload_admin_avatar():
 @admin_bp.route('/notifications', methods=['GET'])
 @admin_required
 def admin_notifications():
-    pending_employers = Employer.query.filter_by(is_verified=False)\
-        .order_by(Employer.created_at.desc())\
-        .limit(10)\
-        .all()
-
-    notifications = []
-
-    for employer in pending_employers:
-        notifications.append({
-            "id": employer.id,
-            "type": "employer_pending",
-            "title": "Nhà tuyển dụng mới đăng ký",
-            "message": f"{employer.company_name} đang chờ duyệt tài khoản",
-            "created_at": employer.created_at.isoformat() if employer.created_at else None,
-        })
-
     return jsonify({
-        "total_unread": len(notifications),
-        "notifications": notifications,
+        "total_unread": 0,
+        "notifications": [],
     }), 200
 
 # ---------------------------------------------------------------------------
@@ -304,13 +288,21 @@ def get_stats():
     """Lấy thống kê tổng quan: số ứng viên, nhà tuyển dụng, etc."""
     total_seekers = User.query.filter(User.role == 'seeker').count()
     total_employers = Employer.query.count()  # Count from Employer table
-    total_users = User.query.filter(User.role != 'admin').count()
-    active_users = User.query.filter(User.role != 'admin', User.is_active == True).count()
+    active_seekers = User.query.filter(User.role == 'seeker', User.is_active == True).count()
+    inactive_seekers = total_seekers - active_seekers
+    active_employers = Employer.query.filter(Employer.is_active == True).count()
+    inactive_employers = total_employers - active_employers
+    total_users = total_seekers + total_employers
+    active_users = active_seekers + active_employers
     inactive_users = total_users - active_users
 
     return jsonify({
         "total_seekers": total_seekers,
         "total_employers": total_employers,
+        "active_seekers": active_seekers,
+        "inactive_seekers": inactive_seekers,
+        "active_employers": active_employers,
+        "inactive_employers": inactive_employers,
         "total_users": total_users,
         "active_users": active_users,
         "inactive_users": inactive_users,
@@ -347,6 +339,8 @@ def list_users():
     users = []
     for u in pagination.items:
         app_count = Application.query.filter_by(user_id=u.id).count()
+        infor = InforUser.query.get(u.id)
+        profile_completion = _get_profile_completion(infor)
         users.append({
             "id": u.id,
             "username": u.username,
@@ -355,6 +349,8 @@ def list_users():
             "is_active": u.is_active,
             "created_at": u.created_at.isoformat() if u.created_at else None,
             "total_applications": app_count,
+            "profile_completion_percentage": profile_completion["percentage"],
+            "profile_completion": profile_completion,
         })
 
     return jsonify({
@@ -374,6 +370,7 @@ def get_user(user_id):
         return jsonify({"error": "Không tìm thấy user"}), 404
 
     infor = InforUser.query.get(user.id)
+    profile_completion = _get_profile_completion(infor)
     applications = Application.query.filter_by(user_id=user.id).order_by(
         Application.applied_at.desc()
     ).limit(10).all()
@@ -385,6 +382,8 @@ def get_user(user_id):
         "role": user.role,
         "is_active": user.is_active,
         "created_at": user.created_at.isoformat() if user.created_at else None,
+        "profile_completion_percentage": profile_completion["percentage"],
+        "profile_completion": profile_completion,
         "profile": {
             "phone": infor.phone if infor else None,
             "desired_job": infor.desired_job if infor else None,
@@ -467,17 +466,12 @@ def list_employers():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 20, type=int)
     search = request.args.get('search', '').strip()
-    verified = request.args.get('verified', '')  # 'true' | 'false'
 
     query = Employer.query
     if search:
         query = query.filter(
             Employer.company_name.ilike(f'%{search}%') | Employer.email.ilike(f'%{search}%')
         )
-    if verified == 'true':
-        query = query.filter_by(is_verified=True)
-    elif verified == 'false':
-        query = query.filter_by(is_verified=False)
 
     query = query.order_by(Employer.created_at.desc())
     pagination = query.paginate(page=page, per_page=per_page)
@@ -492,7 +486,6 @@ def list_employers():
             "phone": e.phone,
             "industry": e.industry,
             "is_active": e.is_active,
-            "is_verified": e.is_verified,
             "created_at": e.created_at.isoformat() if e.created_at else None,
             "total_jobs": job_count,
         })
@@ -526,7 +519,6 @@ def get_employer(employer_id):
         "logo_path": employer.logo_path,
         "industry": employer.industry,
         "is_active": employer.is_active,
-        "is_verified": employer.is_verified,
         "created_at": employer.created_at.isoformat() if employer.created_at else None,
         "recent_jobs": [
             {
@@ -587,34 +579,6 @@ def delete_employer(employer_id):
         return jsonify({"error": str(e)}), 500
 
 
-@admin_bp.route('/employers/<int:employer_id>/verify', methods=['PUT'])
-@admin_required
-def verify_employer(employer_id):
-    """Admin duyệt employer. Sau khi duyệt thì không hủy duyệt nữa."""
-    employer = Employer.query.get(employer_id)
-    if not employer:
-        return jsonify({"error": "Không tìm thấy employer"}), 404
-
-    if employer.is_verified:
-        return jsonify({
-            "error": "Tài khoản này đã được duyệt. Nếu cần chặn truy cập, hãy khóa tài khoản."
-        }), 400
-
-    employer.is_verified = True
-    employer.is_active = True
-
-    try:
-        db.session.commit()
-        return jsonify({
-            "message": "Duyệt employer thành công",
-            "is_verified": employer.is_verified,
-            "is_active": employer.is_active,
-        }), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-
 # ---------------------------------------------------------------------------
 # Quản lý Job
 # ---------------------------------------------------------------------------
@@ -623,14 +587,14 @@ def verify_employer(employer_id):
 @admin_required
 def get_jobs_stats():
     """Thống kê job theo trạng thái."""
-    total_jobs = Job.query.count()
-    locked_jobs = Job.query.filter_by(is_locked=True).count() if hasattr(Job, 'is_locked') else 0
-    hidden_jobs = Job.query.filter_by(is_hidden=True).count() if hasattr(Job, 'is_hidden') else 0
+    total_jobs = Job.query.filter_by(is_deleted=False).count()
+    active_jobs = Job.query.filter_by(is_deleted=False, is_active=True, is_locked=False).count()
+    locked_jobs = Job.query.filter_by(is_deleted=False, is_locked=True).count() if hasattr(Job, 'is_locked') else 0
 
     return jsonify({
         "total_jobs": total_jobs,
+        "active_jobs": active_jobs,
         "locked_jobs": locked_jobs,
-        "hidden_jobs": hidden_jobs,
     }), 200
 
 
@@ -641,7 +605,7 @@ def list_jobs():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 20, type=int)
     search = request.args.get('search', '').strip()
-    status = request.args.get('status', '')  # 'active' | 'locked' | 'hidden'
+    status = request.args.get('status', '')  # 'active' | 'locked'
     employer_id = request.args.get('employer_id', None, type=int)
 
     query = Job.query
@@ -654,12 +618,8 @@ def list_jobs():
     # Status filter
     if status == 'locked':
         query = query.filter_by(is_locked=True)
-    elif status == 'hidden':
-        query = query.filter_by(is_hidden=True)
     elif status == 'active':
-        query = query.filter(
-            (Job.is_locked == False) & (Job.is_hidden == False)
-        )
+        query = query.filter(Job.is_locked == False)
     
     if employer_id:
         query = query.filter_by(employer_id=employer_id)
@@ -679,7 +639,6 @@ def list_jobs():
             "employer_id": j.employer_id,
             "is_active": j.is_active,
             "is_locked": getattr(j, 'is_locked', False),
-            "is_hidden": getattr(j, 'is_hidden', False),
             "is_deleted": getattr(j, 'is_deleted', False),
             "posted_date": j.created_at.isoformat() if j.created_at else None,
             "deadline": j.deadline.isoformat() if j.deadline else None,
@@ -719,7 +678,6 @@ def get_job_detail(job_id):
         "posted_date": job.created_at.isoformat() if job.created_at else None,
         "is_active": job.is_active,
         "is_locked": getattr(job, 'is_locked', False),
-        "is_hidden": getattr(job, 'is_hidden', False),
         "is_deleted": getattr(job, 'is_deleted', False),
         "total_applications": app_count,
         "employer": {
@@ -770,6 +728,7 @@ def lock_job(job_id):
     else:
         job.is_locked = not getattr(job, 'is_locked', False)
 
+    User.query.update({User.recommendations: None}, synchronize_session=False)
     db.session.commit()
     return jsonify({
         "message": f"Job {'đã khóa' if job.is_locked else 'đã mở khóa'}",
@@ -780,39 +739,15 @@ def lock_job(job_id):
 @admin_bp.route('/jobs/<int:job_id>/hidden', methods=['PUT'])
 @admin_required
 def hidden_job(job_id):
-    """Admin ẩn/hiển thị job."""
-    job = Job.query.get(job_id)
-    if not job:
-        return jsonify({"error": "Không tìm thấy job"}), 404
-
-    data = request.get_json(silent=True) or {}
-    if 'is_hidden' in data:
-        job.is_hidden = bool(data['is_hidden'])
-    else:
-        job.is_hidden = not getattr(job, 'is_hidden', False)
-
-    db.session.commit()
-    return jsonify({
-        "message": f"Job {'đã ẩn' if job.is_hidden else 'đã hiển thị'}",
-        "is_hidden": job.is_hidden,
-    }), 200
+    """Chuc nang an bai dang da bi bo; Admin chi con khoa/mo khoa job."""
+    return jsonify({"error": "Chuc nang an bai dang da bi bo. Vui long dung chuc nang khoa."}), 410
 
 
 @admin_bp.route('/jobs/<int:job_id>/toggle', methods=['PUT'])
 @admin_required
 def toggle_job(job_id):
-    """Admin bật/tắt hiển thị job."""
-    job = Job.query.get(job_id)
-    if not job:
-        return jsonify({"error": "Không tìm thấy job"}), 404
-
-    job.is_active = not job.is_active
-    db.session.commit()
-    return jsonify({
-        "message": f"Job {'đã bật' if job.is_active else 'đã ẩn'}",
-        "is_active": job.is_active,
-    })
-
+    """Admin khong con bat/tat hien thi job; chi dung khoa/mo khoa."""
+    return jsonify({"error": "Chuc nang bat/tat hien thi bai dang da bi bo. Vui long dung chuc nang khoa."}), 410
 
 # ---------------------------------------------------------------------------
 # Quản lý Application

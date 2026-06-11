@@ -15,27 +15,41 @@ const LoginEmployer = () => {
     setLoading(true);
     setError('');
 
-    if (!email || !password) {
+    if (!email.trim() || !password) {
       setError('Vui lòng nhập email và mật khẩu');
       setLoading(false);
       return;
     }
 
-    try {
-      const response = await API.post('/auth/employer/login', { email, password });
-      
-      const user = {
-        ...response.data.user,
+   try {
+      const response = await API.post('/auth/employer/login', {
+        email: email.trim().toLowerCase(),
+        password,
+      });
+
+      const employer = {
+        ...response.data.employer,
+        role: 'employer',
         token: response.data.token,
         access_token: response.data.token,
       };
 
-      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('user', JSON.stringify(employer));
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('employerToken', response.data.token);
+
       navigate('/employer/dashboard');
     } catch (err) {
-      setError(err.response?.data?.error || 'Không thể đăng nhập');
+      console.log('LOGIN ERROR:', err);
+      console.log('ERROR RESPONSE:', err.response);
+
+      setError(
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        err.message ||
+        'Không thể đăng nhập'
+      );
+
       setLoading(false);
     }
   };
@@ -101,10 +115,10 @@ const LoginEmployer = () => {
             </header>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {error && (
-                <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-md text-sm">
+             {error && (
+                <p className="text-red-600 font-semibold text-sm bg-red-50 border border-red-200 px-4 py-3 rounded-md">
                   {error}
-                </div>
+                </p>
               )}
               
               <div>

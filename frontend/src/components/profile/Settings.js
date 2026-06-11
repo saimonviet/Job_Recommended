@@ -2,14 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 
+const DEFAULT_SETTINGS = {
+  newJobNotifications: true,
+  applicationReviewNotifications: true,
+  recruiterContact: true,
+  newsAndUpdates: false,
+  profileVisibility: 'public',
+};
+
 const Settings = () => {
   const navigate = useNavigate();
-  const [settings, setSettings] = useState({
-    newJobNotifications: true,
-    recruiterContact: true,
-    newsAndUpdates: false,
-    profileVisibility: 'public',
-  });
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [password, setPassword] = useState({
     currentPassword: '',
     newPassword: '',
@@ -19,10 +22,8 @@ const Settings = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const data = await api.request('/seeker/profile');
-        if (data.degree) {
-          setSettings(JSON.parse(data.degree));
-        }
+        const data = await api.request('/seeker/settings');
+        setSettings({ ...DEFAULT_SETTINGS, ...data });
       } catch (error) {
         console.error('Failed to fetch settings:', error);
       }
@@ -32,13 +33,16 @@ const Settings = () => {
 
   const handleSaveSettings = async (updatedSettings) => {
     try {
-      await api.request('/seeker/profile', {
-        method: 'POST',
-        body: JSON.stringify({ degree: JSON.stringify(updatedSettings) }),
+      const data = await api.request('/seeker/settings', {
+        method: 'PUT',
+        body: JSON.stringify(updatedSettings),
       });
+      if (data?.settings) {
+        setSettings({ ...DEFAULT_SETTINGS, ...data.settings });
+      }
     } catch (error) {
       console.error('Failed to save settings:', error);
-      alert('Lưu cài đặt thất bại.');
+      alert(error.message || 'Lưu cài đặt thất bại.');
     }
   };
 
@@ -78,7 +82,26 @@ const Settings = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
     navigate('/login-seeker');
+  };
+
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm('Bạn có chắc muốn xóa tài khoản? Sau khi xác nhận, tài khoản sẽ bị vô hiệu hóa.');
+    if (!confirmed) return;
+
+    try {
+      await api.request('/seeker/account', {
+        method: 'DELETE',
+      });
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      alert('Tài khoản đã được vô hiệu hóa.');
+      navigate('/login-seeker');
+    } catch (error) {
+      console.error('Failed to delete account:', error);
+      alert(error.message || 'Xóa tài khoản thất bại.');
+    }
   };
 
   const Toggle = ({ settingKey }) => (
@@ -123,9 +146,12 @@ const Settings = () => {
 
                 <div className="divide-y divide-outline-variant/10">
                   {[
-                    { key: 'newJobNotifications', label: 'Thông báo việc làm mới', desc: 'Gửi email khi có việc làm phù hợp' },
+                    {
+                      key: 'applicationReviewNotifications',
+                      label: 'Thông báo xét duyệt hồ sơ',
+                      desc: 'Nhận thông báo khi nhà tuyển dụng cập nhật trạng thái hồ sơ ứng tuyển của bạn'
+                    },
                     { key: 'recruiterContact', label: 'Lời mời từ nhà tuyển dụng', desc: 'Nhận thông báo khi nhà tuyển dụng liên hệ' },
-                    { key: 'newsAndUpdates', label: 'Tin tức & Sự nghiệp', desc: 'Bản tin hàng tuần về thị trường lao động' },
                   ].map(item => (
                     <div key={item.key} className="flex items-center justify-between py-4 first:pt-0 last:pb-0">
                       <div>
@@ -233,7 +259,10 @@ const Settings = () => {
                     <span className="material-symbols-outlined text-[18px] leading-none">logout</span>
                     Đăng xuất
                   </button>
-                  <button className="flex items-center justify-center gap-2 border border-red-500 text-red-600 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-red-50 transition-all">
+                  <button
+                    onClick={handleDeleteAccount}
+                    className="flex items-center justify-center gap-2 border border-red-500 text-red-600 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-red-50 transition-all"
+                  >
                     <span className="material-symbols-outlined text-[18px] leading-none">delete</span>
                     Xóa tài khoản
                   </button>

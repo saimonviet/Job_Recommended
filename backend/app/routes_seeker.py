@@ -23,13 +23,15 @@ from datetime import datetime
 from werkzeug.utils import secure_filename
 
 from .embedding_pipeline import score_jobs_for_user, _parse_salary_nums
-from .models import db, User, InforUser, Job, Application
+from .models import db, User, InforUser, Job, Application, RecruitmentInvitation, SeekerSetting, EmployerNotification
+
 import numpy as np
 from .auth import seeker_required, login_required
 from .routes import (
     _get_infor_for_user, _get_user_context, _get_profile_missing_fields,
+    _get_profile_completion,
     _deserialize_recommendations_cache,
-    _save_recommendations_cache, _serialize_job,
+    _save_recommendations_cache, _serialize_job, LOCKED_JOB_MESSAGE,
 )
 from .embedding_utils import generate_and_save_user_embedding
 
@@ -103,7 +105,6 @@ CV_FOLDER = os.path.join(
     os.path.dirname(os.path.dirname(__file__)), 'instance', 'cvs'
 )
 
-
 def _save_file(file_obj, folder, prefix) -> str:
     os.makedirs(folder, exist_ok=True)
     original = secure_filename(file_obj.filename or 'file')
@@ -128,13 +129,225 @@ def _serialize_application(app: Application) -> dict:
             "company_name": app.job.company_name,
             "job_address": app.job.job_address,
             "deadline": app.job.deadline.isoformat() if app.job.deadline else None,
+            "is_locked": bool(getattr(app.job, 'is_locked', False)),
+            "job_warning": LOCKED_JOB_MESSAGE if getattr(app.job, 'is_locked', False) else None,
         } if app.job else None,
+    }
+
+
+def _serialize_notification_item(item_type, title, message, created_at, job=None, status=None, source_id=None):
+    return {
+        "id": f"{item_type}-{source_id}" if source_id is not None else f"{item_type}-{int(created_at.timestamp()) if created_at else 0}",
+        "type": item_type,
+        "title": title,
+        "message": message,
+        "status": status,
+        "created_at": created_at.isoformat() if created_at else None,
+        "job": {
+            "id": job.id,
+            "job_title": job.job_title,
+            "company_name": job.company_name,
+            "job_address": job.job_address,
+            "is_locked": bool(getattr(job, 'is_locked', False)),
+            "job_warning": LOCKED_JOB_MESSAGE if getattr(job, 'is_locked', False) else None,
+        } if job else None,
+    }
+
+
+def _get_or_create_seeker_settings(user_id):
+    settings = SeekerSetting.query.filter_by(user_id=user_id).first()
+    if not settings:
+        settings = SeekerSetting(user_id=user_id)
+        db.session.add(settings)
+        db.session.flush()
+    return settings
+
+
+def _ensure_employer_notification_table():
+    EmployerNotification.__table__.create(db.engine, checkfirst=True)
+
+
+def _create_new_application_notification(job, seeker):
+    if not job or not job.employer_id:
+        return
+
+    _ensure_employer_notification_table()
+    seeker_name = seeker.username if seeker else 'Một ứng viên'
+    db.session.add(EmployerNotification(
+        employer_id=job.employer_id,
+        type='new_application',
+        title='Có ứng viên mới',
+        message=f"{seeker_name} vừa nộp hồ sơ vào vị trí {job.job_title}.",
+    ))
+
+
+def _serialize_seeker_settings(settings):
+    return {
+        "newJobNotifications": settings.application_review_notifications,
+        "applicationReviewNotifications": settings.application_review_notifications,
+        "recruiterContact": settings.recruiter_contact,
+        "newsAndUpdates": settings.news_and_updates,
+        "profileVisibility": settings.profile_visibility or "public",
+        "updated_at": settings.updated_at.isoformat() if settings.updated_at else None,
     }
 
 
 # ---------------------------------------------------------------------------
 # Nộp đơn / Application
 # ---------------------------------------------------------------------------
+
+@seeker_bp.route('/settings', methods=['GET'])
+@seeker_required
+def get_settings():
+    """Lấy cài đặt riêng của seeker hiện tại."""
+    user = User.query.get(request.current_user_id)
+    if not user:
+        return jsonify({"error": "Không tìm thấy user"}), 404
+
+    settings = _get_or_create_seeker_settings(user.id)
+    db.session.commit()
+    return jsonify(_serialize_seeker_settings(settings))
+
+
+@seeker_bp.route('/settings', methods=['PUT'])
+@seeker_required
+def update_settings():
+    """Cập nhật cài đặt thông báo và quyền riêng tư của seeker."""
+    user = User.query.get(request.current_user_id)
+    if not user:
+        return jsonify({"error": "Không tìm thấy user"}), 404
+
+    data = request.get_json(silent=True) or {}
+    settings = _get_or_create_seeker_settings(user.id)
+
+    if 'newJobNotifications' in data:
+        settings.application_review_notifications = bool(data.get('newJobNotifications'))
+    if 'applicationReviewNotifications' in data:
+        settings.application_review_notifications = bool(data.get('applicationReviewNotifications'))
+    if 'recruiterContact' in data:
+        settings.recruiter_contact = bool(data.get('recruiterContact'))
+    if 'newsAndUpdates' in data:
+        settings.news_and_updates = bool(data.get('newsAndUpdates'))
+    if 'profileVisibility' in data:
+        visibility = (data.get('profileVisibility') or '').strip()
+        if visibility not in ('public', 'private'):
+            return jsonify({"error": "profileVisibility không hợp lệ"}), 400
+        settings.profile_visibility = visibility
+
+    try:
+        db.session.commit()
+        return jsonify({
+            "message": "Cập nhật cài đặt thành công",
+            "settings": _serialize_seeker_settings(settings),
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+
+@seeker_bp.route('/account', methods=['DELETE'])
+@seeker_required
+def deactivate_account():
+    """Vô hiệu hóa tài khoản seeker hiện tại."""
+    user = User.query.get(request.current_user_id)
+    if not user:
+        return jsonify({"error": "Không tìm thấy user"}), 404
+
+    user.is_active = False
+    try:
+        db.session.commit()
+        return jsonify({"message": "Tài khoản đã được vô hiệu hóa"})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+
+@seeker_bp.route('/notifications', methods=['GET'])
+@seeker_required
+def get_notifications():
+    """Thông báo cho seeker: được mời, được duyệt/phỏng vấn, hoặc bị từ chối."""
+    user_id = request.current_user_id
+
+    settings = _get_or_create_seeker_settings(user_id)
+    db.session.commit()
+
+    status_messages = {
+        'reviewed': (
+            'Hồ sơ đã được xem',
+            'Nhà tuyển dụng đã xem hồ sơ ứng tuyển của bạn.',
+            'reviewed',
+        ),
+        'interview': (
+            'Bạn được mời phỏng vấn',
+            'Nhà tuyển dụng muốn trao đổi thêm với bạn về vị trí này.',
+            'interview',
+        ),
+        'accepted': (
+            'Hồ sơ được duyệt',
+            'Chúc mừng! Hồ sơ ứng tuyển của bạn đã được chấp nhận.',
+            'accepted',
+        ),
+        'rejected': (
+            'Hồ sơ bị từ chối',
+            'Nhà tuyển dụng đã từ chối hồ sơ ứng tuyển của bạn.',
+            'rejected',
+        ),
+    }
+
+    notifications = []
+
+    applications = [] if not settings.application_review_notifications else (
+        Application.query
+        .filter(Application.user_id == user_id)
+        .filter(Application.status.in_(status_messages.keys()))
+        .order_by(Application.updated_at.desc())
+        .limit(50)
+        .all()
+    )
+    for application in applications:
+        title, message, status = status_messages.get(application.status)
+        job_title = application.job.job_title if application.job else 'vị trí đã ứng tuyển'
+        notifications.append(_serialize_notification_item(
+            item_type='application_status',
+            title=title,
+            message=f"{message} ({job_title})",
+            created_at=application.updated_at or application.applied_at,
+            job=application.job,
+            status=status,
+            source_id=application.id,
+        ))
+
+    invitations = [] if not settings.recruiter_contact else (
+        RecruitmentInvitation.query
+        .filter_by(user_id=user_id)
+        .order_by(RecruitmentInvitation.sent_at.desc())
+        .limit(50)
+        .all()
+    )
+    for invitation in invitations:
+        job = Job.query.get(invitation.job_id)
+        job_title = job.job_title if job else 'một vị trí tuyển dụng'
+        company_name = job.company_name if job else 'nhà tuyển dụng'
+        custom_message = (invitation.message or '').strip()
+        message = custom_message or f"{company_name} đã mời bạn ứng tuyển vào {job_title}."
+        notifications.append(_serialize_notification_item(
+            item_type='invitation',
+            title='Bạn được mời ứng tuyển',
+            message=message,
+            created_at=invitation.sent_at,
+            job=job,
+            status=invitation.status,
+            source_id=invitation.id,
+        ))
+
+    notifications.sort(key=lambda item: item.get('created_at') or '', reverse=True)
+    notifications = notifications[:50]
+
+    return jsonify({
+        "notifications": notifications,
+        "unread_count": len(notifications),
+    })
+
 
 @seeker_bp.route('/jobs/<int:job_id>/apply', methods=['POST'])
 @seeker_required
@@ -148,6 +361,9 @@ def apply_job(job_id):
 
     if not job.is_active:
         return jsonify({"error": "Job này đã đóng tuyển dụng"}), 400
+
+    if getattr(job, 'is_locked', False):
+        return jsonify({"error": LOCKED_JOB_MESSAGE}), 423
 
     if job.deadline and job.deadline < datetime.utcnow():
         return jsonify({"error": "Job này đã hết hạn nộp đơn"}), 400
@@ -179,6 +395,8 @@ def apply_job(job_id):
     )
     db.session.add(application)
     try:
+        seeker = User.query.get(user_id)
+        _create_new_application_notification(job, seeker)
         db.session.commit()
         return jsonify({
             "message": "Nộp đơn thành công",
@@ -259,6 +477,8 @@ def get_profile():
     if not infor:
         return jsonify({"error": "Chưa có hồ sơ"}), 404
 
+    profile_completion = _get_profile_completion(infor)
+
     return jsonify({
         "id": user.id,
         "username": user.username,
@@ -278,6 +498,8 @@ def get_profile():
         "degree": infor.degree,
         "industry": infor.industry,
         "desired_salary": infor.desired_salary,
+        "profile_completion_percentage": profile_completion["percentage"],
+        "profile_completion": profile_completion,
     })
 
 
@@ -453,7 +675,12 @@ def save_profile():
         db.session.commit()
         generate_and_save_user_embedding(user, infor, commit=True)
 
-        return jsonify({"message": "Cập nhật hồ sơ thành công"})
+        profile_completion = _get_profile_completion(infor)
+        return jsonify({
+            "message": "Cập nhật hồ sơ thành công",
+            "profile_completion_percentage": profile_completion["percentage"],
+            "profile_completion": profile_completion,
+        })
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
@@ -503,6 +730,8 @@ def get_saved_jobs():
                 "industries": job.industries,
                 "logo": logo,
                 "description": job.job_description,
+                "is_locked": bool(getattr(job, 'is_locked', False)),
+                "job_warning": LOCKED_JOB_MESSAGE if getattr(job, 'is_locked', False) else None,
             })
 
     return jsonify({"saved_jobs": jobs, "saved_job_ids": saved_ids})
@@ -515,8 +744,12 @@ def save_job(job_id):
     if not user:
         return jsonify({"error": "Không tìm thấy user"}), 404
 
-    if not Job.query.get(job_id):
+    job = Job.query.get(job_id)
+    if not job:
         return jsonify({"error": "Không tìm thấy job"}), 404
+
+    if getattr(job, 'is_locked', False):
+        return jsonify({"error": LOCKED_JOB_MESSAGE}), 423
 
     ids = _get_saved_ids(user)
     if job_id not in ids:
@@ -571,6 +804,7 @@ def get_recommendations():
         logger.info(f"[seeker/recommendations][{request_tag}] User {user_id} found. Username: {user.username}")
 
         missing_fields  = _get_profile_missing_fields(infor)
+        profile_completion = _get_profile_completion(infor)
         blocking_fields = [f for f in missing_fields if f in ('location', 'desired_job')]
         logger.info(f"[seeker/recommendations][{request_tag}] Profile missing fields: {missing_fields}")
 
@@ -579,6 +813,8 @@ def get_recommendations():
             return jsonify({
                 "profile_complete": False,
                 "profile_missing_fields": missing_fields,
+                "profile_completion_percentage": profile_completion["percentage"],
+                "profile_completion": profile_completion,
                 "recommendations": [],
                 "message": "Profile incomplete",
             }), 200
@@ -590,6 +826,8 @@ def get_recommendations():
             logger.info(f"[seeker/recommendations][{request_tag}] Cache hit! Returning {len(cached)} recommendations")
             return jsonify({
                 "profile_complete": True,
+                "profile_completion_percentage": profile_completion["percentage"],
+                "profile_completion": profile_completion,
                 "user": {"id": user.id, "username": user.username, "email": user.email},
                 "recommendations": cached,
                 "total_jobs_considered": 0,
@@ -597,16 +835,23 @@ def get_recommendations():
             })
         # --- Cache miss: score all jobs via subgraph ---
         logger.info(f"[seeker/recommendations][{request_tag}] Cache miss, loading jobs from DB...")
-        all_jobs = Job.query.order_by(Job.id.desc()).all()
+        all_jobs = Job.query.filter(
+            Job.is_active == True,
+            Job.is_locked == False,
+            Job.is_deleted == False,
+        ).order_by(Job.id.desc()).all()
         logger.info(f"[seeker/recommendations][{request_tag}] Total jobs in DB: {len(all_jobs)}")
 
-        # Lọc jobs theo ngành nghề của user
         jobs, jobs_filtered_out = _filter_jobs_by_industry(infor, all_jobs)
         logger.info(f"[seeker/recommendations][{request_tag}] After industry filter: {len(jobs)} jobs (filtered out: {jobs_filtered_out})")
         
         if not jobs:
-            logger.info(f"[seeker/recommendations][{request_tag}] No jobs matched user's industry filter")
-            return jsonify({"profile_complete": True, "recommendations": []})
+            return jsonify({
+                "profile_complete": True,
+                "profile_completion_percentage": profile_completion["percentage"],
+                "profile_completion": profile_completion,
+                "recommendations": [],
+            })
 
         # Ưu tiên jobs trùng khoảng lương mong muốn của seeker
         user_salary = _salary_range_from_text(infor.desired_salary if infor else '')
@@ -659,6 +904,8 @@ def get_recommendations():
 
         return jsonify({
             "profile_complete": True,
+            "profile_completion_percentage": profile_completion["percentage"],
+            "profile_completion": profile_completion,
             "user": {"id": user.id, "username": user.username, "email": user.email},
             "recommendations": recommendations,
             "total_jobs_considered": len(jobs_to_score),

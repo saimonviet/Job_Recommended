@@ -7,31 +7,47 @@ const LoginSeeker = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!email || !password) {
-      alert('Vui lòng nhập email và mật khẩu');
+    setLoading(true);
+    setError('');
+
+    if (!email.trim() || !password) {
+      setError('Vui lòng nhập email và mật khẩu');
+      setLoading(false);
       return;
     }
 
-    API.post('/auth/seeker/login', { email, password })
-      .then((res) => {
-        const user = {
-          ...res.data.user,
-          token: res.data.token,
-          access_token: res.data.token,
-        };
-
-        localStorage.setItem('user', JSON.stringify(user));
-        localStorage.setItem('token', res.data.token);
-        localStorage.removeItem('employerToken');
-        navigate('/seeker/home');
-      })
-      .catch((error) => {
-        alert(error.message || 'Không thể đăng nhập');
+    try {
+      const res = await API.post('/auth/seeker/login', {
+        email: email.trim().toLowerCase(),
+        password,
       });
+
+      const user = {
+        ...res.data.user,
+        token: res.data.token,
+        access_token: res.data.token,
+      };
+
+      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('token', res.data.token);
+      localStorage.removeItem('employerToken');
+
+      navigate('/seeker/home');
+    } catch (err) {
+      const message =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        err.message ||
+        'Không thể đăng nhập';
+
+      setError(message);
+      setLoading(false);
+    }
   };
 
   return (
@@ -101,16 +117,22 @@ const LoginSeeker = () => {
 
               {/* Main Form */}
               <form onSubmit={handleSubmit} className="space-y-6">
+                {error && (
+                  <p className="text-red-600 font-semibold text-sm bg-red-50 border border-red-200 px-4 py-3 rounded-md">
+                    {error}
+                  </p>
+                )}
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider ml-1">Địa chỉ Email</label>
                   <div className="relative">
                     <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl">mail</span>
-                    <input 
+                    <input
                       type="email"
                       className="w-full pl-12 pr-4 py-3.5 bg-surface-container-low border-none rounded-md focus:ring-1 focus:ring-blue-500 focus:bg-surface-container-lowest transition-all text-on-surface placeholder:text-gray-400"
                       placeholder="email@gmail.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      disabled={loading}
                       required
                     />
                   </div>
@@ -123,12 +145,13 @@ const LoginSeeker = () => {
                   </div>
                   <div className="relative">
                     <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl">lock</span>
-                    <input 
+                    <input
                       type="password"
                       className="w-full pl-12 pr-4 py-3.5 bg-surface-container-low border-none rounded-md focus:ring-1 focus:ring-blue-500 focus:bg-surface-container-lowest transition-all text-on-surface placeholder:text-gray-400"
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      disabled={loading}
                       required
                     />
                   </div>
@@ -145,11 +168,12 @@ const LoginSeeker = () => {
                   <label htmlFor="remember" className="ml-2 text-sm text-on-surface-variant font-medium select-none">Ghi nhớ thiết bị này</label>
                 </div>
 
-                <button 
+                <button
                   type="submit"
-                  className="w-full bg-auth-gradient text-white py-4 rounded-md font-bold text-sm tracking-wide shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+                  disabled={loading}
+                  className="w-full bg-auth-gradient text-white py-4 rounded-md font-bold text-sm tracking-wide shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  ĐĂNG NHẬP VÀO HỆ THỐNG
+                  {loading ? 'ĐANG ĐĂNG NHẬP...' : 'ĐĂNG NHẬP VÀO HỆ THỐNG'}
                 </button>
               </form>
 

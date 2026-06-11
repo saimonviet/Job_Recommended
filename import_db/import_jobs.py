@@ -43,6 +43,24 @@ def _normalize_company_name(value):
     ascii_only = normalized.encode('ascii', 'ignore').decode('ascii').lower()
     return re.sub(r'\s+', ' ', re.sub(r'[^a-z0-9]+', ' ', ascii_only)).strip()
 
+def format_employment_type(value):
+    if not value or pd.isna(value):
+        return None
+
+    mapping = {
+        "full_time": "Full time",
+        "part_time": "Part time",
+        "internship": "Internship",
+        "contract": "Contract",
+        "temporary": "Temporary",
+        "freelance": "Freelance",
+        "remote": "Remote",
+        "hybrid": "Hybrid",
+        "onsite": "Onsite"
+    }
+
+    value = str(value).strip().lower()
+    return mapping.get(value, value.replace('_', ' ').title())
 
 def _build_employer_lookup():
     employers = Employer.query.all()
@@ -107,7 +125,7 @@ def import_jobs_from_excel(app, excel_file):
                         exp_min = get_optional(row, 'exp_min'),
                         exp_max = get_optional(row, 'exp_max'),
                         benefits =get_optional(row, 'benefits'),
-                        employment_type=get_optional(row, 'employment_type'),
+                        employment_type=format_employment_type(get_optional(row, 'employment_type')),
                         job_function=get_optional(row, 'job_function'),
                         industries=get_optional(row, 'industry_group'),
                         job_description=get_optional(row, 'job_description'),

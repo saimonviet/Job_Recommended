@@ -35,6 +35,7 @@ main = Blueprint('main', __name__)
 logger = logging.getLogger(__name__)
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'instance', 'uploads')
 LOGOS_FOLDER  = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'instance', 'logos')
+LOCKED_JOB_MESSAGE = "Bài đăng này đã bị Admin khóa. Ứng viên không thể xem chi tiết hoặc tiếp tục ứng tuyển."
 
 
 # ---------------------------------------------------------------------------
@@ -69,6 +70,56 @@ def _get_profile_missing_fields(infor):
     if not (infor.experience or '').strip():
         missing.append('experience')
     return missing
+
+PROFILE_COMPLETION_FIELDS = [
+    ("avatar_path", "avatar"),
+    ("phone", "phone"),
+    ("workplace_desired", "location"),
+    ("desired_job", "desired_job"),
+    ("target", "bio"),
+    ("experience", "experience"),
+    # ("skills", "skills"),
+    ("age", "age"),
+    ("gender", "gender"),
+    ("degree", "degree"),
+    ("industry", "industry"),
+    ("desired_salary", "desired_salary"),
+]
+
+def _has_profile_value(value):
+    if value is None:
+        return False
+    if isinstance(value, str):
+        stripped = value.strip()
+        return bool(stripped and stripped not in ('[]', '{}', 'null'))
+    return True
+
+def _get_profile_completion(infor):
+    total = len(PROFILE_COMPLETION_FIELDS)
+    if total == 0:
+        return {"percentage": 0, "completed_fields": 0, "total_fields": 0, "missing_fields": []}
+    if not infor:
+        return {
+            "percentage": 0,
+            "completed_fields": 0,
+            "total_fields": total,
+            "missing_fields": [label for _, label in PROFILE_COMPLETION_FIELDS],
+        }
+
+    missing = []
+    completed = 0
+    for field, label in PROFILE_COMPLETION_FIELDS:
+        if _has_profile_value(getattr(infor, field, None)):
+            completed += 1
+        else:
+            missing.append(label)
+
+    return {
+        "percentage": round((completed / total) * 100),
+        "completed_fields": completed,
+        "total_fields": total,
+        "missing_fields": missing,
+    }
 
 def _profile_debug_snapshot(infor):
     if not infor:
@@ -185,6 +236,8 @@ def _serialize_job(job, score=None):
         'industries': getattr(job, 'industries', None),
         'description': getattr(job, 'job_description', None),
         'requirement': getattr(job, 'job_requirement', None),
+        'is_locked': bool(getattr(job, 'is_locked', False)),
+        'job_warning': LOCKED_JOB_MESSAGE if getattr(job, 'is_locked', False) else None,
     }
     if score is not None:
         payload['matchScore'] = round(float(score), 2)
@@ -232,7 +285,11 @@ def get_jobs():
     industries      = request.args.get('industries', '', type=str)
     exp_min         = request.args.get('exp_min', None)
 
-    query = Job.query.order_by(Job.deadline.desc(), Job.id.desc())
+    query = Job.query.filter(
+        Job.is_active == True,
+        Job.is_locked == False,
+        Job.is_deleted == False,
+    ).order_by(Job.deadline.desc(), Job.id.desc())
 
     if search:
         query = query.filter(
@@ -289,6 +346,14 @@ def get_job(job_id):
     job = Job.query.get(job_id)
     if not job:
         return jsonify({"error": "Job not found"}), 404
+    if getattr(job, 'is_locked', False):
+        return jsonify({
+            "error": LOCKED_JOB_MESSAGE,
+            "is_locked": True,
+            "job_id": job.id,
+        }), 423
+    if not job.is_active or getattr(job, 'is_deleted', False):
+        return jsonify({"error": "Job not found"}), 404
     return jsonify({
         **_serialize_job(job),
         "salary_min": job.salary_min, "salary_max": job.salary_max,
@@ -329,7 +394,7 @@ def get_companies():
     if sort == 'hiring':
         # Sort by number of active job openings (most to least)
         query = query.outerjoin(Job).filter(
-            (Job.is_active == True) | (Job.id == None)
+            ((Job.is_active == True) & (Job.is_locked == False) & (Job.is_deleted == False)) | (Job.id == None)
         ).group_by(Employer.id).order_by(db.func.count(Job.id).desc())
     else:  # default: 'newest'
         query = query.order_by(Employer.created_at.desc())
@@ -343,7 +408,9 @@ def get_companies():
         # Count active jobs for this employer
         job_count = Job.query.filter(
             Job.employer_id == employer.id,
-            Job.is_active == True
+            Job.is_active == True,
+            Job.is_locked == False,
+            Job.is_deleted == False,
         ).count()
 
         companies.append({
@@ -375,7 +442,9 @@ def get_company(company_id):
 
     job_count = Job.query.filter(
         Job.employer_id == employer.id,
-        Job.is_active == True
+        Job.is_active == True,
+        Job.is_locked == False,
+        Job.is_deleted == False,
     ).count()
 
     return jsonify({
@@ -402,7 +471,9 @@ def get_company_jobs(company_id):
 
     jobs_query = Job.query.filter(
         Job.employer_id == employer.id,
-        Job.is_active == True
+        Job.is_active == True,
+        Job.is_locked == False,
+        Job.is_deleted == False,
     ).order_by(Job.created_at.desc())
 
     jobs = [{
@@ -441,6 +512,7 @@ def get_user_profile(user_id):
         return jsonify({"error": "User profile not found"}), 404
 
     missing_fields = _get_profile_missing_fields(infor)
+    profile_completion = _get_profile_completion(infor)
 
     try:
         experience_value = json.loads(infor.experience) if infor.experience else []
@@ -466,6 +538,8 @@ def get_user_profile(user_id):
         "username": infor.username,
         "profile_complete": len(missing_fields) == 0,
         "profile_missing_fields": missing_fields,
+        "profile_completion_percentage": profile_completion["percentage"],
+        "profile_completion": profile_completion,
     })
 
 # ---------------------------------------------------------------------------

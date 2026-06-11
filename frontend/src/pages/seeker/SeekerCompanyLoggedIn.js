@@ -25,7 +25,7 @@ const SeekerCompanyLoggedIn = () => {
   const API_BASE_URL = 'http://127.0.0.1:5000';
 
   // Available filters
-  const LOCATIONS = ['TP. Hồ Chí Minh', 'Hà Nội', 'Đà Nẵng', 'Singapore', 'Vũng Tàu', 'Bình Dương', 'Bắc Ninh'];
+  const LOCATIONS = ['Hồ Chí Minh', 'Hà Nội', 'Đà Nẵng', 'Vũng Tàu', 'Bình Dương', 'Bắc Ninh'];
 
   // Fetch companies from API
   const fetchCompanies = async () => {
@@ -183,12 +183,33 @@ const SeekerCompanyLoggedIn = () => {
             <div className="flex-grow">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="font-headline text-xl font-bold">{totalCompanies} Kết quả tìm thấy</h2>
-                <div className="flex items-center gap-2 text-sm text-on-surface-variant">
-                  <span>Sắp xếp theo:</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium text-gray-600">
+                    Sắp xếp theo:
+                  </span>
+
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="bg-transparent border-none font-bold text-primary focus:ring-0 py-0 pr-8 cursor-pointer"
+                    className="
+                      bg-white
+                      border border-gray-200
+                      rounded-xl
+                      px-4 py-2
+                      text-sm
+                      font-semibold
+                      text-[#00488d]
+                      shadow-sm
+                      hover:border-[#00488d]
+                      hover:bg-blue-50
+                      focus:outline-none
+                      focus:ring-2
+                      focus:ring-[#00488d]/20
+                      focus:border-[#00488d]
+                      transition-all
+                      cursor-pointer
+                      min-w-[180px]
+                    "
                   >
                     <option value="newest">Mới nhất</option>
                     <option value="hiring">Nhiều việc làm nhất</option>

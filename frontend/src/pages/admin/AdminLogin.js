@@ -105,9 +105,6 @@ function AdminLogin() {
                   <label className="block text-sm font-semibold text-on-surface">
                     Mật khẩu
                   </label>
-                  <a href="#" className="text-xs font-medium text-emerald-600 hover:underline">
-                    Quên mật khẩu?
-                  </a>
                 </div>
                 <div className="relative">
                   <span className="material-symbols-outlined absolute top-1/2 -translate-y-1/2 left-0 pl-3 flex items-center text-gray-400 text-lg">

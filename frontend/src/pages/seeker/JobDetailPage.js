@@ -106,7 +106,8 @@ const JobDetailPage = () => {
         setLoading(true);
         const response = await fetch(`${API_URL}/jobs/${jobId}`);
         if (!response.ok) {
-          throw new Error(`API Error: ${response.status}`);
+          const payload = await response.json().catch(() => null);
+          throw new Error(payload?.error || `API Error: ${response.status}`);
         }
         const data = await response.json();
         setJob(data);
@@ -203,7 +204,7 @@ const JobDetailPage = () => {
         <div className="text-center">
           <p className="text-lg text-red-500 mb-4">{error || 'Không thể tải công việc'}</p>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/seeker/home')}
             className="px-6 py-2 bg-primary text-white rounded-lg font-bold hover:opacity-90 transition"
           >
             Quay lại danh sách

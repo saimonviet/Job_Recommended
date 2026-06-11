@@ -94,6 +94,7 @@ const SeekerHomeLoggedIn = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [profileComplete, setProfileComplete] = useState(false);
   const [profileMissingFields, setProfileMissingFields] = useState([]);
+  const [profileCompletionPercent, setProfileCompletionPercent] = useState(0);
   const [profileLoading, setProfileLoading] = useState(true);
   const [loadingRecommendations, setLoadingRecommendations] = useState(true);
   const [latestJobsLoaded, setLatestJobsLoaded] = useState(false);
@@ -166,11 +167,17 @@ const SeekerHomeLoggedIn = () => {
     try {
       const profileResponse = await API.get(`/user-profile/${user.id}`);
 
-      const isComplete = true;
-      const missingFields = [];
+      const profileData = profileResponse.data || {};
+      const isComplete = Boolean(profileData.profile_complete);
+      const missingFields = profileData.profile_missing_fields || [];
+      const completionPercent = Math.min(
+        100,
+        Math.max(0, Math.round(Number(profileData.profile_completion_percentage ?? profileData.profile_completion?.percentage ?? 0)))
+      );
 
       setProfileComplete(isComplete);
       setProfileMissingFields(missingFields);
+      setProfileCompletionPercent(Number.isFinite(completionPercent) ? completionPercent : 0);
 
       if (!isComplete) {
         setRecommendations([]);
@@ -180,6 +187,13 @@ const SeekerHomeLoggedIn = () => {
       }
 
       const recommendationResponse = await API.get('/seeker/recommendations');
+      const recommendationCompletion = Number(
+        recommendationResponse.data?.profile_completion_percentage ??
+        recommendationResponse.data?.profile_completion?.percentage
+      );
+      if (Number.isFinite(recommendationCompletion)) {
+        setProfileCompletionPercent(Math.min(100, Math.max(0, Math.round(recommendationCompletion))));
+      }
       const recommendedJobs = (recommendationResponse.data?.recommendations || []).map(toRecommendedJob);
 
       setRecommendations(recommendedJobs);
@@ -719,8 +733,7 @@ const SeekerHomeLoggedIn = () => {
                   <span className="inline-flex items-center gap-2 bg-[#00488d] text-white text-xs font-semibold px-3 py-1 rounded-full">Đề xuất cho bạn</span>
                 </div>
               </div>
-
-              <div className="space-y-4">
+              <div className="space-y-4 max-h-[800px] overflow-y-auto">
                 {profileLoading || loadingRecommendations ? (
                   <div className="flex flex-col items-center justify-center py-12 px-4">
                     <div className="relative w-16 h-16 mb-4">
@@ -744,6 +757,18 @@ const SeekerHomeLoggedIn = () => {
                   <div className="bg-white p-4 rounded-lg">
                     <div className="text-sm font-bold uppercase tracking-widest text-[#00488d] mb-2">Bước 1 / 2</div>
                     <div className="text-sm text-on-surface-variant mb-3">Hoàn thiện hồ sơ để nhận đề xuất việc làm được cá nhân hoá.</div>
+                    <div className="mb-3">
+                      <div className="mb-1 flex items-center justify-between text-xs font-semibold text-on-surface-variant">
+                        <span>Hồ sơ hoàn thiện</span>
+                        <span>{profileCompletionPercent}%</span>
+                      </div>
+                      <div className="h-2 rounded-full bg-[#e5edf7] overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-[#00488d]"
+                          style={{ width: `${profileCompletionPercent}%` }}
+                        />
+                      </div>
+                    </div>
                     <div className="flex gap-2">
                       <button onClick={() => navigate('/seeker/profile/personal')} className="px-3 py-2 rounded-md bg-[#00488d] text-white text-sm">Nhập thông tin</button>
                       <button onClick={() => navigate('/seeker/profile/experience')} className="px-3 py-2 rounded-md border border-outline-variant/20 text-sm">Thêm kinh nghiệm</button>
