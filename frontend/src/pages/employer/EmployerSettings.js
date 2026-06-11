@@ -659,14 +659,14 @@ function EmployerSettings() {
                 <div className="bg-white dark:bg-slate-800 rounded-xl p-8 shadow-sm border-t-4 border-orange-600 dark:border-orange-800">
                   <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-6">
                     <span className="material-symbols-outlined text-2xl text-orange-600 dark:text-orange-400">mail</span>
-                    Thông báo email
+                    Thông báo
                   </h2>
                   <div className="space-y-6">
                     {[
                       {
                         key: "newCandidates",
                         label: "Ứng viên mới",
-                        desc: "Nhận email khi có ứng viên nộp hồ sơ",
+                        desc: "Nhận thông báo khi có ứng viên nộp hồ sơ",
                       },
                       {
                         key: "systemUpdates",

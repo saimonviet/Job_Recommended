@@ -60,7 +60,7 @@ const RegisterEmployer = () => {
       //   localStorage.setItem('employerToken', response.data.token);
       //   navigate('/employer/dashboard');
       // }
-      alert("Đăng ký thành công. Tài khoản của bạn đang chờ admin duyệt.");
+      alert("Đăng ký thành công. Bạn có thể đăng nhập ngay.");
       navigate('/login-employer');
       
     } catch (err) {

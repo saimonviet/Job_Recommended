@@ -10,14 +10,38 @@ function AdminEmployers() {
   const [error, setError] = useState("");
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [verifiedFilter, setVerifiedFilter] = useState("Tất cả");
   const [sortFilter, setSortFilter] = useState("newest");
   const [currentPage, setCurrentPage] = useState(1);
 
   const [totalPages, setTotalPages] = useState(1);
-  const [totalEmployers, setTotalEmployers] = useState(0);
+  const [stats, setStats] = useState({
+    total_employers: 0,
+    active_employers: 0,
+    inactive_employers: 0,
+  });
 
   const [selectedEmployer, setSelectedEmployer] = useState(null);
+
+  const fetchStats = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/stats`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setStats({
+          total_employers: data.total_employers || 0,
+          active_employers: data.active_employers || 0,
+          inactive_employers: data.inactive_employers || 0,
+        });
+      }
+    } catch (err) {
+      console.error("Lá»—i láº¥y thá»‘ng kÃª:", err);
+    }
+  };
 
   const fetchEmployers = async () => {
     setLoading(true);
@@ -30,12 +54,6 @@ function AdminEmployers() {
 
       if (searchTerm.trim()) {
         params.append("search", searchTerm);
-      }
-
-      if (verifiedFilter === "Đã duyệt") {
-        params.append("verified", "true");
-      } else if (verifiedFilter === "Chưa duyệt") {
-        params.append("verified", "false");
       }
 
       const response = await fetch(`${API_BASE_URL}/admin/employers?${params}`, {
@@ -58,7 +76,6 @@ function AdminEmployers() {
 
       setEmployers(sortedEmployers);
       setTotalPages(data.pages || 1);
-      setTotalEmployers(data.total || 0);
     } catch (err) {
       setError(err.message);
       setEmployers([]);
@@ -69,37 +86,11 @@ function AdminEmployers() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, verifiedFilter, sortFilter]);
+  }, [searchTerm, sortFilter]);
   useEffect(() => {
+    fetchStats();
     fetchEmployers();
-  }, [currentPage, searchTerm, verifiedFilter, sortFilter]);
-
-  const handleVerifyEmployer = async (employerId) => {
-    if (!window.confirm("Bạn có chắc muốn duyệt nhà tuyển dụng này?")) return;
-
-    try {
-      const response = await fetch(
-        `${API_BASE_URL}/admin/employers/${employerId}/verify`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-          },
-        }
-      );
-
-      if (response.ok) {
-        alert("✓ Duyệt nhà tuyển dụng thành công");
-        fetchEmployers();
-      } else {
-        const data = await response.json();
-        alert(data.error || "❌ Không thể duyệt nhà tuyển dụng");
-      }
-    } catch (err) {
-      alert(`Lỗi: ${err.message}`);
-    }
-  };
+  }, [currentPage, searchTerm, sortFilter]);
 
   const handleToggleActive = async (employerId, currentStatus) => {
     try {
@@ -116,6 +107,7 @@ function AdminEmployers() {
 
       if (response.ok) {
         alert(`✓ ${!currentStatus ? "Mở khóa" : "Khóa"} nhà tuyển dụng thành công`);
+        fetchStats();
         fetchEmployers();
       } else {
         alert("❌ Không thể cập nhật trạng thái");
@@ -138,6 +130,7 @@ function AdminEmployers() {
 
       if (response.ok) {
         alert("✓ Xóa nhà tuyển dụng thành công");
+        fetchStats();
         fetchEmployers();
       } else {
         alert("❌ Không thể xóa nhà tuyển dụng");
@@ -395,7 +388,7 @@ const paginationButtons = () => {
                 Quản lý nhà tuyển dụng
               </h2>
               <p className="text-on-surface-variant max-w-lg">
-                Tìm kiếm, lọc, duyệt đăng ký, khóa hoặc xóa tài khoản.
+                Tìm kiếm, lọc, khóa, mở khóa hoặc xóa tài khoản.
               </p>
             </div>
           </div>
@@ -406,25 +399,25 @@ const paginationButtons = () => {
                 Tổng nhà tuyển dụng
               </p>
               <h3 className="text-4xl font-black text-on-surface">
-                {totalEmployers.toLocaleString()}
+                {stats.total_employers.toLocaleString()}
               </h3>
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-sm border-b-4 border-emerald-600">
               <p className="text-sm font-semibold text-slate-500 mb-1">
-                Đã duyệt
+                Đang hoạt động
               </p>
               <h3 className="text-4xl font-black text-on-surface">
-                {employers.filter((e) => e.is_verified).length}
+                {stats.active_employers.toLocaleString()}
               </h3>
             </div>
 
-            <div className="bg-white p-6 rounded-xl shadow-sm border-b-4 border-orange-600">
+            <div className="bg-white p-6 rounded-xl shadow-sm border-b-4 border-red-600">
               <p className="text-sm font-semibold text-slate-500 mb-1">
-                Chưa duyệt
+                Bị khóa
               </p>
               <h3 className="text-4xl font-black text-on-surface">
-                {employers.filter((e) => !e.is_verified).length}
+                {stats.inactive_employers.toLocaleString()}
               </h3>
             </div>
           </div>
@@ -446,15 +439,6 @@ const paginationButtons = () => {
                   className="w-full md:w-[420px] appearance-none bg-white border border-gray-300 text-sm rounded-xl pl-4 pr-4 py-3 focus:ring-2 focus:ring-emerald-600 focus:border-transparent outline-none"                />
 
                 <select
-                  value={verifiedFilter}
-                  onChange={(e) => setVerifiedFilter(e.target.value)}
-                className="w-80 appearance-none bg-white border border-gray-300 text-sm rounded-xl pl-4 pr-4 py-3 focus:ring-2 focus:ring-emerald-600 focus:border-transparent outline-none"                
-                >
-                  <option>Tất cả</option>
-                  <option>Đã duyệt</option>
-                  <option>Chưa duyệt</option>
-                </select>
-                <select
                   value={sortFilter}
                   onChange={(e) => setSortFilter(e.target.value)}
                   className="w-64 appearance-none bg-white border border-gray-300 text-sm rounded-xl pl-4 pr-4 py-3 focus:ring-2 focus:ring-emerald-600 focus:border-transparent outline-none"
@@ -475,11 +459,10 @@ const paginationButtons = () => {
             <div className="overflow-x-auto">
               <table className="w-full min-w-[980px] table-fixed text-left border-collapse">
                 <colgroup>
-                  <col className="w-[34%]" />
-                  <col className="w-[15%]" />
-                  <col className="w-[15%]" />
-                  <col className="w-[16%]" />
-                  <col className="w-[20%]" />
+                  <col className="w-[40%]" />
+                  <col className="w-[18%]" />
+                  <col className="w-[18%]" />
+                  <col className="w-[24%]" />
                 </colgroup>
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-100">
@@ -490,10 +473,6 @@ const paginationButtons = () => {
 
                     <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
                       Ngày đăng ký
-                    </th>
-
-                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
-                      Duyệt
                     </th>
 
                     <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
@@ -510,7 +489,7 @@ const paginationButtons = () => {
                 <tbody className="divide-y divide-gray-100">
                   {employers.length === 0 ? (
                     <tr>
-                      <td colSpan="5" className="px-6 py-8 text-center text-slate-500">
+                      <td colSpan="4" className="px-6 py-8 text-center text-slate-500">
                         {loading ? "Đang tải..." : "Không tìm thấy nhà tuyển dụng nào"}
                       </td>
                     </tr>
@@ -534,18 +513,6 @@ const paginationButtons = () => {
                         </td>
                         <td className="px-6 py-5 text-center">
                           <span
-                            className={`inline-flex items-center justify-center min-w-[88px] px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap ${
-                              employer.is_verified
-                                ? "text-emerald-700 bg-emerald-50"
-                                : "text-orange-700 bg-orange-50"
-                            }`}
-                          >
-                            {employer.is_verified ? "Đã duyệt" : "Chưa duyệt"}
-                          </span>
-                        </td>
-
-                        <td className="px-6 py-5 text-center">
-                          <span
                             className={`inline-flex items-center justify-center min-w-[110px] px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap ${
                               employer.is_active
                                 ? "text-emerald-700 bg-emerald-50"
@@ -566,27 +533,18 @@ const paginationButtons = () => {
                               Chi tiết
                             </button>
 
-                            {!employer.is_verified ? (
-                              <button
-                                onClick={() => handleVerifyEmployer(employer.id)}
-                                className="min-w-[78px] px-3 py-2 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-all"
-                              >
-                                Duyệt
-                              </button>
-                            ) : (
-                              <button
-                                onClick={() =>
-                                  handleToggleActive(employer.id, employer.is_active)
-                                }
-                                className={`min-w-[78px] px-3 py-2 rounded-lg text-xs font-bold text-white transition-all ${
-                                  employer.is_active
-                                    ? "bg-emerald-600 hover:bg-emerald-700"
-                                    : "bg-emerald-600 hover:bg-emerald-700"
-                                }`}
-                              >
-                                {employer.is_active ? "Khóa" : "Mở khóa"}
-                              </button>
-                            )}
+                            <button
+                              onClick={() =>
+                                handleToggleActive(employer.id, employer.is_active)
+                              }
+                              className={`min-w-[78px] px-3 py-2 rounded-lg text-xs font-bold text-white transition-all ${
+                                employer.is_active
+                                  ? "bg-emerald-600 hover:bg-emerald-700"
+                                  : "bg-emerald-600 hover:bg-emerald-700"
+                              }`}
+                            >
+                              {employer.is_active ? "Khóa" : "Mở khóa"}
+                            </button>
 
                             <button
                               onClick={() => handleDeleteEmployer(employer.id)}

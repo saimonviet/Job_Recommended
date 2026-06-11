@@ -12,10 +12,11 @@ function AdminUsers() {
   const [statusFilter, setStatusFilter] = useState("Tất cả trạng thái");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalUsers, setTotalUsers] = useState(0);
 
   const [stats, setStats] = useState({
     total_seekers: 0,
+    active_seekers: 0,
+    inactive_seekers: 0,
   });
 
   const fetchStats = async () => {
@@ -30,6 +31,8 @@ function AdminUsers() {
         const data = await response.json();
         setStats({
           total_seekers: data.total_seekers || 0,
+          active_seekers: data.active_seekers || 0,
+          inactive_seekers: data.inactive_seekers || 0,
         });
       }
     } catch (err) {
@@ -70,7 +73,6 @@ function AdminUsers() {
       const data = await response.json();
       setUsers(data.users || []);
       setTotalPages(data.pages || 1);
-      setTotalUsers(data.total || 0);
     } catch (err) {
       setError(err.message);
       setUsers([]);
@@ -101,6 +103,7 @@ function AdminUsers() {
 
       if (response.ok) {
         alert("✓ Xóa người dùng thành công");
+        fetchStats();
         fetchUsers();
       } else {
         alert("❌ Không thể xóa người dùng");
@@ -123,6 +126,7 @@ function AdminUsers() {
 
       if (response.ok) {
         alert(`✓ ${!currentStatus ? "Mở khoá" : "Khoá"} người dùng thành công`);
+        fetchStats();
         fetchUsers();
       } else {
         alert("❌ Không thể cập nhật trạng thái");
@@ -130,6 +134,12 @@ function AdminUsers() {
     } catch (err) {
       alert(`Lỗi: ${err.message}`);
     }
+  };
+
+  const getCompletionPercent = (user) => {
+    const raw = Number(user.profile_completion_percentage ?? user.profile_completion?.percentage ?? 0);
+    if (!Number.isFinite(raw)) return 0;
+    return Math.min(100, Math.max(0, Math.round(raw)));
   };
 
   const paginationButtons = () => {
@@ -239,7 +249,7 @@ function AdminUsers() {
                 Đang hoạt động
               </p>
               <h3 className="text-4xl font-black text-slate-900">
-                {users.filter((u) => u.is_active).length}
+                {stats.active_seekers.toLocaleString()}
               </h3>
             </div>
 
@@ -248,7 +258,7 @@ function AdminUsers() {
                 Bị khóa
               </p>
               <h3 className="text-4xl font-black text-slate-900">
-                {users.filter((u) => !u.is_active).length}
+                {stats.inactive_seekers.toLocaleString()}
               </h3>
             </div>
           </div>
@@ -294,26 +304,30 @@ function AdminUsers() {
 
             {/* Table */}
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[980px] table-fixed text-left border-collapse">
+              <table className="w-full min-w-[1080px] table-fixed text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-100">
-                    <th className="w-[40%] px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest">
+                    <th className="w-[32%] px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest">
                       Ứng viên / Email
                     </th>
 
-                    <th className="w-[15%] px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
+                    <th className="w-[14%] px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
                       Trạng thái
                     </th>
 
-                    <th className="w-[15%] px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
+                    <th className="w-[16%] px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
+                      Hồ sơ
+                    </th>
+
+                    <th className="w-[12%] px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
                       Đơn ứng tuyển
                     </th>
 
-                    <th className="w-[15%] px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
+                    <th className="w-[13%] px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
                       Ngày tạo
                     </th>
 
-                    <th className="w-[15%] px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
+                    <th className="w-[13%] px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
                       Hành động
                     </th>
                   </tr>
@@ -323,7 +337,7 @@ function AdminUsers() {
                   {users.length === 0 ? (
                     <tr>
                       <td
-                        colSpan="5"
+                        colSpan="6"
                         className="px-6 py-8 text-center text-slate-500"
                       >
                         {loading ? "Đang tải..." : "Không tìm thấy ứng viên nào"}
@@ -356,6 +370,46 @@ function AdminUsers() {
                           >
                             {user.is_active ? "Hoạt động" : "Bị khóa"}
                           </span>
+                        </td>
+
+                        <td className="px-6 py-5">
+                          {(() => {
+                            const percent = getCompletionPercent(user);
+                            const isGood = percent >= 80;
+                            const isMedium = percent >= 50;
+                            return (
+                              <div className="mx-auto w-full max-w-[150px]">
+                                <div className="mb-2 flex items-center justify-between gap-2">
+                                  <span className="text-xs font-bold text-slate-700">
+                                    {percent}%
+                                  </span>
+                                  <span
+                                    className={`text-[11px] font-semibold ${
+                                      isGood
+                                        ? "text-emerald-600"
+                                        : isMedium
+                                          ? "text-amber-600"
+                                          : "text-red-600"
+                                    }`}
+                                  >
+                                    {isGood ? "Tốt" : isMedium ? "Đang bổ sung" : "Thiếu"}
+                                  </span>
+                                </div>
+                                <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                                  <div
+                                    className={`h-full rounded-full ${
+                                      isGood
+                                        ? "bg-emerald-500"
+                                        : isMedium
+                                          ? "bg-amber-500"
+                                          : "bg-red-500"
+                                    }`}
+                                    style={{ width: `${percent}%` }}
+                                  />
+                                </div>
+                              </div>
+                            );
+                          })()}
                         </td>
 
                         <td className="px-6 py-5 text-center text-sm font-semibold text-slate-700">

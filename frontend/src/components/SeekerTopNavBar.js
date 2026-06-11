@@ -13,6 +13,9 @@ const TopNavBar = ({ currentPage = 'home' }) => {
   const [avatarPreview, setAvatarPreview] = useState(
     `https://ui-avatars.com/api/?name=${user.username || user.name || 'User'}&background=random&color=fff`
   );
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -30,10 +33,43 @@ const TopNavBar = ({ currentPage = 'home' }) => {
     fetchProfile();
   }, []);
 
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const data = await api.request('/seeker/notifications');
+        setNotifications(data.notifications || []);
+        setUnreadCount(data.unread_count || 0);
+      } catch (error) {
+        console.error('Failed to fetch seeker notifications:', error);
+        setNotifications([]);
+        setUnreadCount(0);
+      }
+    };
+
+    fetchNotifications();
+  }, []);
+
   const handleLogout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     navigate('/login-seeker');
+  };
+
+  const handleNotificationClick = (item) => {
+    setShowNotifications(false);
+    if (item?.job?.id) {
+      navigate(`/jobs/${item.job.id}`);
+      return;
+    }
+    navigate('/seeker/applications');
+  };
+
+  const getNotificationIcon = (type, status) => {
+    if (type === 'invitation') return 'mark_email_unread';
+    if (status === 'accepted') return 'check_circle';
+    if (status === 'rejected') return 'cancel';
+    if (status === 'interview') return 'event_available';
+    return 'notifications';
   };
 
   return (
@@ -124,11 +160,72 @@ const TopNavBar = ({ currentPage = 'home' }) => {
         </div>
 
         <div className="flex items-center gap-4">
-          <button className="p-2 hover:bg-[#f2f3fb] dark:hover:bg-slate-800 rounded-md transition-all duration-200 ease-in-out">
-            <span className="material-symbols-outlined text-slate-600">
-              notifications
-            </span>
-          </button>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowNotifications((prev) => !prev)}
+              className="relative p-2 hover:bg-[#f2f3fb] dark:hover:bg-slate-800 rounded-md transition-all duration-200 ease-in-out"
+              aria-label="Thông báo"
+            >
+              <span className="material-symbols-outlined text-slate-600">
+                notifications
+              </span>
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+
+            {showNotifications && (
+              <div className="absolute right-0 mt-3 w-96 max-w-[calc(100vw-2rem)] bg-white dark:bg-[#2e3036] rounded-xl shadow-xl border border-slate-200/70 dark:border-slate-700 z-50 overflow-hidden">
+                <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                  <p className="font-bold text-sm text-slate-900 dark:text-white">Thông báo</p>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/seeker/applications')}
+                    className="text-xs font-semibold text-[#00488d] hover:underline"
+                  >
+                    Xem ứng tuyển
+                  </button>
+                </div>
+
+                <div className="max-h-96 overflow-y-auto">
+                  {notifications.length === 0 ? (
+                    <div className="px-4 py-8 text-center text-sm text-slate-500">
+                      Chưa có thông báo mới.
+                    </div>
+                  ) : (
+                    notifications.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => handleNotificationClick(item)}
+                        className="w-full text-left px-4 py-3 flex gap-3 hover:bg-[#f2f3fb] dark:hover:bg-slate-800 border-b border-slate-100 dark:border-slate-700 last:border-b-0"
+                      >
+                        <span className="material-symbols-outlined text-[#00488d] text-xl mt-0.5">
+                          {getNotificationIcon(item.type, item.status)}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block text-sm font-bold text-slate-900 dark:text-white">
+                            {item.title}
+                          </span>
+                          <span className="block text-xs text-slate-600 dark:text-slate-300 line-clamp-2 mt-1">
+                            {item.message}
+                          </span>
+                          {item.job?.company_name && (
+                            <span className="block text-[11px] text-slate-400 mt-1">
+                              {item.job.company_name}
+                            </span>
+                          )}
+                        </span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className="relative group">
             <div className="h-10 w-10 rounded-full bg-[#ecedf6] dark:bg-[#191c21] overflow-hidden ring-2 ring-primary/10 transition-all duration-200 ease-in-out cursor-pointer">

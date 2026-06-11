@@ -186,6 +186,10 @@ function EmployerJobs() {
   };
 
   const handleToggleActive = async (job) => {
+    if (job.is_locked) {
+      alert("Bài đăng này đã bị Admin khóa. Bạn không thể thay đổi trạng thái hoạt động.");
+      return;
+    }
     try {
       await API.put(`/employer/jobs/${job.id}`, { is_active: !job.is_active });
       setJobs((prev) =>
@@ -198,6 +202,10 @@ function EmployerJobs() {
   };
 
   const handleDeleteJob = async (job) => {
+    if (job.is_locked) {
+      alert("Bài đăng này đã bị Admin khóa. Bạn không thể xóa hoặc đóng bài đăng.");
+      return;
+    }
     if (!window.confirm(`Xác nhận xóa bài đăng "${job.job_title}"?`)) return;
     try {
       const response = await API.delete(`/employer/jobs/${job.id}`);
@@ -216,6 +224,10 @@ function EmployerJobs() {
   };
 
   const handleOpenEditModal = async (job) => {
+    if (job.is_locked) {
+      alert("Bài đăng này đã bị Admin khóa. Bạn không thể chỉnh sửa thông tin.");
+      return;
+    }
     setEditLoading(true);
     try {
       const response = await API.get(`/employer/jobs/${job.id}`);
@@ -447,14 +459,17 @@ function EmployerJobs() {
                       <td className="px-6 py-5">
                         <button
                           onClick={() => handleToggleActive(job)}
+                          disabled={job.is_locked}
                           className={`inline-block px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${
-                            job.is_active
+                            job.is_locked
+                              ? "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 cursor-not-allowed"
+                              : job.is_active
                               ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-200"
                               : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200"
                           }`}
-                          title="Nhấn để đổi trạng thái"
+                          title={job.is_locked ? "Bài đăng đã bị Admin khóa" : "Nhấn để đổi trạng thái"}
                         >
-                          {job.is_active ? "Đang đăng" : "Đã đóng"}
+                          {job.is_locked ? "Đã khóa" : job.is_active ? "Đang đăng" : "Đã đóng"}
                         </button>
                       </td>
                       <td className="px-6 py-5 text-right">
@@ -467,13 +482,23 @@ function EmployerJobs() {
                           </button>
                           <button
                             onClick={() => handleOpenEditModal(job)}
-                            className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-semibold text-sm"
+                            disabled={job.is_locked}
+                            className={`font-semibold text-sm ${
+                              job.is_locked
+                                ? "text-slate-400 dark:text-slate-600 cursor-not-allowed"
+                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                            }`}
                           >
                             Sửa
                           </button>
                           <button
                             onClick={() => handleDeleteJob(job)}
-                            className="text-red-500 dark:text-red-400 hover:text-red-700 font-semibold text-sm"
+                            disabled={job.is_locked}
+                            className={`font-semibold text-sm ${
+                              job.is_locked
+                                ? "text-slate-400 dark:text-slate-600 cursor-not-allowed"
+                                : "text-red-500 dark:text-red-400 hover:text-red-700"
+                            }`}
                           >
                             Xóa
                           </button>

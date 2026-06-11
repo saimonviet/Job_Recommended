@@ -5,7 +5,7 @@ import EmployerTopNavBar from "../../components/EmployerTopNavBar";
 import API from "../../services/api";
 import { getEmployerToken } from "../../utils/authStorage";
 
-const DASHBOARD_CACHE_KEY_PREFIX = "employer_dashboard_cache";
+const DASHBOARD_CACHE_KEY_PREFIX = "employer_dashboard_cache_v3";
 const DASHBOARD_CACHE_DURATION = 5 * 60 * 1000;
 
 const getDashboardCacheKey = (token) => `${DASHBOARD_CACHE_KEY_PREFIX}:${token || "anonymous"}`;
@@ -38,13 +38,48 @@ const writeDashboardCache = (token, data) => {
   }
 };
 
+const buildFallbackWeeklyApplications = () => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const labels = [];
+  const values = [];
+
+  for (let offset = 6; offset >= 0; offset -= 1) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - offset);
+    labels.push(date.toISOString().slice(0, 10));
+    values.push(0);
+  }
+
+  return { labels, values };
+};
+
+const formatChartDate = (dateKey) => {
+  if (!dateKey) return "";
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+
+  if (Number.isNaN(date.getTime())) return dateKey;
+
+  return date.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+  });
+};
+
 function EmployerDashboard() {
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [recentJobs, setRecentJobs] = useState([]);
   const [loadingStats, setLoadingStats] = useState(true);
-  const chartData = [40, 65, 45, 70, 55, 80, 60];
-  const maxValue = Math.max(...chartData);
+  const weeklyApplications =
+    stats?.weeklyApplications?.labels?.length
+      ? stats.weeklyApplications
+      : buildFallbackWeeklyApplications();
+  const chartValues = weeklyApplications.values || [];
+  const maxValue = Math.max(...chartValues, 1);
+  const totalWeeklyApplications = chartValues.reduce((sum, value) => sum + (value || 0), 0);
 
   useEffect(() => {
     const token = getEmployerToken();
@@ -65,10 +100,11 @@ function EmployerDashboard() {
 
     const loadDashboard = async () => {
       try {
-        // Load profile + jobs concurrently
-        const [profileRes, jobsRes] = await Promise.allSettled([
+        // Load profile + jobs + analytics concurrently
+        const [, jobsRes, analyticsRes] = await Promise.allSettled([
           API.get("/auth/me"),
           API.get("/employer/jobs", { params: { page: 1, per_page: 100 } }),
+          API.get("/employer/analytics"),
         ]);
 
         if (cancelled) return;
@@ -82,11 +118,24 @@ function EmployerDashboard() {
             0
           );
 
-          setStats({
+          const weeklyData = analyticsRes.status === "fulfilled"
+            ? analyticsRes.value.data?.weekly_applications
+            : null;
+          const analyticsKpis = analyticsRes.status === "fulfilled"
+            ? analyticsRes.value.data?.kpis
+            : null;
+          const nextStats = {
             activePostings: activeJobs.length,
             totalJobs: jobs.length,
             newApplications: totalApplications,
-          });
+            reviewedApplications: analyticsKpis?.reviewed_applications_count || 0,
+            weeklyApplications: {
+              labels: weeklyData?.labels || [],
+              values: weeklyData?.values || [],
+            },
+          };
+
+          setStats(nextStats);
 
           // Top 5 jobs by applications for "recent" panel
           const sorted = [...jobs]
@@ -95,11 +144,7 @@ function EmployerDashboard() {
           setRecentJobs(sorted);
 
           writeDashboardCache(token, {
-            stats: {
-              activePostings: activeJobs.length,
-              totalJobs: jobs.length,
-              newApplications: totalApplications,
-            },
+            stats: nextStats,
             recentJobs: sorted,
           });
         }
@@ -143,7 +188,7 @@ function EmployerDashboard() {
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
             {/* Active Postings */}
             <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm hover:shadow-md transition-all">
               <div className="flex justify-between items-start mb-2">
@@ -167,6 +212,19 @@ function EmployerDashboard() {
               <h3 className="text-slate-600 dark:text-slate-400 text-sm font-medium mb-0.5">Tổng lượt ứng tuyển</h3>
               <p className="text-2xl font-black text-slate-900 dark:text-white">
                 {loadingStats ? "—" : stats?.newApplications ?? 0}
+              </p>
+            </div>
+
+            {/* Reviewed Applications */}
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm hover:shadow-md transition-all">
+              <div className="flex justify-between items-start mb-2">
+                <div className="p-2.5 bg-sky-100 dark:bg-sky-900/30 rounded-lg text-sky-600 dark:text-sky-400">
+                  <span className="material-symbols-outlined text-xl">fact_check</span>
+                </div>
+              </div>
+              <h3 className="text-slate-600 dark:text-slate-400 text-sm font-medium mb-0.5">CV đã duyệt</h3>
+              <p className="text-2xl font-black text-slate-900 dark:text-white">
+                {loadingStats ? "—" : stats?.reviewedApplications ?? 0}
               </p>
             </div>
 
@@ -197,19 +255,27 @@ function EmployerDashboard() {
                   <p className="text-sm text-slate-500 dark:text-slate-400">
                     Thống kê 7 ngày gần nhất
                   </p>
+                  <p className="text-2xl font-black text-slate-900 dark:text-white">
+                    {loadingStats ? "—" : totalWeeklyApplications}
+                    <span className="ml-2 text-sm font-semibold text-slate-500 dark:text-slate-400">CV mới</span>
+                  </p>
                 </div>
               </div>
               <div className="flex-1 min-h-0 flex items-end justify-between gap-3 px-2">
-                {chartData.map((value, idx) => {
-                  const pct = Math.round((value / maxValue) * 100);
+                {chartValues.map((value, idx) => {
+                  const pct = Math.round(((value || 0) / maxValue) * 100);
                   return (
                     <div key={idx} className="flex-1 h-full flex flex-col items-center justify-end gap-2">
                       <div
-                        className="w-full bg-orange-200 dark:bg-orange-900/30 rounded-t-lg transition-all duration-500 hover:bg-orange-700"
+                        className="relative w-full bg-orange-200 dark:bg-orange-900/30 rounded-t-lg transition-all duration-500 hover:bg-orange-700 group"
                         style={{ height: `${pct}%`, minHeight: 16 }}
+                        title={`${formatChartDate(weeklyApplications.labels?.[idx])}: ${value || 0} CV`}
                       />
+                      <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                        {value || 0}
+                      </span>
                       <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">
-                        N{idx + 1}
+                        {formatChartDate(weeklyApplications.labels?.[idx])}
                       </span>
                     </div>
                   );

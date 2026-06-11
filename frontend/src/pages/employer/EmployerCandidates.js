@@ -32,9 +32,7 @@ const NEXT_STATUSES = {
   rejected: [],
 };
 
-const JOBS_CACHE_KEY_PREFIX = "employer_candidates_jobs_cache";
 const ANALYTICS_CACHE_KEY_PREFIX = "employer_analytics_cache";
-const JOBS_CACHE_DURATION = 24 * 60 * 60 * 1000;
 
 const clearEmployerAnalyticsCache = () => {
   const token = getEmployerToken();
@@ -56,12 +54,6 @@ const tryParseJsonArray = (value) => {
   } catch {
     return [];
   }
-};
-
-const describeExperience = (exp) => {
-  if (!exp || typeof exp !== "object") return "";
-  const parts = [exp.company, exp.position, exp.startDate, exp.endDate].filter(Boolean);
-  return parts.join(" • ");
 };
 
 // ---------------------------------------------------------------------------
@@ -185,7 +177,7 @@ function CandidateModal({ appId, onClose, onStatusChange }) {
                   </h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400">{seeker?.email}</p>
                   {seeker?.desired_job && (
-                    <p className="text-sm text-orange-600 dark:text-orange-400 mt-1">🎯 {seeker.desired_job}</p>
+                    <p className="text-sm text-orange-600 dark:text-orange-400 mt-1">{seeker.desired_job}</p>
                   )}
                   {/* Current Status Badge */}
                   <span
@@ -407,13 +399,187 @@ function CandidateModal({ appId, onClose, onStatusChange }) {
   );
 }
 
+function SearchCandidateModal({ candidate, onClose, onSendInvitation, sendingInviteId, selectedJob }) {
+  if (!candidate) return null;
+
+  const experienceItems = tryParseJsonArray(candidate.experience);
+  const projectItems = tryParseJsonArray(candidate.target);
+  const canInvite = selectedJob && !candidate.invitation && !candidate.application;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">Hồ sơ ứng viên</h2>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+            aria-label="Đóng"
+          >
+            <span className="material-symbols-outlined text-slate-500">close</span>
+          </button>
+        </div>
+
+        <div className="p-6 space-y-6">
+          <div className="flex items-start gap-4">
+            <div className="w-16 h-16 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center flex-shrink-0">
+              {candidate.avatar_path ? (
+                <img
+                  src={candidate.avatar_path}
+                  alt={candidate.username}
+                  className="w-16 h-16 rounded-full object-cover"
+                />
+              ) : (
+                <span className="material-symbols-outlined text-orange-600 dark:text-orange-400 text-3xl">person</span>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                {candidate.username || "Ứng viên"}
+              </h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 break-all">{candidate.email}</p>
+              {candidate.desired_job && (
+                <p className="text-sm text-orange-600 dark:text-orange-400 mt-1">{candidate.desired_job}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {[
+              { label: "Số điện thoại", value: candidate.phone },
+              { label: "Tuổi", value: candidate.age },
+              { label: "Giới tính", value: candidate.gender },
+              { label: "Học vấn", value: candidate.degree },
+              { label: "Lương mong muốn", value: candidate.desired_salary },
+              { label: "Nơi làm việc mong muốn", value: candidate.workplace_desired },
+              { label: "Ngành quan tâm", value: candidate.industry },
+              { label: "Tình trạng hôn nhân", value: candidate.marriage },
+              {
+                label: "Kinh nghiệm mong muốn",
+                value: candidate.exp_min || candidate.exp_max
+                  ? formatExperienceRange(candidate.exp_min, candidate.exp_max)
+                  : null,
+              },
+            ].map(({ label, value }) =>
+              value ? (
+                <div key={label} className="bg-slate-50 dark:bg-slate-700/50 p-3 rounded-lg">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">{label}</p>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white">{value}</p>
+                </div>
+              ) : null
+            )}
+          </div>
+
+          {candidate.skills && (
+            <div>
+              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Kỹ năng</p>
+              <p className="text-sm text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-700/50 p-3 rounded-lg">
+                {candidate.skills}
+              </p>
+            </div>
+          )}
+
+          {experienceItems.length > 0 && (
+            <div>
+              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Kinh nghiệm làm việc</p>
+              <div className="space-y-3">
+                {experienceItems.map((exp, index) => (
+                  <div key={exp.id || index} className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-bold text-slate-900 dark:text-white">{exp.position || "Chưa có chức vụ"}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">{exp.company || "Chưa có công ty"}</p>
+                      </div>
+                      <span className="text-xs text-slate-500 dark:text-slate-400 text-right">
+                        {exp.startDate || exp.endDate ? `${exp.startDate || "?"} - ${exp.endDate || "Hiện tại"}` : ""}
+                      </span>
+                    </div>
+                    {exp.description && (
+                      <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">{exp.description}</p>
+                    )}
+                    {Array.isArray(exp.skills) && exp.skills.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {exp.skills.map((skill) => (
+                          <span key={`${index}-${skill}`} className="px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {projectItems.length > 0 ? (
+            <div>
+              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Dự án</p>
+              <div className="space-y-3">
+                {projectItems.map((project, index) => (
+                  <div key={project.id || index} className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-bold text-slate-900 dark:text-white">{project.title || "Dự án chưa đặt tên"}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">{project.role || "Chưa rõ vai trò"}</p>
+                      </div>
+                      {project.year && (
+                        <span className="text-xs text-slate-500 dark:text-slate-400">{project.year}</span>
+                      )}
+                    </div>
+                    {project.description && (
+                      <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">{project.description}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : candidate.target ? (
+            <div>
+              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Mục tiêu nghề nghiệp</p>
+              <p className="text-sm text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-700/50 p-3 rounded-lg">
+                {candidate.target}
+              </p>
+            </div>
+          ) : null}
+
+          <div className="pt-4 border-t border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              {selectedJob ? `Mời cho: ${selectedJob.job_title}` : "Chọn job để gửi lời mời"}
+            </p>
+            {candidate.application ? (
+              <span className="inline-flex px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                Đã ứng tuyển
+              </span>
+            ) : candidate.invitation ? (
+              <span className="inline-flex px-3 py-1.5 rounded-full text-xs font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
+                Đã mời
+              </span>
+            ) : (
+              <button
+                onClick={() => onSendInvitation(candidate.id)}
+                disabled={!canInvite || sendingInviteId === candidate.id}
+                className="px-4 py-2 rounded-lg bg-orange-600 text-white text-sm font-bold hover:bg-orange-700 disabled:opacity-60"
+              >
+                {sendingInviteId === candidate.id ? "Đang gửi..." : "Gửi lời mời"}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Main Component
 // ---------------------------------------------------------------------------
 function EmployerCandidates() {
   const navigate = useNavigate();
   const location = useLocation();
-  const employerCacheKey = `${JOBS_CACHE_KEY_PREFIX}:${getEmployerToken() || "anonymous"}`;
 
   const [jobs, setJobs] = useState([]);
   const [selectedJobId, setSelectedJobId] = useState(null);
@@ -423,6 +589,17 @@ function EmployerCandidates() {
   const [loadingCandidates, setLoadingCandidates] = useState(false);
   const [error, setError] = useState("");
   const [modalAppId, setModalAppId] = useState(null);
+  const [activeTab, setActiveTab] = useState("applicants");
+  const [searchFilters, setSearchFilters] = useState({ q: "", industry: "", location: "" });
+  const [candidateSearchResults, setCandidateSearchResults] = useState([]);
+  const [searchTotal, setSearchTotal] = useState(0);
+  const [searchPage, setSearchPage] = useState(1);
+  const [searchPages, setSearchPages] = useState(1);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState("");
+  const [inviteMessage, setInviteMessage] = useState("");
+  const [sendingInviteId, setSendingInviteId] = useState(null);
+  const [selectedSearchCandidate, setSelectedSearchCandidate] = useState(null);
 
   // Đọc ?job=<id> từ URL (navigate từ EmployerJobs)
   const urlJobId = useMemo(() => {
@@ -441,40 +618,16 @@ function EmployerCandidates() {
       setError("");
 
       try {
-        const rawCached = localStorage.getItem(employerCacheKey);
-        if (rawCached) {
-          const cached = JSON.parse(rawCached);
-          const isExpired = Date.now() - cached.timestamp > JOBS_CACHE_DURATION;
-          if (!isExpired && Array.isArray(cached.jobs)) {
-            const list = cached.jobs;
-            setJobs(list);
-            if (urlJobId && list.some((j) => j.id === urlJobId)) {
-              setSelectedJobId(urlJobId);
-            } else if (list.length > 0) {
-              setSelectedJobId(list[0].id);
-            }
-            setLoadingJobs(false);
-            return;
-          }
-          localStorage.removeItem(employerCacheKey);
-        }
-      } catch {
-        localStorage.removeItem(employerCacheKey);
-      }
-
-      try {
         const res = await API.get("/employer/jobs", { params: { page: 1, per_page: 100 } });
         const list = res.data?.jobs || [];
         setJobs(list);
-        localStorage.setItem(
-          employerCacheKey,
-          JSON.stringify({ jobs: list, timestamp: Date.now() })
-        );
         // Ưu tiên job từ URL, nếu không có thì job đầu tiên
         if (urlJobId && list.some((j) => j.id === urlJobId)) {
           setSelectedJobId(urlJobId);
         } else if (list.length > 0) {
           setSelectedJobId(list[0].id);
+        } else {
+          setSelectedJobId(null);
         }
       } catch {
         setError("Không tải được danh sách việc làm.");
@@ -483,7 +636,7 @@ function EmployerCandidates() {
       }
     };
     load();
-  }, [employerCacheKey, navigate, urlJobId]);
+  }, [navigate, urlJobId]);
 
   // Load candidates khi selectedJobId thay đổi
   const loadCandidates = useCallback(async () => {
@@ -507,8 +660,8 @@ function EmployerCandidates() {
           avatar: app.seeker?.avatar_path || "",
         }))
       );
-    } catch {
-      setError("Không tải được danh sách ứng viên.");
+      } catch {
+        setError("Không tải được danh sách ứng viên.");
       setCandidates([]);
     } finally {
       setLoadingCandidates(false);
@@ -523,6 +676,104 @@ function EmployerCandidates() {
       prev.map((c) => (c.id === appId ? { ...c, status: newStatus } : c))
     );
   }, []);
+
+  const handleSearchFilterChange = (field, value) => {
+    setSearchFilters((prev) => ({ ...prev, [field]: value }));
+    setSearchPage(1);
+  };
+
+  const searchCandidates = useCallback(async (pageOverride = searchPage) => {
+    setSearchLoading(true);
+    setSearchError("");
+
+    const requestCandidates = (jobId) => API.get("/employer/candidates/search", {
+      params: {
+        page: pageOverride,
+        per_page: 20,
+        job_id: jobId || undefined,
+        q: searchFilters.q,
+        industry: searchFilters.industry,
+        location: searchFilters.location,
+      },
+    });
+
+    try {
+      const res = await requestCandidates(selectedJobId);
+      setCandidateSearchResults(res.data?.candidates || []);
+      setSearchTotal(res.data?.total || 0);
+      setSearchPages(res.data?.pages || 1);
+      setSearchPage(res.data?.current_page || pageOverride);
+    } catch (requestError) {
+      if (selectedJobId) {
+        try {
+          const fallbackRes = await requestCandidates(null);
+          setSelectedJobId(null);
+          setCandidateSearchResults(fallbackRes.data?.candidates || []);
+          setSearchTotal(fallbackRes.data?.total || 0);
+          setSearchPages(fallbackRes.data?.pages || 1);
+          setSearchPage(fallbackRes.data?.current_page || pageOverride);
+          setSearchError("Job đã chọn không còn hợp lệ. Vui lòng chọn lại job trước khi gửi lời mời.");
+        } catch (fallbackError) {
+          setSearchError(fallbackError.message || requestError.message || "Không tải được danh sách ứng viên.");
+          setCandidateSearchResults([]);
+          setSearchTotal(0);
+          setSearchPages(1);
+        }
+      } else {
+        setSearchError(requestError.message || "Không tải được danh sách ứng viên.");
+        setCandidateSearchResults([]);
+        setSearchTotal(0);
+        setSearchPages(1);
+      }
+    } finally {
+      setSearchLoading(false);
+    }
+  }, [selectedJobId, searchFilters, searchPage]);
+
+  const handleCandidateSearchSubmit = () => {
+    setSearchPage(1);
+    searchCandidates(1);
+  };
+
+  const handleSearchPageChange = (nextPage) => {
+    const boundedPage = Math.min(Math.max(nextPage, 1), searchPages || 1);
+    setSearchPage(boundedPage);
+    searchCandidates(boundedPage);
+  };
+  useEffect(() => {
+    if (activeTab === "search") {
+      searchCandidates();
+    }
+  }, [activeTab, selectedJobId, searchCandidates]);
+
+  const handleSendInvitation = async (candidateId) => {
+    if (!selectedJobId) {
+      alert("Vui lòng chọn job để gửi lời mời.");
+      return;
+    }
+
+    setSendingInviteId(candidateId);
+    try {
+      const res = await API.post("/employer/invitations", {
+        user_id: candidateId,
+        job_id: selectedJobId,
+        message: inviteMessage,
+      });
+      const invitation = res.data?.invitation || { status: "sent", sent_at: new Date().toISOString() };
+      setCandidateSearchResults((prev) =>
+        prev.map((candidate) =>
+          candidate.id === candidateId ? { ...candidate, invitation } : candidate
+        )
+      );
+      setSelectedSearchCandidate((prev) =>
+        prev?.id === candidateId ? { ...prev, invitation } : prev
+      );
+    } catch (requestError) {
+      alert(requestError.message || "Gửi lời mời thất bại.");
+    } finally {
+      setSendingInviteId(null);
+    }
+  };
 
   const selectedJob = useMemo(() => jobs.find((j) => j.id === selectedJobId) || null, [jobs, selectedJobId]);
 
@@ -561,6 +812,28 @@ function EmployerCandidates() {
             ))}
           </div>
 
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-2 shadow-sm mb-8 inline-flex gap-2">
+            {[
+              { key: "applicants", label: "Ứng viên đã nộp", icon: "assignment_ind" },
+              { key: "search", label: "Tìm ứng viên", icon: "manage_search" },
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`px-4 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${
+                  activeTab === tab.key
+                    ? "bg-orange-600 text-white"
+                    : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                }`}
+              >
+                <span className="material-symbols-outlined text-lg">{tab.icon}</span>
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {activeTab === "applicants" && (
+          <>
           {/* Filters */}
           <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm mb-8 space-y-4">
             {/* Status filter pills */}
@@ -604,7 +877,204 @@ function EmployerCandidates() {
               </select>
             </div>
           </div>
+          </>
+          )}
 
+          {activeTab === "search" && (
+            <div className="space-y-8">
+              <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2">
+                      Job mời tuyển dụng
+                    </label>
+                    <select
+                      value={selectedJobId || ""}
+                      onChange={(e) => { setSelectedJobId(Number(e.target.value)); setSearchPage(1); }}
+                      className="w-full bg-slate-100 dark:bg-slate-700 border-none rounded-lg text-sm p-3 focus:ring-2 focus:ring-orange-600/20 text-slate-900 dark:text-white"
+                    >
+                      {loadingJobs ? (
+                        <option>Đang tải...</option>
+                      ) : jobs.length > 0 ? (
+                        jobs.map((j) => (
+                          <option key={j.id} value={j.id}>
+                            {j.job_title}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="">Không có job</option>
+                      )}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2">
+                      Từ khóa
+                    </label>
+                    <input
+                      value={searchFilters.q}
+                      onChange={(e) => handleSearchFilterChange("q", e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleCandidateSearchSubmit()}
+                      placeholder="Tên, kỹ năng, vị trí..."
+                      className="w-full bg-slate-100 dark:bg-slate-700 border-none rounded-lg text-sm p-3 focus:ring-2 focus:ring-orange-600/20 text-slate-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2">
+                      Ngành nghề
+                    </label>
+                    <input
+                      value={searchFilters.industry}
+                      onChange={(e) => handleSearchFilterChange("industry", e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleCandidateSearchSubmit()}
+                      placeholder="CNTT, Kế toán..."
+                      className="w-full bg-slate-100 dark:bg-slate-700 border-none rounded-lg text-sm p-3 focus:ring-2 focus:ring-orange-600/20 text-slate-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2">
+                      Khu vực
+                    </label>
+                    <input
+                      value={searchFilters.location}
+                      onChange={(e) => handleSearchFilterChange("location", e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleCandidateSearchSubmit()}
+                      placeholder="Hà Nội, Đà Nẵng..."
+                      className="w-full bg-slate-100 dark:bg-slate-700 border-none rounded-lg text-sm p-3 focus:ring-2 focus:ring-orange-600/20 text-slate-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                <textarea
+                  value={inviteMessage}
+                  onChange={(e) => setInviteMessage(e.target.value)}
+                  rows="3"
+                  placeholder="Nội dung lời mời gửi đến ứng viên..."
+                  className="w-full bg-slate-100 dark:bg-slate-700 border-none rounded-lg text-sm p-3 focus:ring-2 focus:ring-orange-600/20 text-slate-900 dark:text-white resize-none"
+                />
+
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    {selectedJob ? `Đang mời cho: ${selectedJob.job_title}` : "Chọn job để gửi lời mời"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                  <h2 className="text-base font-bold text-slate-900 dark:text-white">Kết quả tìm kiếm</h2>
+                  <span className="text-sm text-slate-500 dark:text-slate-400">{searchTotal} ứng viên</span>
+                </div>
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-200 dark:border-slate-700">
+                      <th className="px-6 py-5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">Ứng viên</th>
+                      <th className="px-6 py-5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">Mong muốn</th>
+      
+                      <th className="px-6 py-5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest text-right"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                    {searchLoading ? (
+                      <tr>
+                        <td className="px-6 py-10 text-slate-500 dark:text-slate-400" colSpan={4}>Đang tìm ứng viên...</td>
+                      </tr>
+                    ) : searchError ? (
+                      <tr>
+                        <td className="px-6 py-10 text-red-600 dark:text-red-400" colSpan={4}>{searchError}</td>
+                      </tr>
+                    ) : candidateSearchResults.length === 0 ? (
+                      <tr>
+                        <td className="px-6 py-10 text-slate-500 dark:text-slate-400" colSpan={4}>Chưa có kết quả phù hợp.</td>
+                      </tr>
+                    ) : (
+                      candidateSearchResults.map((candidate) => {
+                        const disabled = Boolean(candidate.invitation || candidate.application || sendingInviteId === candidate.id);
+                        return (
+                          <tr key={candidate.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                            <td className="px-6 py-5">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center flex-shrink-0">
+                                  {candidate.avatar_path ? (
+                                    <img src={candidate.avatar_path} alt={candidate.username} className="w-10 h-10 rounded-full object-cover" />
+                                  ) : (
+                                    <span className="material-symbols-outlined text-orange-600 dark:text-orange-400">person</span>
+                                  )}
+                                </div>
+                                <div>
+                                  <p className="font-semibold text-slate-900 dark:text-white">{candidate.username || "Ứng viên"}</p>
+                                  <p className="text-xs text-slate-500 dark:text-slate-400">{candidate.email}</p>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-5">
+                              <p className="text-sm font-semibold text-slate-900 dark:text-white">{candidate.desired_job || "Chưa cập nhật"}</p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400">{candidate.workplace_desired || candidate.industry || ""}</p>
+                            </td>
+                            <td className="px-6 py-5">
+                              <div className="flex items-center justify-end gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedSearchCandidate(candidate)}
+                                  className="px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-bold hover:bg-slate-200 dark:hover:bg-slate-600"
+                                >
+                                  Xem hồ sơ
+                                </button>
+                                {candidate.application ? (
+                                  <span className="inline-flex px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                                    Đã ứng tuyển
+                                  </span>
+                                ) : candidate.invitation ? (
+                                  <span className="inline-flex px-3 py-1.5 rounded-full text-xs font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
+                                    Đã mời
+                                  </span>
+                                ) : (
+                                  <button
+                                    onClick={() => handleSendInvitation(candidate.id)}
+                                    disabled={disabled}
+                                    className="px-4 py-2 rounded-lg bg-orange-600 text-white text-sm font-bold hover:bg-orange-700 disabled:opacity-60"
+                                  >
+                                    {sendingInviteId === candidate.id ? "Đang gửi..." : "Gửi lời mời"}
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+                {searchPages > 1 && (
+                  <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3">
+                    <button
+                      type="button"
+                      onClick={() => handleSearchPageChange(searchPage - 1)}
+                      disabled={searchLoading || searchPage <= 1}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span className="material-symbols-outlined text-lg">chevron_left</span>
+                      Trước
+                    </button>
+                    <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+                      Trang {searchPage} / {searchPages}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleSearchPageChange(searchPage + 1)}
+                      disabled={searchLoading || searchPage >= searchPages}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Sau
+                      <span className="material-symbols-outlined text-lg">chevron_right</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeTab === "applicants" && (
+          <>
           {/* Table */}
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm overflow-hidden">
             <table className="w-full text-left border-collapse">
@@ -675,6 +1145,8 @@ function EmployerCandidates() {
               </tbody>
             </table>
           </div>
+          </>
+          )}
         </div>
       </main>
 
@@ -684,6 +1156,15 @@ function EmployerCandidates() {
           appId={modalAppId}
           onClose={() => setModalAppId(null)}
           onStatusChange={handleStatusChange}
+        />
+      )}
+      {selectedSearchCandidate && (
+        <SearchCandidateModal
+          candidate={selectedSearchCandidate}
+          onClose={() => setSelectedSearchCandidate(null)}
+          onSendInvitation={handleSendInvitation}
+          sendingInviteId={sendingInviteId}
+          selectedJob={selectedJob}
         />
       )}
     </div>

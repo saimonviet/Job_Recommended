@@ -20,8 +20,9 @@ from datetime import datetime, timedelta
 from collections import Counter
 from werkzeug.utils import secure_filename
 
-from .models import db, Employer, Job, Application, User, InforUser
+from .models import db, Employer, Job, Application, User, InforUser, RecruitmentInvitation, SeekerSetting, EmployerNotification
 from .auth import employer_required, admin_required
+from .routes import _get_profile_completion
 from sqlalchemy import or_
 from .embedding_utils import generate_and_save_job_embedding
 
@@ -39,6 +40,7 @@ UPLOAD_FOLDER_CVS = os.path.join(
 def _serialize_application(app: Application, include_job=False) -> dict:
     user = User.query.get(app.user_id)
     infor = InforUser.query.get(app.user_id)
+    profile_completion = _get_profile_completion(infor)
     result = {
         "id": app.id,
         "user_id": app.user_id,
@@ -67,6 +69,8 @@ def _serialize_application(app: Application, include_job=False) -> dict:
             "experience": infor.experience if infor else None,
             "exp_min": infor.exp_min if infor else None,
             "exp_max": infor.exp_max if infor else None,
+            "profile_completion_percentage": profile_completion["percentage"],
+            "profile_completion": profile_completion,
         } if user else None,
     }
     if include_job and app.job:
@@ -76,6 +80,90 @@ def _serialize_application(app: Application, include_job=False) -> dict:
             "company_name": app.job.company_name,
         }
     return result
+
+
+def _serialize_candidate(user: User, infor: InforUser = None, job_id=None, employer_id=None) -> dict:
+    profile_completion = _get_profile_completion(infor)
+    invitation = None
+    application = None
+    if job_id and employer_id:
+        invitation = RecruitmentInvitation.query.filter_by(
+            employer_id=employer_id,
+            user_id=user.id,
+            job_id=job_id,
+        ).first()
+        application = Application.query.filter_by(user_id=user.id, job_id=job_id).first()
+
+    return {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "is_active": user.is_active,
+        "avatar_path": infor.avatar_path if infor else None,
+        "phone": infor.phone if infor else None,
+        "desired_job": infor.desired_job if infor else None,
+        "industry": infor.industry if infor else None,
+        "workplace_desired": infor.workplace_desired if infor else None,
+        "desired_salary": infor.desired_salary if infor else None,
+        "skills": infor.skills if infor else None,
+        "degree": infor.degree if infor else None,
+        "age": infor.age if infor else None,
+        "gender": infor.gender if infor else None,
+        "marriage": infor.marriage if infor else None,
+        "experience": infor.experience if infor else None,
+        "target": infor.target if infor else None,
+        "exp_min": infor.exp_min if infor else None,
+        "exp_max": infor.exp_max if infor else None,
+        "profile_completion_percentage": profile_completion["percentage"],
+        "profile_completion": profile_completion,
+        "invitation": {
+            "id": invitation.id,
+            "status": invitation.status,
+            "sent_at": invitation.sent_at.isoformat() if invitation.sent_at else None,
+        } if invitation else None,
+        "application": {
+            "id": application.id,
+            "status": application.status,
+            "applied_at": application.applied_at.isoformat() if application.applied_at else None,
+        } if application else None,
+    }
+
+
+def _ensure_recruitment_invitation_table():
+    try:
+        RecruitmentInvitation.__table__.create(db.engine, checkfirst=True)
+    except Exception:
+        current_app.logger.exception("Could not ensure recruitment_invitation table exists")
+
+
+def _ensure_seeker_setting_table():
+    try:
+        SeekerSetting.__table__.create(db.engine, checkfirst=True)
+    except Exception:
+        current_app.logger.exception("Could not ensure seeker_setting table exists")
+
+
+def _ensure_employer_notification_table():
+    try:
+        EmployerNotification.__table__.create(db.engine, checkfirst=True)
+    except Exception:
+        current_app.logger.exception("Could not ensure employer_notification table exists")
+
+
+def _serialize_employer_notification(notification):
+    return {
+        "id": notification.id,
+        "type": notification.type,
+        "title": notification.title,
+        "message": notification.message,
+        "is_read": notification.is_read,
+        "created_at": notification.created_at.isoformat() if notification.created_at else None,
+    }
+
+
+def _is_public_candidate(user_id):
+    settings = SeekerSetting.query.filter_by(user_id=user_id).first()
+    return not settings or settings.profile_visibility == 'public'
 
 
 def _get_current_employer():
@@ -151,10 +239,15 @@ def _empty_analytics_payload():
             "applications_growth_pct": 0,
             "applications_growth_count": 0,
             "processing_rate_pct": 0,
+            "reviewed_applications_count": 0,
             "avg_hiring_days": None,
             "avg_salary": None,
         },
         "monthly_applications": {
+            "labels": [],
+            "values": [],
+        },
+        "weekly_applications": {
             "labels": [],
             "values": [],
         },
@@ -212,6 +305,51 @@ def _expire_past_jobs_for_employer(employer: Employer):
 # ---------------------------------------------------------------------------
 # Hồ sơ Employer
 # ---------------------------------------------------------------------------
+
+@employer_bp.route('/notifications', methods=['GET'])
+@employer_required
+def get_employer_notifications():
+    employer = _get_current_employer()
+    if not employer:
+        return jsonify({"error": "Không tìm thấy employer"}), 404
+
+    _ensure_employer_notification_table()
+    notifications = (
+        EmployerNotification.query
+        .filter_by(employer_id=employer.id)
+        .order_by(EmployerNotification.created_at.desc())
+        .limit(50)
+        .all()
+    )
+
+    return jsonify({
+        "notifications": [_serialize_employer_notification(item) for item in notifications],
+        "unread_count": EmployerNotification.query.filter_by(
+            employer_id=employer.id,
+            is_read=False,
+        ).count(),
+    })
+
+
+@employer_bp.route('/notifications/<int:notification_id>/read', methods=['PUT'])
+@employer_required
+def mark_employer_notification_read(notification_id):
+    employer = _get_current_employer()
+    if not employer:
+        return jsonify({"error": "Không tìm thấy employer"}), 404
+
+    _ensure_employer_notification_table()
+    notification = EmployerNotification.query.filter_by(
+        id=notification_id,
+        employer_id=employer.id,
+    ).first()
+    if not notification:
+        return jsonify({"error": "Không tìm thấy thông báo"}), 404
+
+    notification.is_read = True
+    db.session.commit()
+    return jsonify({"message": "Đã đánh dấu đã đọc"})
+
 
 @employer_bp.route('/profile', methods=['GET'])
 @employer_required
@@ -372,6 +510,8 @@ def get_employer_jobs():
             "employment_type": job.employment_type,
             "deadline": job.deadline.isoformat() if job.deadline else None,
             "is_active": job.is_active,
+            "is_locked": bool(getattr(job, 'is_locked', False)),
+            "job_warning": "Bai dang nay da bi Admin khoa. Ban khong the chinh sua thong tin hoac trang thai hoat dong." if getattr(job, 'is_locked', False) else None,
             "created_at": job.created_at.isoformat() if job.created_at else None,
             "total_applications": total_applications,
         })
@@ -417,6 +557,8 @@ def get_employer_job_detail(job_id):
         "job_description": job.job_description,
         "job_requirement": job.job_requirement,
         "is_active": job.is_active,
+        "is_locked": bool(getattr(job, 'is_locked', False)),
+        "job_warning": "Bai dang nay da bi Admin khoa. Ban khong the chinh sua thong tin hoac trang thai hoat dong." if getattr(job, 'is_locked', False) else None,
         "created_at": job.created_at.isoformat() if job.created_at else None,
         "total_applications": job.applications.count(),
     })
@@ -433,6 +575,9 @@ def update_job(job_id):
     job = Job.query.filter_by(id=job_id).first()
     if not _job_belongs_to_employer(job, employer):
         return jsonify({"error": "Không tìm thấy job hoặc bạn không có quyền"}), 404
+
+    if getattr(job, 'is_locked', False):
+        return jsonify({"error": "Bai dang nay da bi Admin khoa. Ban khong the chinh sua thong tin hoac trang thai hoat dong."}), 423
 
     data = request.get_json(silent=True) or {}
 
@@ -495,6 +640,9 @@ def delete_job(job_id):
     if not _job_belongs_to_employer(job, employer):
         return jsonify({"error": "Không tìm thấy job hoặc bạn không có quyền"}), 404
 
+    if getattr(job, 'is_locked', False):
+        return jsonify({"error": "Bai dang nay da bi Admin khoa. Ban khong the xoa hoac dong bai dang."}), 423
+
     if job.applications.count() > 0:
         # Ẩn thay vì xóa để giữ lịch sử ứng viên
         job.is_active = False
@@ -509,6 +657,150 @@ def delete_job(job_id):
 # ---------------------------------------------------------------------------
 # Ứng viên
 # ---------------------------------------------------------------------------
+
+@employer_bp.route('/candidates/search', methods=['GET'])
+@employer_required
+def search_candidates():
+    """Employer tìm kiếm hồ sơ seeker để gửi lời mời tuyển dụng."""
+    employer = _get_current_employer()
+    if not employer:
+        return jsonify({"error": "Không tìm thấy employer"}), 404
+    _ensure_recruitment_invitation_table()
+    _ensure_seeker_setting_table()
+
+    page = request.args.get('page', 1, type=int)
+    per_page = min(request.args.get('per_page', 12, type=int), 50)
+    keyword = (request.args.get('q') or request.args.get('query') or '').strip()
+    industry = (request.args.get('industry') or '').strip()
+    location = (request.args.get('location') or '').strip()
+    job_id = request.args.get('job_id', type=int)
+
+    if job_id:
+        job = Job.query.filter_by(id=job_id).first()
+        if not _job_belongs_to_employer(job, employer):
+            return jsonify({"error": "Không tìm thấy job hoặc bạn không có quyền"}), 404
+
+    query = (
+        db.session.query(User, InforUser)
+        .outerjoin(InforUser, InforUser.id == User.id)
+        .outerjoin(SeekerSetting, SeekerSetting.user_id == User.id)
+        .filter(User.role == 'seeker', User.is_active == True)
+        .filter(or_(
+            SeekerSetting.id == None,
+            SeekerSetting.profile_visibility == 'public',
+        ))
+    )
+
+    if keyword:
+        like = f"%{keyword}%"
+        query = query.filter(or_(
+            User.username.ilike(like),
+            User.email.ilike(like),
+            InforUser.desired_job.ilike(like),
+            InforUser.skills.ilike(like),
+            InforUser.degree.ilike(like),
+            InforUser.industry.ilike(like),
+            InforUser.target.ilike(like),
+            InforUser.experience.ilike(like),
+        ))
+    if industry:
+        like = f"%{industry}%"
+        query = query.filter(or_(
+            InforUser.industry.ilike(like),
+            InforUser.desired_job.ilike(like),
+        ))
+    if location:
+        like = f"%{location}%"
+        query = query.filter(InforUser.workplace_desired.ilike(like))
+
+    query = query.order_by(User.created_at.desc())
+    pagination = query.paginate(page=page, per_page=per_page)
+
+    return jsonify({
+        "candidates": [
+            _serialize_candidate(user, infor, job_id=job_id, employer_id=employer.id)
+            for user, infor in pagination.items
+        ],
+        "total": pagination.total,
+        "pages": pagination.pages,
+        "current_page": page,
+    })
+
+
+@employer_bp.route('/invitations', methods=['POST'])
+@employer_required
+def send_recruitment_invitation():
+    """Employer gửi lời mời tuyển dụng đến seeker cho một job."""
+    employer = _get_current_employer()
+    if not employer:
+        return jsonify({"error": "Không tìm thấy employer"}), 404
+    _ensure_recruitment_invitation_table()
+    _ensure_seeker_setting_table()
+    data = request.get_json(silent=True) or {}
+    user_id = data.get('user_id')
+    job_id = data.get('job_id')
+    message = (data.get('message') or '').strip() or None
+
+    if not user_id or not job_id:
+        return jsonify({"error": "user_id và job_id là bắt buộc"}), 400
+
+    user = User.query.filter_by(id=user_id, role='seeker', is_active=True).first()
+    if not user:
+        return jsonify({"error": "Không tìm thấy ứng viên"}), 404
+
+    if not _is_public_candidate(user.id):
+        return jsonify({"error": "Ứng viên đang để hồ sơ riêng tư"}), 403
+
+    job = Job.query.filter_by(id=job_id).first()
+    if not _job_belongs_to_employer(job, employer):
+        return jsonify({"error": "Không tìm thấy job hoặc bạn không có quyền"}), 404
+    if getattr(job, 'is_locked', False):
+        return jsonify({"error": "Bai dang nay da bi Admin khoa. Khong the gui loi moi cho job nay."}), 423
+    if not job.is_active:
+        return jsonify({"error": "Job này đang đóng, không thể gửi lời mời"}), 400
+
+    existing_application = Application.query.filter_by(user_id=user.id, job_id=job.id).first()
+    if existing_application:
+        return jsonify({"error": "Ứng viên đã ứng tuyển job này"}), 409
+
+    existing_invitation = RecruitmentInvitation.query.filter_by(
+        employer_id=employer.id,
+        user_id=user.id,
+        job_id=job.id,
+    ).first()
+    if existing_invitation:
+        return jsonify({
+            "message": "Đã gửi lời mời cho ứng viên này rồi",
+            "invitation": {
+                "id": existing_invitation.id,
+                "status": existing_invitation.status,
+                "sent_at": existing_invitation.sent_at.isoformat() if existing_invitation.sent_at else None,
+            },
+        }), 200
+
+    invitation = RecruitmentInvitation(
+        employer_id=employer.id,
+        user_id=user.id,
+        job_id=job.id,
+        message=message,
+        status='sent',
+    )
+    db.session.add(invitation)
+
+    try:
+        db.session.commit()
+        return jsonify({
+            "message": "Gửi lời mời tuyển dụng thành công",
+            "invitation": {
+                "id": invitation.id,
+                "status": invitation.status,
+                "sent_at": invitation.sent_at.isoformat() if invitation.sent_at else None,
+            },
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
 
 @employer_bp.route('/jobs/<int:job_id>/applicants', methods=['GET'])
 @employer_required
@@ -697,6 +989,20 @@ def get_employer_analytics():
     monthly_labels = [f"T{month.month}" for month in month_starts]
     monthly_values = [month_counts[f"{month.year:04d}-{month.month:02d}"] for month in month_starts]
 
+    today_start = datetime(now.year, now.month, now.day)
+    day_starts = [today_start - timedelta(days=offset) for offset in range(6, -1, -1)]
+    weekly_counts = {day.strftime('%Y-%m-%d'): 0 for day in day_starts}
+    for app in applications:
+        applied_at = app.applied_at or app.updated_at
+        if not applied_at:
+            continue
+        key = applied_at.strftime('%Y-%m-%d')
+        if key in weekly_counts:
+            weekly_counts[key] += 1
+
+    weekly_labels = [day.strftime('%Y-%m-%d') for day in day_starts]
+    weekly_values = [weekly_counts[label] for label in weekly_labels]
+
     status_order = ['accepted', 'interview', 'reviewed', 'pending', 'rejected']
     status_labels = {
         'accepted': 'Đã tuyển',
@@ -755,12 +1061,17 @@ def get_employer_analytics():
             "applications_growth_pct": round(growth_pct, 1),
             "applications_growth_count": current_30 - previous_30,
             "processing_rate_pct": round(processing_rate, 1),
+            "reviewed_applications_count": processed_count,
             "avg_hiring_days": avg_hiring_days,
             "avg_salary": avg_salary,
         },
         "monthly_applications": {
             "labels": monthly_labels,
             "values": monthly_values,
+        },
+        "weekly_applications": {
+            "labels": weekly_labels,
+            "values": weekly_values,
         },
         "status_distribution": status_distribution,
         "top_positions": top_positions,

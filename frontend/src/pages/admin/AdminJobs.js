@@ -13,11 +13,10 @@ function AdminJobs() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalJobs, setTotalJobs] = useState(0);
   const [stats, setStats] = useState({
     total_jobs: 0,
+    active_jobs: 0,
     locked_jobs: 0,
-    hidden_jobs: 0,
   });
   const [selectedJob, setSelectedJob] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -35,8 +34,8 @@ function AdminJobs() {
         const data = await response.json();
         setStats({
           total_jobs: data.total_jobs || 0,
+          active_jobs: data.active_jobs || 0,
           locked_jobs: data.locked_jobs || 0,
-          hidden_jobs: data.hidden_jobs || 0,
         });
       }
     } catch (err) {
@@ -68,7 +67,6 @@ function AdminJobs() {
       const data = await response.json();
       setJobs(data.jobs || []);
       setTotalPages(data.pages || 1);
-      setTotalJobs(data.total || 0);
     } catch (err) {
       setError(err.message);
       setJobs([]);
@@ -113,13 +111,11 @@ function AdminJobs() {
 
   const getStatusColor = (job) => {
     if (job.is_locked) return "text-red-600 bg-red-50";
-    if (job.is_hidden) return "text-slate-600 bg-slate-50";
     return "text-emerald-600 bg-emerald-50";
   };
 
   const getStatusText = (job) => {
     if (job.is_locked) return "Đã khóa";
-    if (job.is_hidden) return "Đã ẩn";
     return "Hoạt động";
   };
 
@@ -136,6 +132,7 @@ function AdminJobs() {
 
       if (response.ok) {
         alert("✓ Xóa bài đăng thành công");
+        fetchStats();
         fetchJobs();
       } else {
         alert("❌ Không thể xóa bài đăng");
@@ -158,28 +155,7 @@ function AdminJobs() {
 
       if (response.ok) {
         alert(`✓ ${!currentStatus ? "Khóa" : "Mở khóa"} bài đăng thành công`);
-        fetchJobs();
-      } else {
-        alert("❌ Không thể cập nhật trạng thái");
-      }
-    } catch (err) {
-      alert(`Lỗi: ${err.message}`);
-    }
-  };
-
-  const handleToggleHidden = async (jobId, currentStatus) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/admin/jobs/${jobId}/hidden`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("adminToken")}`,
-        },
-        body: JSON.stringify({ is_hidden: !currentStatus }),
-      });
-
-      if (response.ok) {
-        alert(`✓ ${!currentStatus ? "Ẩn" : "Hiển thị"} bài đăng thành công`);
+        fetchStats();
         fetchJobs();
       } else {
         alert("❌ Không thể cập nhật trạng thái");
@@ -274,7 +250,7 @@ function AdminJobs() {
                 Quản lý bài đăng tuyển dụng
               </h2>
               <p className="text-on-surface-variant max-w-lg">
-                Xem chi tiết, khóa, ẩn, xóa và tìm kiếm bài đăng.
+                Xem chi tiết, khóa, xóa và tìm kiếm bài đăng.
               </p>
             </div>
           </div>
@@ -288,6 +264,13 @@ function AdminJobs() {
               </h3>
             </div>
 
+            <div className="bg-white p-6 rounded-xl shadow-sm border-b-4 border-emerald-600">
+              <p className="text-sm font-semibold text-slate-500 mb-1">Đang đăng</p>
+              <h3 className="text-4xl font-black text-slate-900">
+                {stats.active_jobs.toLocaleString()}
+              </h3>
+            </div>
+
             <div className="bg-white p-6 rounded-xl shadow-sm border-b-4 border-orange-600">
               <p className="text-sm font-semibold text-slate-500 mb-1">Đã khóa</p>
               <h3 className="text-4xl font-black text-slate-900">
@@ -295,12 +278,6 @@ function AdminJobs() {
               </h3>
             </div>
 
-            <div className="bg-white p-6 rounded-xl shadow-sm border-b-4 border-slate-600">
-              <p className="text-sm font-semibold text-slate-500 mb-1">Đã ẩn</p>
-              <h3 className="text-4xl font-black text-slate-900">
-                {stats.hidden_jobs.toLocaleString()}
-              </h3>
-            </div>
           </div>
 
           {/* Error State */}
@@ -331,7 +308,6 @@ function AdminJobs() {
                   <option value="all">Tất cả trạng thái</option>
                   <option value="active">Hoạt động</option>
                   <option value="locked">Đã khóa</option>
-                  <option value="hidden">Đã ẩn</option>
                 </select>
               </div>
 
@@ -427,17 +403,6 @@ function AdminJobs() {
                               </button>
 
                               <button
-                                onClick={() => handleToggleHidden(job.id, job.is_hidden || false)}
-                                className={`min-w-[70px] px-3 py-2 rounded-full text-xs font-bold text-white transition-all ${
-                                  job.is_hidden
-                                    ? "bg-slate-600 hover:bg-slate-700"
-                                    : "bg-purple-600 hover:bg-purple-700"
-                                }`}
-                              >
-                                {job.is_hidden ? "Hiện" : "Ẩn"}
-                              </button>
-
-                              <button
                                 onClick={() => handleSoftDeleteJob(job.id)}
                                 className="min-w-[70px] px-3 py-2 rounded-full text-xs font-bold text-white bg-red-600 hover:bg-red-700 transition-all"
                               >
@@ -519,11 +484,6 @@ function AdminJobs() {
                 {selectedJob.is_locked && (
                   <span className="bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-bold">
                     🔒 Đã khóa
-                  </span>
-                )}
-                {selectedJob.is_hidden && (
-                  <span className="bg-slate-50 text-slate-600 px-3 py-1 rounded-full text-xs font-bold">
-                    👁️ Đã ẩn
                   </span>
                 )}
                 {selectedJob.is_deleted && (

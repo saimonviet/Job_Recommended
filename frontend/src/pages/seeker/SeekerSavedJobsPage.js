@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import TopNavBar from '../../components/SeekerTopNavBar';
 import api from '../../services/api';
 
-const createJobLogo = (seed) => `https://api.dicebear.com/7.x/icons/svg?seed=${encodeURIComponent(seed || 'job')}`;
+const createJobLogo = (seed) =>
+  `https://api.dicebear.com/7.x/icons/svg?seed=${encodeURIComponent(seed || 'job')}`;
 
 const SeekerSavedJobsPage = () => {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ const SeekerSavedJobsPage = () => {
       navigate('/login-seeker');
       return;
     }
+
     loadSavedJobs();
   }, [navigate]);
 
@@ -28,9 +30,7 @@ const SeekerSavedJobsPage = () => {
 
     try {
       const response = await api.get('/seeker/saved-jobs');
-      console.log('[loadSavedJobs] API response:', response);
       const jobs = response.data?.saved_jobs || [];
-      console.log('[loadSavedJobs] Loaded jobs:', jobs);
       setSavedJobs(jobs);
     } catch (err) {
       console.error('Failed to load saved jobs:', err);
@@ -66,8 +66,15 @@ const SeekerSavedJobsPage = () => {
     }
 
     if (filterStatus === 'all') return filtered;
-    if (filterStatus === 'active') return filtered.filter(job => job.status === 'active' || job.status === 'normal');
-    if (filterStatus === 'expiring') return filtered.filter(job => job.status === 'expiring');
+    if (filterStatus === 'active') {
+      return filtered.filter(
+        (job) => job.status === 'active' || job.status === 'normal'
+      );
+    }
+    if (filterStatus === 'expiring') {
+      return filtered.filter((job) => job.status === 'expiring');
+    }
+
     return filtered;
   };
 
@@ -78,21 +85,17 @@ const SeekerSavedJobsPage = () => {
           {job.matchScore}% Match
         </span>
       );
-    } else if (job.status === 'expiring') {
+    }
+
+    if (job.status === 'expiring') {
       return (
         <span className="px-3 py-1 bg-error/10 text-error text-xs font-bold rounded-full uppercase tracking-widest">
           Sắp hết hạn
         </span>
       );
     }
-    return null;
-  };
 
-  const getDeadlineText = (deadline, status) => {
-    if (status === 'expiring') {
-      return <span className="text-sm font-semibold text-error">Còn {deadline} ngày</span>;
-    }
-    return <span className="text-sm font-semibold text-on-surface-variant">Còn {deadline} ngày</span>;
+    return null;
   };
 
   const filteredJobs = getFilteredJobs();
@@ -101,24 +104,26 @@ const SeekerSavedJobsPage = () => {
     <div className="min-h-screen">
       <TopNavBar currentPage="saved" />
 
-      <div className="flex min-h-screen pt-16">
-        <main className="flex-1 p-8 lg:p-12 max-w-7xl mx-auto w-full">
-          {/* Header Section */}
-          <header className="mb-12">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <div className="min-h-screen pt-16">
+        <main className="w-full px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+          <div className="max-w-5xl mx-auto">
+            <header className="mb-8">
+              <h1 className="text-3xl font-bold text-on-surface font-headline">
+                Công việc đã lưu
+              </h1>
+              <p className="mt-2 text-on-surface-variant">
+                Theo dõi những công việc bạn quan tâm và ứng tuyển khi sẵn sàng.
+              </p>
+            </header>
 
-        
-            </div>
-          </header>
-
-          {/* Jobs Grid */}
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-            {/* Main Listing Column */}
-            <div className="xl:col-span-8 space-y-6">
+            <div className="space-y-6">
               {loading ? (
                 <div className="space-y-6">
                   {Array.from({ length: 3 }).map((_, index) => (
-                    <div key={index} className="bg-surface-container-lowest p-6 rounded-xl animate-pulse">
+                    <div
+                      key={index}
+                      className="bg-surface-container-lowest p-6 rounded-xl animate-pulse"
+                    >
                       <div className="flex gap-4 mb-4">
                         <div className="w-16 h-16 rounded-lg bg-surface-container-low" />
                         <div className="flex-1">
@@ -126,6 +131,7 @@ const SeekerSavedJobsPage = () => {
                           <div className="h-4 bg-surface-container-low rounded w-1/2" />
                         </div>
                       </div>
+
                       <div className="space-y-2">
                         <div className="h-4 bg-surface-container-low rounded" />
                         <div className="h-4 bg-surface-container-low rounded w-5/6" />
@@ -153,6 +159,7 @@ const SeekerSavedJobsPage = () => {
                             src={job.logo || createJobLogo(job.company || job.title)}
                           />
                         </div>
+
                         <div>
                           <h3 className="text-xl font-bold font-headline text-on-surface group-hover:text-primary transition-colors">
                             {job.title}
@@ -162,6 +169,7 @@ const SeekerSavedJobsPage = () => {
                           </p>
                         </div>
                       </div>
+
                       {getStatusBadge(job)}
                     </div>
 
@@ -170,25 +178,36 @@ const SeekerSavedJobsPage = () => {
                         <p className="text-[10px] uppercase tracking-widest text-on-surface-variant mb-1 font-bold">
                           Mức lương
                         </p>
-                        <p className="text-sm font-semibold text-primary">{job.salary || 'Thoả thuận'}</p>
+                        <p className="text-sm font-semibold text-primary">
+                          {job.salary || 'Thoả thuận'}
+                        </p>
                       </div>
+
                       <div>
                         <p className="text-[10px] uppercase tracking-widest text-on-surface-variant mb-1 font-bold">
                           Loại công việc
                         </p>
-                        <p className="text-sm font-semibold text-on-surface">{job.employmentType || 'N/A'}</p>
+                        <p className="text-sm font-semibold text-on-surface">
+                          {job.employmentType || 'N/A'}
+                        </p>
                       </div>
+
                       <div>
                         <p className="text-[10px] uppercase tracking-widest text-on-surface-variant mb-1 font-bold">
                           Chức năng
                         </p>
-                        <p className="text-sm font-semibold text-on-surface">{job.jobFunction || 'N/A'}</p>
+                        <p className="text-sm font-semibold text-on-surface">
+                          {job.jobFunction || 'N/A'}
+                        </p>
                       </div>
+
                       <div>
                         <p className="text-[10px] uppercase tracking-widest text-on-surface-variant mb-1 font-bold">
                           Ngành
                         </p>
-                        <p className="text-sm font-semibold text-on-surface">{job.industries || 'N/A'}</p>
+                        <p className="text-sm font-semibold text-on-surface">
+                          {job.industries || 'N/A'}
+                        </p>
                       </div>
                     </div>
 
@@ -197,9 +216,12 @@ const SeekerSavedJobsPage = () => {
                         onClick={(e) => handleUnsave(e, job.id)}
                         className="text-on-surface-variant hover:text-error text-sm font-bold flex items-center gap-2 transition-colors"
                       >
-                        <span className="material-symbols-outlined text-lg">bookmark_remove</span>
+                        <span className="material-symbols-outlined text-lg">
+                          bookmark_remove
+                        </span>
                         Bỏ lưu
                       </button>
+
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -217,8 +239,15 @@ const SeekerSavedJobsPage = () => {
                   <span className="material-symbols-outlined text-6xl text-on-surface-variant mb-4 inline-block">
                     bookmark
                   </span>
-                  <h3 className="text-xl font-bold text-on-surface mb-2">Chưa có công việc đã lưu</h3>
-                  <p className="text-on-surface-variant mb-6">Hãy lưu những công việc bạn quan tâm để theo dõi dễ dàng hơn.</p>
+
+                  <h3 className="text-xl font-bold text-on-surface mb-2">
+                    Chưa có công việc đã lưu
+                  </h3>
+
+                  <p className="text-on-surface-variant mb-6">
+                    Hãy lưu những công việc bạn quan tâm để theo dõi dễ dàng hơn.
+                  </p>
+
                   <button
                     onClick={() => navigate('/seeker/home')}
                     className="px-6 py-3 bg-primary text-on-primary rounded-lg font-bold text-sm hover:opacity-90 transition-opacity"
@@ -227,11 +256,6 @@ const SeekerSavedJobsPage = () => {
                   </button>
                 </div>
               )}
-            </div>
-
-            {/* Sidebar Column */}
-            <div className="xl:col-span-4 space-y-8">
-              
             </div>
           </div>
         </main>

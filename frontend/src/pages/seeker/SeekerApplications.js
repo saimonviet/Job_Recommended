@@ -4,6 +4,7 @@ import TopNavBar from '../../components/SeekerTopNavBar';
 import API from '../../services/api';
 
 const statusTextMap = {
+  interview: 'Đang phỏng vấn',
   pending: 'Đang chờ duyệt',
   interviewing: 'Đang phỏng vấn',
   accepted: 'Đã chấp nhận',
@@ -58,6 +59,8 @@ const SeekerApplications = () => {
         appliedDate: formatAppliedDate(app.applied_at),
         status: app.status || 'pending',
         statusText: statusTextMap[app.status] || app.status || 'Chưa cập nhật',
+        isLocked: Boolean(app.job?.is_locked),
+        jobWarning: app.job?.job_warning || '',
       }));
 
       setApplications(mappedApplications);
@@ -77,6 +80,7 @@ const SeekerApplications = () => {
 
   const getStatusBadgeStyle = (status) => {
     switch (status) {
+      case 'interview':
       case 'interviewing':
         return 'bg-secondary-container text-on-secondary-fixed-variant';
       case 'pending':
@@ -94,8 +98,12 @@ const SeekerApplications = () => {
     alert('Mở tính năng nhắn tin!');
   };
 
-  const handleDetailClick = (appId) => {
-    navigate(`/jobs/${appId}`);
+  const handleDetailClick = (app) => {
+    if (app.isLocked) {
+      alert(app.jobWarning || 'Bài đăng này đã bị Admin khóa. Bạn không thể xem chi tiết công việc.');
+      return;
+    }
+    navigate(`/jobs/${app.jobId}`);
   };
 
   const handleWithdrawClick = async (appId) => {
@@ -115,7 +123,7 @@ const SeekerApplications = () => {
 
   // Calculate stats
   const totalApplications = applications.length;
-  const interviewCount = applications.filter(app => app.status === 'interviewing').length;
+  const interviewCount = applications.filter(app => app.status === 'interview' || app.status === 'interviewing').length;
   const responseRate = Math.round((interviewCount / totalApplications) * 100) || 0;
 
   if (!isLoggedIn) {
@@ -181,8 +189,21 @@ const SeekerApplications = () => {
                     </div>
                     <div className="flex-grow">
                       <div className="mb-2">
-                        <h3 className="text-xl font-bold text-primary">{app.title}</h3>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="text-xl font-bold text-primary">{app.title}</h3>
+                          {app.isLocked && (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-red-700">
+                              <span className="material-symbols-outlined text-sm">lock</span>
+                              Đã khóa
+                            </span>
+                          )}
+                        </div>
                       </div>
+                      {app.isLocked && (
+                        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                          {app.jobWarning || 'Bài đăng này đã bị Admin khóa. Bạn vẫn thấy lịch sử ứng tuyển nhưng không thể xem chi tiết công việc.'}
+                        </div>
+                      )}
                       <p className="text-on-surface font-medium mb-4">
                         {app.company} • <span className="text-on-surface-variant font-normal">Đã ứng tuyển {app.appliedDate}</span>
                       </p>
@@ -203,8 +224,13 @@ const SeekerApplications = () => {
                       </span>
                       <div className="flex md:flex-col justify-end gap-2 w-full">
                         <button
-                          onClick={() => handleDetailClick(app.jobId)}
-                          className="text-primary hover:bg-surface-container-low  py-2 rounded-md text-sm font-semibold transition-colors"
+                          onClick={() => handleDetailClick(app)}
+                          disabled={app.isLocked}
+                          className={`py-2 rounded-md text-sm font-semibold transition-colors ${
+                            app.isLocked
+                              ? 'text-on-surface-variant opacity-50 cursor-not-allowed'
+                              : 'text-primary hover:bg-surface-container-low'
+                          }`}
                         >
                           Chi tiết
                         </button>

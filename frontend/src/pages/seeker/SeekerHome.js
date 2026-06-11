@@ -410,7 +410,7 @@ const SeekerHome = () => {
                   >
                     <option value="">Tất cả tỉnh thành</option>
                     <option value="Hà Nội">Hà Nội</option>
-                    <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+                    <option value="Hồ Chí Minh">Hồ Chí Minh</option>
                     <option value="Đà Nẵng">Đà Nẵng</option>
                     <option value="Hải Phòng">Hải Phòng</option>
                     <option value="Cần Thơ">Cần Thơ</option>
@@ -501,20 +501,19 @@ const SeekerHome = () => {
                     className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface-container-lowest text-on-surface"
                   >
                     <option value="">Tất cả</option>
-                    <option value="Toàn thời gian">Toàn thời gian</option>
-                    <option value="Bán thời gian">Bán thời gian</option>
-                    <option value="Hợp đồng">Hợp đồng</option>
-                    <option value="Thực tập">Thực tập</option>
+                    <option value="Full time">Toàn thời gian</option>
+                    <option value="Part time">Bán thời gian</option>
+                    <option value="Freelance">Làm việc tự do</option>
                   </select>
                 </div>
               </div>
               <div className="flex gap-4">
-                <button
+                {/* <button
                   onClick={applyFilters}
                   className="bg-primary text-on-primary px-6 py-2 rounded-lg font-bold hover:shadow-lg transition-all"
                 >
                   Áp dụng bộ lọc
-                </button>
+                </button> */}
                 <button
                   onClick={() => {
                     clearFilters();
