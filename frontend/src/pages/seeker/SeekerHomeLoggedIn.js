@@ -179,7 +179,7 @@ const SeekerHomeLoggedIn = () => {
       setProfileMissingFields(missingFields);
       setProfileCompletionPercent(Number.isFinite(completionPercent) ? completionPercent : 0);
 
-      if (!isComplete) {
+      if (completionPercent < 50) {
         setRecommendations([]);
         setNewRecommendations(0);
         setLoadingRecommendations(false);
@@ -753,10 +753,10 @@ const SeekerHomeLoggedIn = () => {
                       }
                     `}</style>
                   </div>
-                ) : !profileComplete ? (
+                ) : profileCompletionPercent < 50 ? (
                   <div className="bg-white p-4 rounded-lg">
                     <div className="text-sm font-bold uppercase tracking-widest text-[#00488d] mb-2">Bước 1 / 2</div>
-                    <div className="text-sm text-on-surface-variant mb-3">Hoàn thiện hồ sơ để nhận đề xuất việc làm được cá nhân hoá.</div>
+                    <div className="text-sm text-on-surface-variant mb-3">Hoàn thiện hồ sơ trên 50% để nhận đề xuất việc làm được cá nhân hoá.</div>
                     <div className="mb-3">
                       <div className="mb-1 flex items-center justify-between text-xs font-semibold text-on-surface-variant">
                         <span>Hồ sơ hoàn thiện</span>
@@ -798,12 +798,6 @@ const SeekerHomeLoggedIn = () => {
                       <div className="mt-auto text-sm font-bold text-[#00488d]">{job.salary}</div>
                     </div>
                   ))
-                )}
-
-                {!loadingRecommendations && !recommendations.length && (
-                  <div className="rounded-xl border border-dashed border-outline-variant/30 bg-white p-4 text-center text-sm text-on-surface-variant">
-                    Chưa tìm thấy việc làm phù hợp cho hồ sơ hiện tại.
-                  </div>
                 )}
               </div>
             </div>

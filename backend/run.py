@@ -19,7 +19,7 @@ MAINTENANCE_KEY = 'maintenance_mode'
 
 
 def _maintenance_mode_enabled():
-    setting = SystemSetting.query.get(MAINTENANCE_KEY)
+    setting = db.session.get(SystemSetting, MAINTENANCE_KEY)
     return bool(setting and setting.value == 'true')
 
 
