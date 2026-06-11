@@ -145,6 +145,17 @@ class EmployerNotification(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
 
 
+class SeekerNotificationRead(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    notification_id = db.Column(db.String(120), nullable=False, index=True)
+    read_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'notification_id', name='uq_seeker_notification_read'),
+    )
+
+
 class SystemSetting(db.Model):
     key = db.Column(db.String(100), primary_key=True)
     value = db.Column(db.Text, nullable=False)

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import EmployerSideNavBar from "../../components/EmployerSideNavBar";
-import API from "../../services/api";
+import API, { API_URL } from "../../services/api";
 import { getEmployerToken } from "../../utils/authStorage";
 import EmployerTopNavBar from "../../components/EmployerTopNavBar";
 import { formatExperienceRange } from "../../utils/dataFormatter";
@@ -54,6 +54,27 @@ const tryParseJsonArray = (value) => {
   } catch {
     return [];
   }
+};
+
+const resolveCandidateAvatarUrl = (path) => {
+  if (!path || typeof path !== "string" || !path.trim()) return "";
+  const normalized = path.trim();
+  if (
+    normalized.startsWith("http://") ||
+    normalized.startsWith("https://") ||
+    normalized.startsWith("data:") ||
+    normalized.startsWith("blob:")
+  ) {
+    return normalized;
+  }
+  return `${API_URL}${normalized.startsWith("/") ? normalized : `/${normalized}`}`;
+};
+
+const handleCandidateAvatarError = (e) => {
+  const img = e.currentTarget;
+  if (img.dataset._avatarErrorHandled) return;
+  img.dataset._avatarErrorHandled = "1";
+  img.src = "https://api.dicebear.com/10.x/glyphs/svg?seed=Candidate";
 };
 
 // ---------------------------------------------------------------------------
@@ -163,9 +184,10 @@ function CandidateModal({ appId, onClose, onStatusChange }) {
                 <div className="w-16 h-16 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center flex-shrink-0">
                   {seeker?.avatar_path ? (
                     <img
-                      src={seeker.avatar_path}
+                      src={resolveCandidateAvatarUrl(seeker.avatar_path)}
                       alt={seeker.username}
                       className="w-16 h-16 rounded-full object-cover"
+                      onError={handleCandidateAvatarError}
                     />
                   ) : (
                     <span className="material-symbols-outlined text-orange-600 dark:text-orange-400 text-3xl">person</span>
@@ -428,9 +450,10 @@ function SearchCandidateModal({ candidate, onClose, onSendInvitation, sendingInv
             <div className="w-16 h-16 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center flex-shrink-0">
               {candidate.avatar_path ? (
                 <img
-                  src={candidate.avatar_path}
+                  src={resolveCandidateAvatarUrl(candidate.avatar_path)}
                   alt={candidate.username}
                   className="w-16 h-16 rounded-full object-cover"
+                  onError={handleCandidateAvatarError}
                 />
               ) : (
                 <span className="material-symbols-outlined text-orange-600 dark:text-orange-400 text-3xl">person</span>
@@ -995,7 +1018,12 @@ function EmployerCandidates() {
                               <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center flex-shrink-0">
                                   {candidate.avatar_path ? (
-                                    <img src={candidate.avatar_path} alt={candidate.username} className="w-10 h-10 rounded-full object-cover" />
+                                    <img
+                                      src={resolveCandidateAvatarUrl(candidate.avatar_path)}
+                                      alt={candidate.username}
+                                      className="w-10 h-10 rounded-full object-cover"
+                                      onError={handleCandidateAvatarError}
+                                    />
                                   ) : (
                                     <span className="material-symbols-outlined text-orange-600 dark:text-orange-400">person</span>
                                   )}
@@ -1109,7 +1137,12 @@ function EmployerCandidates() {
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center flex-shrink-0">
                             {c.avatar ? (
-                              <img src={c.avatar} alt={c.name} className="w-10 h-10 rounded-full object-cover" />
+                              <img
+                                src={resolveCandidateAvatarUrl(c.avatar)}
+                                alt={c.name}
+                                className="w-10 h-10 rounded-full object-cover"
+                                onError={handleCandidateAvatarError}
+                              />
                             ) : (
                               <span className="material-symbols-outlined text-orange-600 dark:text-orange-400">person</span>
                             )}
