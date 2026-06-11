@@ -19,7 +19,7 @@ export const buildJobSearchParams = ({
 }) => {
   const params = {
     page,
-    per_page: 6,
+    per_page: perPage,
   };
 
   const text = query ?? searchQuery ?? searchTerm;

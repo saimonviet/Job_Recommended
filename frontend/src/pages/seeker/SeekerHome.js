@@ -33,6 +33,8 @@ const SeekerHome = () => {
   const debounceTimer = useRef(null);
   const API_URL = 'http://127.0.0.1:5000';
   const perPage = 6;
+  const ALL_JOBS_PAGE_SIZE = 10000;
+  const getClientTotalPages = (items) => Math.max(1, Math.ceil((items?.length || 0) / perPage));
 
   // Load search history from localStorage on mount
   useEffect(() => {
@@ -49,18 +51,13 @@ const SeekerHome = () => {
     });
   }, []);
 
-  // Fetch jobs when page, search, or filters change
-  useEffect(() => {
-    fetchJobs(currentPage, searchQuery, filters);
-  }, [currentPage, searchQuery, filters]);
-
   // Fetch jobs from API
   const fetchJobs = async (page = 1, search = '', appliedFilters = filters) => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
-        page: page,
-        per_page: perPage,
+        page: 1,
+        per_page: ALL_JOBS_PAGE_SIZE,
       });
 
       if (search) {
@@ -85,10 +82,11 @@ const SeekerHome = () => {
       }
 
       const data = await response.json();
-      setJobs(data.jobs || []);
-      setTotalPages(data.pages || 1);
-      setCurrentPage(data.current_page || 1);
-      setTotalResults(data.total || 0);
+      const fetchedJobs = data.jobs || [];
+      setJobs(fetchedJobs);
+      setTotalPages(getClientTotalPages(fetchedJobs));
+      setCurrentPage(page);
+      setTotalResults(data.total || fetchedJobs.length);
     } catch (error) {
       console.error('Error fetching jobs:', error);
       setJobs([]);
@@ -169,13 +167,17 @@ const SeekerHome = () => {
   // Handle filter change
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters(prev => ({ ...prev, [name]: value }));
+    const nextFilters = { ...filters, [name]: value };
+    setFilters(nextFilters);
+    setCurrentPage(1);
+    fetchJobs(1, searchQuery, nextFilters);
   };
 
   // Apply filters
   const applyFilters = () => {
     setCurrentPage(1);
     setShowFilters(false);
+    fetchJobs(1, searchQuery, filters);
     // useEffect sẽ tự động fetch với filters mới
   };
 
@@ -287,6 +289,11 @@ const SeekerHome = () => {
         </button>
       </div>
     </div>
+  );
+
+  const displayJobs = jobs.slice(
+    (currentPage - 1) * perPage,
+    currentPage * perPage
   );
 
   return (
@@ -546,7 +553,7 @@ const SeekerHome = () => {
                 Không tìm thấy công việc nào. Vui lòng thử tìm kiếm khác.
               </div>
             ) : (
-              jobs.map((job) => (
+              displayJobs.map((job) => (
                 <JobCard key={job.id} job={job} />
               ))
             )}
