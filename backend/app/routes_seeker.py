@@ -22,6 +22,7 @@ from flask import Blueprint, request, jsonify
 from datetime import datetime
 from werkzeug.utils import secure_filename
 
+from .embedding_pipeline import score_jobs_for_user, _parse_salary_nums
 from .models import db, User, InforUser, Job, Application
 import numpy as np
 from .auth import seeker_required, login_required
@@ -32,41 +33,6 @@ from .routes import (
 )
 from .embedding_utils import generate_and_save_user_embedding
 
-# Đã import thêm map_industry_group để phục vụ việc so sánh ngành nghề
-from .embedding_pipeline import (
-    score_jobs_for_user, 
-    extract_province, 
-    _parse_salary_nums,
-    map_industry_group
-)
-
-NORTH_PROVINCES = [
-    'Hà Nội', 'Hải Phòng', 'Bắc Giang', 'Bắc Kạn', 'Bắc Ninh', 'Cao Bằng', 
-    'Điện Biên', 'Hà Giang', 'Hà Nam', 'Hải Dương', 'Hòa Bình', 'Hưng Yên', 
-    'Lai Châu', 'Lạng Sơn', 'Lào Cai', 'Nam Định', 'Ninh Bình', 'Phú Thọ', 
-    'Quảng Ninh', 'Sơn La', 'Thái Bình', 'Thái Nguyên', 'Tuyên Quang', 'Vĩnh Phúc', 'Yên Bái'
-]
-
-CENTRAL_PROVINCES = [
-    'Đà Nẵng', 'Bình Định', 'Bình Thuận', 'Đắk Lắk', 'Đắk Nông', 'Gia Lai', 
-    'Hà Tĩnh', 'Khánh Hòa', 'Kon Tum', 'Lâm Đồng', 'Nghệ An', 'Ninh Thuận', 
-    'Phú Yên', 'Quảng Bình', 'Quảng Nam', 'Quảng Ngãi', 'Quảng Trị', 'Thanh Hóa', 'Thừa Thiên Huế'
-]
-
-SOUTH_PROVINCES = [
-    'Hồ Chí Minh', 'Cần Thơ', 'An Giang', 'Bà Rịa - Vũng Tàu', 'Bạc Liêu', 
-    'Bến Tre', 'Bình Dương', 'Bình Phước', 'Cà Mau', 'Đồng Nai', 'Đồng Tháp', 
-    'Hậu Giang', 'Kiên Giang', 'Long An', 'Sóc Trăng', 'Tây Ninh', 'Tiền Giang', 'Trà Vinh', 'Vĩnh Long'
-]
-
-def get_region(province_name):
-    if province_name in NORTH_PROVINCES:
-        return 'North'
-    if province_name in CENTRAL_PROVINCES:
-        return 'Central'
-    if province_name in SOUTH_PROVINCES:
-        return 'South'
-    return 'Other'
 
 seeker_bp = Blueprint('seeker', __name__, url_prefix='/seeker')
 
@@ -76,6 +42,63 @@ logger = logging.getLogger(__name__)
 UPLOAD_FOLDER = os.path.join(
     os.path.dirname(os.path.dirname(__file__)), 'instance', 'uploads'
 )
+
+
+# ---------------------------------------------------------------------------
+# Helper: Lọc jobs theo ngành nghề
+# ---------------------------------------------------------------------------
+def _filter_jobs_by_industry(infor, jobs):
+    """
+    Lọc danh sách jobs theo ngành nghề của user.
+    Nếu user không có industry hoặc industries trống, trả về tất cả jobs.
+    Ngược lại, chỉ giữ jobs có industries khớp (case-insensitive).
+    
+    Returns: (filtered_jobs, jobs_filtered_count)
+    """
+    if not infor or not infor.industry:
+        return jobs, 0
+    
+    user_industry = (infor.industry or '').strip().lower()
+    if not user_industry:
+        return jobs, 0
+    
+    filtered = []
+    for job in jobs:
+        job_industry = (job.industries or '').strip().lower()
+        if job_industry == user_industry:
+            filtered.append(job)
+    
+    filtered_count = len(jobs) - len(filtered)
+    return filtered, filtered_count
+
+
+def _salary_range_from_text(sal_str):
+    if not sal_str:
+        return 0.0, 0.0
+    return _parse_salary_nums(str(sal_str))
+
+
+def _job_salary_matches_user(job, user_min, user_max):
+    if user_min <= 0 or user_max <= 0:
+        return False
+    job_min, job_max = _parse_salary_nums(str(getattr(job, 'salary_min', '') or ''))
+    parsed_max = _parse_salary_nums(str(getattr(job, 'salary_max', '') or ''))[1]
+    if parsed_max > 0:
+        job_max = parsed_max
+    if job_max <= 0 and job_min > 0:
+        job_max = job_min * 1.2
+    if job_min <= 0 and job_max <= 0:
+        return False
+    return not (job_max < user_min or job_min > user_max)
+
+
+def _salary_ranges_overlap(user_salary, job_salary):
+    user_min, user_max = user_salary
+    job_min, job_max = job_salary
+    if user_min <= 0 or user_max <= 0 or job_min <= 0 or job_max <= 0:
+        return False
+    return not (job_max < user_min or job_min > user_max)
+
 CV_FOLDER = os.path.join(
     os.path.dirname(os.path.dirname(__file__)), 'instance', 'cvs'
 )
@@ -320,6 +343,76 @@ def save_profile():
         else:
             infor.experience = json.dumps(experience_payload, ensure_ascii=False)
 
+        # --- TỰ ĐỘNG TÍNH exp_min (mặc định 0) và exp_max (số năm):
+        # exp_max = (latest end date among experiences) - (earliest start date among experiences)
+        try:
+            experiences_list = None
+            if isinstance(experience_payload, list):
+                experiences_list = experience_payload
+            else:
+                # nếu lưu dưới dạng chuỗi JSON trong infor.experience
+                try:
+                    experiences_list = json.loads(infor.experience) if infor.experience else None
+                except Exception:
+                    experiences_list = None
+
+            # Parse dates
+            start_dates = []
+            end_dates = []
+            today = datetime.utcnow().date()
+            if isinstance(experiences_list, list):
+                for item in experiences_list:
+                    if not isinstance(item, dict):
+                        continue
+                    s = item.get('startDate') or item.get('from') or item.get('start')
+                    e = item.get('endDate') or item.get('to') or item.get('end')
+
+                    # parse start
+                    if isinstance(s, str) and len(s) >= 4 and s[:4].isdigit():
+                        try:
+                            if len(s) >= 10 and s[4] == '-':
+                                sd = datetime.strptime(s[:10], '%Y-%m-%d').date()
+                            else:
+                                sd = datetime(int(s[:4]), 1, 1).date()
+                            start_dates.append(sd)
+                        except Exception:
+                            pass
+
+                    # parse end
+                    if isinstance(e, str):
+                        if e.strip().lower() in ('hiện tại', 'hien tai', 'present', 'current'):
+                            end_dates.append(today)
+                        elif len(e) >= 4 and e[:4].isdigit():
+                            try:
+                                if len(e) >= 10 and e[4] == '-':
+                                    ed = datetime.strptime(e[:10], '%Y-%m-%d').date()
+                                else:
+                                    ed = datetime(int(e[:4]), 1, 1).date()
+                                end_dates.append(ed)
+                            except Exception:
+                                pass
+                    else:
+                        # nếu không có end date, coi là hiện tại
+                        if e in (None, '', []):
+                            end_dates.append(today)
+
+            # Compute exp_min and exp_max
+            # exp_min mặc định 0
+            computed_exp_min = 0
+            computed_exp_max = 0
+            if start_dates and end_dates:
+                min_start = min(start_dates)
+                max_end = max(end_dates)
+                delta_days = (max_end - min_start).days
+                years = max(0, int(delta_days // 365))
+                computed_exp_max = years
+
+            infor.exp_min = str(computed_exp_min)
+            infor.exp_max = str(computed_exp_max)
+        except Exception:
+            infor.exp_min = infor.exp_min or '0'
+            infor.exp_max = infor.exp_max or '0'
+
     if 'skills' in data:
         skills_value = (data['skills'] or '').strip()
         if skills_value and not skills_value.startswith('['):
@@ -502,22 +595,42 @@ def get_recommendations():
                 "total_jobs_considered": 0,
                 "cached": True,
             })
-            
         # --- Cache miss: score all jobs via subgraph ---
         logger.info(f"[seeker/recommendations][{request_tag}] Cache miss, loading jobs from DB...")
-        jobs = Job.query.order_by(Job.id.desc()).all()
-        logger.info(f"[seeker/recommendations][{request_tag}] Total raw jobs: {len(jobs)}")
+        all_jobs = Job.query.order_by(Job.id.desc()).all()
+        logger.info(f"[seeker/recommendations][{request_tag}] Total jobs in DB: {len(all_jobs)}")
 
+        # Lọc jobs theo ngành nghề của user
+        jobs, jobs_filtered_out = _filter_jobs_by_industry(infor, all_jobs)
+        logger.info(f"[seeker/recommendations][{request_tag}] After industry filter: {len(jobs)} jobs (filtered out: {jobs_filtered_out})")
+        
         if not jobs:
+            logger.info(f"[seeker/recommendations][{request_tag}] No jobs matched user's industry filter")
             return jsonify({"profile_complete": True, "recommendations": []})
 
-        # Chấm điểm toàn bộ Job bằng Cosine Similarity
-        BATCH_SIZE = 5000
+        # Ưu tiên jobs trùng khoảng lương mong muốn của seeker
+        user_salary = _salary_range_from_text(infor.desired_salary if infor else '')
+        salary_matched_jobs = [job for job in jobs if _job_salary_matches_user(job, *user_salary)]
+
+        if salary_matched_jobs:
+            logger.info(
+                f"[seeker/recommendations][{request_tag}] Found {len(salary_matched_jobs)} jobs matching user's salary range; prioritizing these"
+            )
+            jobs_to_score = salary_matched_jobs
+        else:
+            if user_salary[0] > 0:
+                logger.info(
+                    f"[seeker/recommendations][{request_tag}] No jobs matched salary range; using all {len(jobs)} jobs after industry filter"
+                )
+            jobs_to_score = jobs
+
+        # score_jobs_for_user tự build feature từ raw data — không cần đọc embedding từ DB
+        BATCH_SIZE = 2000
         all_scored = []
         infor = _get_infor_for_user(user)
 
-        for i in range(0, len(jobs), BATCH_SIZE):
-            batch = jobs[i:i + BATCH_SIZE]
+        for i in range(0, len(jobs_to_score), BATCH_SIZE):
+            batch = jobs_to_score[i:i + BATCH_SIZE]
             try:
                 batch_scores = score_jobs_for_user(user, infor, batch)
                 all_scored.extend(zip(batch_scores.tolist(), batch))
@@ -525,90 +638,30 @@ def get_recommendations():
                 logger.exception(f"[seeker/recommendations] Error scoring batch: {e}")
                 all_scored.extend([(0.5, job) for job in batch])
             logger.debug(
-                f"[seeker/recommendations][{request_tag}] Progress: {min(i+BATCH_SIZE, len(jobs))}/{len(jobs)} jobs scored"
+                f"[seeker/recommendations][{request_tag}] Progress: {min(i+BATCH_SIZE, len(jobs_to_score))}/{len(jobs_to_score)} jobs scored"
             )
 
+        # Fallback nếu toàn bộ batch đều lỗi
         if not all_scored:
-            all_scored = [(0.5, job) for job in jobs]
+            all_scored = [(0.5, job) for job in jobs_to_score]
 
-        # ==========================================
-        # BƯỚC SẮP XẾP ƯU TIÊN ĐA TẦNG (MULTI-KEY SORT)
-        # ==========================================
-        user_province = extract_province(infor.workplace_desired)
-        user_region = get_region(user_province)
-        user_sal_min, _ = _parse_salary_nums(infor.desired_salary)
-        user_industry = map_industry_group(infor.industry)
+        # Sort descending và lấy top 5
+        all_scored.sort(key=lambda x: x[0], reverse=True)
+        top_5 = all_scored[:5]
 
-        enhanced_scores = []
-        for score, job in all_scored:
-            # 1. Khớp Ngành nghề
-            job_industry = map_industry_group(job.industries)
-            ind_match = 1 if (user_industry == 'Khác' or job_industry == 'Khác' or user_industry == job_industry) else 0
-
-            # 2. Khớp Lương
-            try:
-                job_sal_min = float(job.salary_min) if job.salary_min not in (None, '') else 0.0
-            except (ValueError, TypeError):
-                job_sal_min, _ = _parse_salary_nums(str(job.salary_min or ''))
-
-            try:
-                job_sal_max = float(job.salary_max) if job.salary_max not in (None, '') else 0.0
-            except (ValueError, TypeError):
-                _, job_sal_max = _parse_salary_nums(str(job.salary_max or ''))
-
-            if job_sal_max == 0 and job_sal_min > 0:
-                job_sal_max = job_sal_min * 1.2
-
-            sal_match = 1 if (user_sal_min == 0 or job_sal_max == 0 or job_sal_max >= user_sal_min) else 0
-
-            # 3. Khớp Khu vực (Bắc/Trung/Nam)
-            job_province = extract_province(job.job_address)
-            job_region = get_region(job_province)
-            loc_match = 1 if (
-                user_region == 'Other' or
-                job_region == 'Other' or
-                job_province in ['Toàn quốc', 'Tại Nhà', 'Nước ngoài'] or
-                user_region == job_region
-            ) else 0
-
-            enhanced_scores.append({
-                'score': score,
-                'job': job,
-                'ind_match': ind_match,
-                'sal_match': sal_match,
-                'loc_match': loc_match
-            })
-
-        # Sắp xếp theo tuple (A, B, C, D, E)
-        # Bằng cách làm tròn score 1 chữ số thập phân (vd: 0.86 và 0.92 đều -> 0.9),
-        # hệ thống sẽ gom các job có độ phù hợp từ AI gần bằng nhau vào cùng một nhóm.
-        # Trong cùng nhóm đó, nó ưu tiên: Ngành -> Lương -> Khu vực -> Điểm Cosine chính xác.
-        enhanced_scores.sort(
-            key=lambda x: (
-                round(x['score'], 1),  
-                x['ind_match'],        
-                x['sal_match'],        
-                x['loc_match'],       
-                x['score']             
-            ),
-            reverse=True
-        )
-
-        # Lấy top 5 sau khi đã qua bộ lọc ưu tiên
-        top_5 = [(x['score'], x['job']) for x in enhanced_scores[:5]]
-
+        # Score * 100 để hiển thị dạng phần trăm
         recommendations = [_serialize_job(job, score=score * 100) for score, job in top_5]
         _save_recommendations_cache(user, recommendations)
 
-        logger.info(f"[seeker/recommendations][{request_tag}] Top 5 jobs after priority sorting:")
+        logger.info(f"[seeker/recommendations][{request_tag}] Top 5 jobs (from {len(jobs_to_score)} after salary prioritization and industry filter):")
         for score, job in top_5:
-            logger.info(f"  [seeker/recommendations][{request_tag}] score={score * 100:.2f}% {job.job_title} @ {job.company_name}")
+            logger.info(f"  [seeker/recommendations][{request_tag}] score={score * 100:.2f}% {job.job_title} @ {job.company_name} ({job.industries})")
 
         return jsonify({
             "profile_complete": True,
             "user": {"id": user.id, "username": user.username, "email": user.email},
             "recommendations": recommendations,
-            "total_jobs_considered": len(jobs),
+            "total_jobs_considered": len(jobs_to_score),
             "cached": False,
         })
 

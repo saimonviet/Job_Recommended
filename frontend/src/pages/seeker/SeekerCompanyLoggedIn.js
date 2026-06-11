@@ -14,6 +14,9 @@ const SeekerCompanyLoggedIn = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchLocation, setSearchLocation] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
+  // Applied filters used for actual API requests. These are updated when user clicks "Tìm kiếm".
+  const [appliedSearchTerm, setAppliedSearchTerm] = useState('');
+  const [appliedSearchLocation, setAppliedSearchLocation] = useState('');
   const [sortBy, setSortBy] = useState('newest');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
@@ -52,13 +55,14 @@ const SeekerCompanyLoggedIn = () => {
   };
 
   // Fetch on component mount and when filters change
+  // Reset to page 1 when selectedLocation or sort order change (not while typing)
   useEffect(() => {
-    setCurrentPage(1); // Reset to page 1 when filters change
-  }, [searchTerm, searchLocation,  selectedLocation, sortBy]);
+    setCurrentPage(1);
+  }, [selectedLocation, sortBy]);
 
   useEffect(() => {
     fetchCompanies();
-  }, [searchTerm, searchLocation, selectedLocation, sortBy, currentPage]);
+  }, [appliedSearchTerm, appliedSearchLocation, selectedLocation, sortBy, currentPage]);
 
 
   const handleLocationChange = (location) => {
@@ -74,8 +78,10 @@ const SeekerCompanyLoggedIn = () => {
   };
 
   const handleSearch = () => {
+    // Apply current inputs and trigger fetching via effect
+    setAppliedSearchTerm(searchTerm);
+    setAppliedSearchLocation(searchLocation);
     setCurrentPage(1);
-    fetchCompanies();
   };
   return (
     <>

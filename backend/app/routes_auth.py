@@ -37,8 +37,8 @@ def seeker_register():
     if len(raw_password) < 6:
         return jsonify({"error": "Mật khẩu phải có ít nhất 6 ký tự"}), 400
 
-    if User.query.filter((User.username == username) | (User.email == email)).first():
-        return jsonify({"error": "Username hoặc email đã tồn tại"}), 409
+    if User.query.filter((User.email == email)).first():
+        return jsonify({"error": "Email đã tồn tại"}), 409
 
     user = User(
         username=username,

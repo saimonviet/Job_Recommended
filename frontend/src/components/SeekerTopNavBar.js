@@ -11,7 +11,7 @@ const TopNavBar = ({ currentPage = 'home' }) => {
   };
 
   const [avatarPreview, setAvatarPreview] = useState(
-    `https://ui-avatars.com/api/?name=${user.username || user.name || 'User'}&background=random&color=fff`
+    `https://api.dicebear.com/10.x/glyphs/svg?seed=Luna`
   );
 
   useEffect(() => {

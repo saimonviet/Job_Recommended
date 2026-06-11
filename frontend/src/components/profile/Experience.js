@@ -48,6 +48,12 @@ const Experience = () => {
         method: 'POST',
         body: JSON.stringify({ experience: JSON.stringify(updatedExperiences) }),
       });
+      // Trigger recommendation refresh so home shows updated suggestions immediately
+      try {
+        await api.request('/seeker/recommendations');
+      } catch (err) {
+        console.warn('Failed to refresh recommendations after saving experiences', err);
+      }
     } catch (error) {
       console.error('Failed to save experiences:', error);
       alert('Lưu thông tin thất bại.');

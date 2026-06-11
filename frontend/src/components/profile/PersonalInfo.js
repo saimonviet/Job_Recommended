@@ -59,7 +59,7 @@ const PersonalInfo = () => {
   const fileInputRef = useRef(null);
   const [avatarFile, setAvatarFile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [avatarPreview, setAvatarPreview] = useState('https://api.dicebear.com/7.x/avataaars/svg?seed=Felix');
+  const [avatarPreview, setAvatarPreview] = useState('https://api.dicebear.com/10.x/glyphs/svg?seed=Luna');
   const [formData, setFormData] = useState({
     phone: '',
     workplace_desired: '',
@@ -130,6 +130,12 @@ const PersonalInfo = () => {
         body: data,
         headers: { 'Content-Type': null },
       });
+      // Refresh recommendations immediately so home shows updated suggestions
+      try {
+        await api.request('/seeker/recommendations');
+      } catch (err) {
+        console.warn('Failed to refresh recommendations after profile save', err);
+      }
       setIsEditing(false);
       alert('Lưu thông tin thành công!');
     } catch (error) {
