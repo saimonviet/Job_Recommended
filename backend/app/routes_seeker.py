@@ -22,7 +22,7 @@ from flask import Blueprint, request, jsonify
 from datetime import datetime
 from werkzeug.utils import secure_filename
 
-from .embedding_pipeline import score_jobs_for_user, _parse_salary_nums
+from .embedding_pipeline import score_jobs_for_user, _parse_salary_nums, _build_job_feat, _cosine_fallback_tfidf
 from .models import db, User, InforUser, Job, Application, RecruitmentInvitation, SeekerSetting, EmployerNotification, SeekerNotificationRead
 
 import numpy as np
@@ -100,6 +100,82 @@ def _salary_ranges_overlap(user_salary, job_salary):
     if user_min <= 0 or user_max <= 0 or job_min <= 0 or job_max <= 0:
         return False
     return not (job_max < user_min or job_min > user_max)
+
+
+def _get_recent_applied_job_ids(user, limit=10):
+    if not getattr(user, 'recent_applied_jobs', None):
+        return []
+    try:
+        ids = json.loads(user.recent_applied_jobs)
+        if not isinstance(ids, list):
+            return []
+        normalized = []
+        for item in ids:
+            if isinstance(item, int):
+                normalized.append(item)
+            elif isinstance(item, str) and item.isdigit():
+                normalized.append(int(item))
+        return normalized[:limit]
+    except Exception:
+        return []
+
+
+def _append_recent_applied_job_id(user, job_id, limit=10):
+    if not user:
+        return []
+    ids = _get_recent_applied_job_ids(user, limit)
+    if job_id in ids:
+        ids.remove(job_id)
+    ids.insert(0, job_id)
+    ids = ids[:limit]
+    user.recent_applied_jobs = json.dumps(ids, ensure_ascii=False)
+    return ids
+
+
+def _remove_recent_applied_job_id(user, job_id):
+    if not user:
+        return []
+    ids = _get_recent_applied_job_ids(user, limit=10)
+    if job_id in ids:
+        ids.remove(job_id)
+    user.recent_applied_jobs = json.dumps(ids, ensure_ascii=False)
+    return ids
+
+
+def _score_jobs_against_recent_applied_jobs(recent_job_ids, candidate_jobs):
+    if not recent_job_ids or not candidate_jobs:
+        return np.zeros(len(candidate_jobs), dtype=np.float32)
+
+    recent_jobs = Job.query.filter(Job.id.in_(recent_job_ids)).all()
+    if not recent_jobs:
+        return np.zeros(len(candidate_jobs), dtype=np.float32)
+
+    recent_feats = []
+    for job in recent_jobs:
+        try:
+            recent_feats.append(_build_job_feat(job).numpy())
+        except Exception:
+            recent_feats.append(np.zeros(265, dtype=np.float32))
+    candidate_feats = []
+    for job in candidate_jobs:
+        try:
+            candidate_feats.append(_build_job_feat(job).numpy())
+        except Exception:
+            candidate_feats.append(np.zeros(265, dtype=np.float32))
+
+    recent_feats = np.stack(recent_feats).astype(np.float32)
+    candidate_feats = np.stack(candidate_feats).astype(np.float32)
+
+    recent_text = recent_feats[:, -256:]
+    candidate_text = candidate_feats[:, -256:]
+
+    recent_norm = recent_text / (np.linalg.norm(recent_text, axis=1, keepdims=True) + 1e-12)
+    candidate_norm = candidate_text / (np.linalg.norm(candidate_text, axis=1, keepdims=True) + 1e-12)
+
+    sims = candidate_norm @ recent_norm.T
+    best_sim = np.max(sims, axis=1)
+    scores = ((np.clip(best_sim, -1, 1) + 1.0) / 2.0).astype(np.float32)
+    return scores
 
 CV_FOLDER = os.path.join(
     os.path.dirname(os.path.dirname(__file__)), 'instance', 'cvs'
@@ -438,8 +514,20 @@ def apply_job(job_id):
     db.session.add(application)
     try:
         seeker = User.query.get(user_id)
-        _create_new_application_notification(job, seeker)
+        _append_recent_applied_job_id(seeker, job_id)
+        seeker.recommendations = None
         db.session.commit()
+
+        try:
+            _create_new_application_notification(job, seeker)
+            db.session.commit()
+        except Exception as notification_error:
+            db.session.rollback()
+            logger.warning(
+                "[seeker/apply] Failed to create employer notification after saving application: %s",
+                notification_error,
+            )
+
         return jsonify({
             "message": "Nộp đơn thành công",
             "application_id": application.id,
@@ -498,6 +586,11 @@ def withdraw_application(app_id):
 
     if application.status != 'pending':
         return jsonify({"error": "Chỉ có thể rút đơn khi trạng thái còn 'pending'"}), 400
+
+    seeker = User.query.get(request.current_user_id)
+    if seeker:
+        _remove_recent_applied_job_id(seeker, application.job_id)
+        seeker.recommendations = None
 
     db.session.delete(application)
     db.session.commit()
@@ -887,6 +980,16 @@ def get_recommendations():
         jobs, jobs_filtered_out = _filter_jobs_by_industry(infor, all_jobs)
         logger.info(f"[seeker/recommendations][{request_tag}] After industry filter: {len(jobs)} jobs (filtered out: {jobs_filtered_out})")
         
+        applied_job_ids = {
+            app.job_id
+            for app in Application.query.filter_by(user_id=user.id).all()
+            if app.job_id is not None
+        }
+        jobs = [job for job in jobs if job.id not in applied_job_ids]
+        logger.info(
+            f"[seeker/recommendations][{request_tag}] After removing applied jobs: {len(jobs)} jobs remain"
+        )
+
         if not jobs:
             return jsonify({
                 "profile_complete": True,
@@ -916,14 +1019,28 @@ def get_recommendations():
         all_scored = []
         infor = _get_infor_for_user(user)
 
+        recent_ids = _get_recent_applied_job_ids(user, limit=10)
+        recent_scores = None
+        if recent_ids:
+            try:
+                recent_scores = _score_jobs_against_recent_applied_jobs(recent_ids, jobs_to_score)
+            except Exception as e:
+                logger.warning(f"[seeker/recommendations][{request_tag}] Lỗi score với recent applied jobs: {e}")
+
         for i in range(0, len(jobs_to_score), BATCH_SIZE):
             batch = jobs_to_score[i:i + BATCH_SIZE]
             try:
                 batch_scores = score_jobs_for_user(user, infor, batch)
+                if recent_scores is not None:
+                    batch_recent_scores = recent_scores[i:i + BATCH_SIZE]
+                    batch_scores = 0.7 * batch_scores + 0.3 * batch_recent_scores
                 all_scored.extend(zip(batch_scores.tolist(), batch))
             except Exception as e:
                 logger.exception(f"[seeker/recommendations] Error scoring batch: {e}")
-                all_scored.extend([(0.5, job) for job in batch])
+                fallback_scores = np.array([0.5] * len(batch), dtype=np.float32)
+                if recent_scores is not None:
+                    fallback_scores = 0.7 * fallback_scores + 0.3 * recent_scores[i:i + BATCH_SIZE]
+                all_scored.extend([(float(score), job) for score, job in zip(fallback_scores.tolist(), batch)])
             logger.debug(
                 f"[seeker/recommendations][{request_tag}] Progress: {min(i+BATCH_SIZE, len(jobs_to_score))}/{len(jobs_to_score)} jobs scored"
             )

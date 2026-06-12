@@ -2,6 +2,55 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
+const CACHE_TTL_MS = 5 * 60 * 1000;
+const TOP_BAR_PROFILE_CACHE_KEY = 'cache_seeker_topbar_profile_v1';
+const TOP_BAR_NOTIFICATIONS_CACHE_KEY = 'cache_seeker_topbar_notifications_v1';
+
+const topBarMemoryCache = {
+  profile: null,
+  notifications: null,
+};
+
+const readCachedValue = (key) => {
+  if (key === TOP_BAR_PROFILE_CACHE_KEY && topBarMemoryCache.profile) {
+    return topBarMemoryCache.profile;
+  }
+
+  if (key === TOP_BAR_NOTIFICATIONS_CACHE_KEY && topBarMemoryCache.notifications) {
+    return topBarMemoryCache.notifications;
+  }
+
+  try {
+    const raw = sessionStorage.getItem(key);
+    if (!raw) return null;
+    const { ts, data } = JSON.parse(raw);
+    if (Date.now() - ts < CACHE_TTL_MS) {
+      return data;
+    }
+    sessionStorage.removeItem(key);
+  } catch (error) {
+    console.warn('Top bar cache read error:', error);
+  }
+
+  return null;
+};
+
+const writeCachedValue = (key, data) => {
+  try {
+    if (key === TOP_BAR_PROFILE_CACHE_KEY) {
+      topBarMemoryCache.profile = data;
+    }
+
+    if (key === TOP_BAR_NOTIFICATIONS_CACHE_KEY) {
+      topBarMemoryCache.notifications = data;
+    }
+
+    sessionStorage.setItem(key, JSON.stringify({ ts: Date.now(), data }));
+  } catch (error) {
+    console.warn('Top bar cache write error:', error);
+  }
+};
+
 const TopNavBar = ({ currentPage = 'home' }) => {
   const navigate = useNavigate();
 
@@ -18,12 +67,20 @@ const TopNavBar = ({ currentPage = 'home' }) => {
   const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
+    const cachedProfile = readCachedValue(TOP_BAR_PROFILE_CACHE_KEY);
+    if (cachedProfile?.avatarPreview) {
+      setAvatarPreview(cachedProfile.avatarPreview);
+      return;
+    }
+
     const fetchProfile = async () => {
       try {
         const data = await api.request('/seeker/profile');
 
         if (data.avatar_path) {
-          setAvatarPreview(`http://127.0.0.1:5000${data.avatar_path}`);
+          const nextAvatarPreview = `http://127.0.0.1:5000${data.avatar_path}`;
+          setAvatarPreview(nextAvatarPreview);
+          writeCachedValue(TOP_BAR_PROFILE_CACHE_KEY, { avatarPreview: nextAvatarPreview });
         }
       } catch (error) {
         console.error('Failed to fetch profile avatar:', error);
@@ -34,11 +91,24 @@ const TopNavBar = ({ currentPage = 'home' }) => {
   }, []);
 
   useEffect(() => {
+    const cachedNotifications = readCachedValue(TOP_BAR_NOTIFICATIONS_CACHE_KEY);
+    if (cachedNotifications) {
+      setNotifications(cachedNotifications.notifications || []);
+      setUnreadCount(cachedNotifications.unreadCount || 0);
+      return;
+    }
+
     const fetchNotifications = async () => {
       try {
         const data = await api.request('/seeker/notifications');
-        setNotifications(data.notifications || []);
-        setUnreadCount(data.unread_count || 0);
+        const nextNotifications = data.notifications || [];
+        const nextUnreadCount = data.unread_count || 0;
+        setNotifications(nextNotifications);
+        setUnreadCount(nextUnreadCount);
+        writeCachedValue(TOP_BAR_NOTIFICATIONS_CACHE_KEY, {
+          notifications: nextNotifications,
+          unreadCount: nextUnreadCount,
+        });
       } catch (error) {
         console.error('Failed to fetch seeker notifications:', error);
         setNotifications([]);

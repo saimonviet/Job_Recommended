@@ -60,12 +60,20 @@ const CACHE_KEY_LATEST_JOBS = 'cache_latest_jobs_all_v1';
 const JOBS_PER_PAGE = 6;
 const ALL_JOBS_PAGE_SIZE = 10000;
 
+const memoryCache = {
+  latestJobs: null,
+};
+
 const getClientTotalPages = (jobs) => Math.max(1, Math.ceil((jobs?.length || 0) / JOBS_PER_PAGE));
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 phút
 
 // Helper: kiểm tra cache có còn hiệu lực
 const getCachedData = (key) => {
   try {
+    if (key === CACHE_KEY_LATEST_JOBS && memoryCache.latestJobs) {
+      return memoryCache.latestJobs;
+    }
+
     const raw = sessionStorage.getItem(key);
     if (!raw) return null;
     const { ts, data } = JSON.parse(raw);
@@ -82,6 +90,10 @@ const getCachedData = (key) => {
 // Helper: lưu dữ liệu vào cache
 const setCachedData = (key, data) => {
   try {
+    if (key === CACHE_KEY_LATEST_JOBS) {
+      memoryCache.latestJobs = data;
+    }
+
     sessionStorage.setItem(key, JSON.stringify({ ts: Date.now(), data }));
   } catch (e) {
     console.warn('Cache write error:', e);
@@ -132,18 +144,17 @@ const SeekerHomeLoggedIn = () => {
   }, [navigate]);
 
   const loadLatestJobs = async () => {
+    const cached = getCachedData(CACHE_KEY_LATEST_JOBS);
+    if (cached) {
+      setLatestJobs(cached.jobs || []);
+      setTotalPages(getClientTotalPages(cached.jobs || []));
+      setLatestJobsLoaded(true);
+      setJobsLoading(false);
+      return;
+    }
+
     setJobsLoading(true);
     try {
-      // Kiểm tra cache trước
-      const cached = getCachedData(CACHE_KEY_LATEST_JOBS);
-      if (cached) {
-        setLatestJobs(cached.jobs);
-        setTotalPages(getClientTotalPages(cached.jobs));
-        setLatestJobsLoaded(true);
-        setJobsLoading(false);
-        return;
-      }
-
       // Gọi API nếu cache hết hạn
       const latestJobsResponse = await API.get('/jobs', { params: { page: 1, per_page: ALL_JOBS_PAGE_SIZE } });
       const freshJobs = (latestJobsResponse.data?.jobs || []).map(toLatestJob);

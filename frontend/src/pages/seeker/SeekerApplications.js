@@ -204,10 +204,11 @@ const SeekerApplications = () => {
                           {app.jobWarning || 'Bài đăng này đã bị Admin khóa. Bạn vẫn thấy lịch sử ứng tuyển nhưng không thể xem chi tiết công việc.'}
                         </div>
                       )}
-                      <p className="text-on-surface font-medium mb-4">
-                        {app.company} • <span className="text-on-surface-variant font-normal">Đã ứng tuyển {app.appliedDate}</span>
+                      <p className="text-on-surface font-medium mb-1">
+                        {app.company}
                       </p>
-                      <div className="flex flex-wrap gap-4 items-center">
+                       <span className="text-on-surface-variant font-normal mb-2">{app.appliedDate}</span>
+                      <div className="flex flex-wrap gap-4 mt-4 items-center">
                         <div className="flex items-center gap-1.5 text-on-surface-variant text-sm">
                           <span className="material-symbols-outlined text-base">payments</span>
                           {app.salary}

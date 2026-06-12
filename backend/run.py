@@ -1,8 +1,9 @@
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from sqlalchemy import inspect, text
 
-from app.models import db, SystemSetting
+from app.models import db, SystemSetting, User
 from app.config import Config
 
 # Legacy routes (job listing, GNN, user-profile, saved-jobs cũ)
@@ -59,12 +60,19 @@ def create_app(config_object=Config):
     app.register_blueprint(employer_bp)    # /employer/jobs, /employer/applications/<id>/status, ...
     app.register_blueprint(admin_bp)       # /admin/dashboard, /admin/users, ...
 
+    def _ensure_user_recent_applied_jobs_column():
+        inspector = inspect(db.engine)
+        if 'user' not in inspector.get_table_names():
+            return
+        columns = [col['name'] for col in inspector.get_columns('user')]
+        if 'recent_applied_jobs' not in columns:
+            db.engine.execute(text(
+                'ALTER TABLE user ADD COLUMN recent_applied_jobs TEXT'
+            ))
+
     with app.app_context():
         db.create_all()                    # Tạo bảng mới (Employer, Application)
-        # _ensure_user_recommendations_column()
-        # _ensure_user_saved_jobs_column()
-        # _ensure_infor_experience_column()
-        # _ensure_job_embedding_column()
+        _ensure_user_recent_applied_jobs_column()
         _get_recommendation_model()
 
     return app

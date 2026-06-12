@@ -30,6 +30,43 @@ import AdminEmployers from "./pages/admin/AdminEmployers";
 import MaintenancePage from "./pages/MaintenancePage";
 import { API_URL } from "./services/api";
 
+const MAINTENANCE_CACHE_KEY = 'cache_maintenance_status_v1';
+const MAINTENANCE_CACHE_TTL_MS = 60 * 1000;
+
+let maintenanceStatusMemoryCache = null;
+
+const readMaintenanceStatusCache = () => {
+  if (maintenanceStatusMemoryCache && Date.now() - maintenanceStatusMemoryCache.ts < MAINTENANCE_CACHE_TTL_MS) {
+    return maintenanceStatusMemoryCache.value;
+  }
+
+  try {
+    const raw = sessionStorage.getItem(MAINTENANCE_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (Date.now() - parsed.ts < MAINTENANCE_CACHE_TTL_MS) {
+      maintenanceStatusMemoryCache = parsed;
+      return parsed.value;
+    }
+    sessionStorage.removeItem(MAINTENANCE_CACHE_KEY);
+  } catch (error) {
+    console.warn('Maintenance cache read error:', error);
+  }
+
+  return null;
+};
+
+const writeMaintenanceStatusCache = (value) => {
+  const payload = { ts: Date.now(), value };
+  maintenanceStatusMemoryCache = payload;
+
+  try {
+    sessionStorage.setItem(MAINTENANCE_CACHE_KEY, JSON.stringify(payload));
+  } catch (error) {
+    console.warn('Maintenance cache write error:', error);
+  }
+};
+
 function AppRoutes() {
   const location = useLocation();
   const [maintenanceMode, setMaintenanceMode] = useState(false);
@@ -37,11 +74,21 @@ function AppRoutes() {
   useEffect(() => {
     let isMounted = true;
 
+    const cachedMaintenanceMode = readMaintenanceStatusCache();
+    if (cachedMaintenanceMode !== null) {
+      setMaintenanceMode(Boolean(cachedMaintenanceMode));
+      return () => {
+        isMounted = false;
+      };
+    }
+
     fetch(`${API_URL}/maintenance-status`)
       .then((response) => response.json())
       .then((data) => {
         if (isMounted) {
-          setMaintenanceMode(Boolean(data.maintenanceMode));
+          const nextMaintenanceMode = Boolean(data.maintenanceMode);
+          setMaintenanceMode(nextMaintenanceMode);
+          writeMaintenanceStatusCache(nextMaintenanceMode);
         }
       })
       .catch((error) => {

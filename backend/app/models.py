@@ -14,6 +14,7 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     recommendations = db.Column(db.Text)
     saved_jobs = db.Column(db.Text)  # JSON array of job IDs
+    recent_applied_jobs = db.Column(db.Text)  # JSON array of most recent applied job IDs
 
     # infor = db.relationship('InforUser', backref='user', uselist=False,
     #                         primaryjoin='User.id == foreign(InforUser.user_id)')
