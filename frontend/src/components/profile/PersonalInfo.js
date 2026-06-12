@@ -153,13 +153,15 @@ const PersonalInfo = () => {
       if (Number.isFinite(completionPercent)) {
         setProfileCompletionPercent(Math.min(100, Math.max(0, Math.round(completionPercent))));
       }
+
+    //alert('Lưu thông tin thành công!');
+
+      setIsEditing(false);
       try {
         await api.request('/seeker/recommendations');
       } catch (err) {
         console.warn('Failed to refresh recommendations after profile save', err);
       }
-      setIsEditing(false);
-      alert('Lưu thông tin thành công!');
     } catch (error) {
       console.error('Failed to save profile:', error);
       alert('Lưu thông tin thất bại.');
