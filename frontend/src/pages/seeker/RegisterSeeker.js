@@ -56,7 +56,7 @@ const RegisterSeeker = () => {
       }
 
       // Đăng ký thành công, điều hướng đến login
-      alert('Đăng ký thành công! Vui lòng đăng nhập.');
+      // alert('Đăng ký thành công! Vui lòng đăng nhập.');
       navigate('/login-seeker');
     } catch (error) {
       console.error('Registration error:', error);

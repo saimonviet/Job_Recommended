@@ -91,7 +91,7 @@ const JobDetailPage = () => {
 
     try {
       await api.post(`/seeker/jobs/${jobId}/apply`);
-      alert('Nộp đơn thành công.');
+      // alert('Nộp đơn thành công.');
       navigate('/seeker/applications');
     } catch (requestError) {
       console.error('Error applying job:', requestError);
