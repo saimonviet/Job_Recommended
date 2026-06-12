@@ -55,8 +55,25 @@ const TopNavBar = ({ currentPage = 'home' }) => {
     navigate('/login-seeker');
   };
 
-  const handleNotificationClick = (item) => {
+  const handleNotificationClick = async (item) => {
     setShowNotifications(false);
+    if (item?.id && !item.is_read) {
+      setNotifications((prev) =>
+        prev.map((notification) =>
+          notification.id === item.id
+            ? { ...notification, is_read: true }
+            : notification
+        )
+      );
+      setUnreadCount((prev) => Math.max(prev - 1, 0));
+
+      try {
+        await api.put(`/seeker/notifications/${encodeURIComponent(item.id)}/read`, {});
+      } catch (error) {
+        console.error('Failed to mark seeker notification as read:', error);
+      }
+    }
+
     if (item?.job?.id) {
       navigate(`/jobs/${item.job.id}`);
       return;
@@ -201,10 +218,17 @@ const TopNavBar = ({ currentPage = 'home' }) => {
                         key={item.id}
                         type="button"
                         onClick={() => handleNotificationClick(item)}
-                        className="w-full text-left px-4 py-3 flex gap-3 hover:bg-[#f2f3fb] dark:hover:bg-slate-800 border-b border-slate-100 dark:border-slate-700 last:border-b-0"
+                        className={`w-full text-left px-4 py-3 flex gap-3 hover:bg-[#f2f3fb] dark:hover:bg-slate-800 border-b border-slate-100 dark:border-slate-700 last:border-b-0 ${
+                          item.is_read ? 'bg-white dark:bg-[#2e3036]' : 'bg-[#eef6ff] dark:bg-[#0f2a44]'
+                        }`}
                       >
-                        <span className="material-symbols-outlined text-[#00488d] text-xl mt-0.5">
-                          {getNotificationIcon(item.type, item.status)}
+                        <span className="relative mt-0.5">
+                          {!item.is_read && (
+                            <span className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-red-500" />
+                          )}
+                          <span className="material-symbols-outlined text-[#00488d] text-xl">
+                            {getNotificationIcon(item.type, item.status)}
+                          </span>
                         </span>
                         <span className="min-w-0">
                           <span className="block text-sm font-bold text-slate-900 dark:text-white">

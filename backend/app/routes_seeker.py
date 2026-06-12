@@ -23,7 +23,7 @@ from datetime import datetime
 from werkzeug.utils import secure_filename
 
 from .embedding_pipeline import score_jobs_for_user, _parse_salary_nums
-from .models import db, User, InforUser, Job, Application, RecruitmentInvitation, SeekerSetting, EmployerNotification
+from .models import db, User, InforUser, Job, Application, RecruitmentInvitation, SeekerSetting, EmployerNotification, SeekerNotificationRead
 
 import numpy as np
 from .auth import seeker_required, login_required
@@ -135,13 +135,21 @@ def _serialize_application(app: Application) -> dict:
     }
 
 
-def _serialize_notification_item(item_type, title, message, created_at, job=None, status=None, source_id=None):
+def _serialize_notification_item(item_type, title, message, created_at, job=None, status=None, source_id=None, is_read=False):
+    notification_id = (
+        f"{item_type}-{source_id}-{status}"
+        if source_id is not None and status
+        else f"{item_type}-{source_id}"
+        if source_id is not None
+        else f"{item_type}-{int(created_at.timestamp()) if created_at else 0}"
+    )
     return {
-        "id": f"{item_type}-{source_id}" if source_id is not None else f"{item_type}-{int(created_at.timestamp()) if created_at else 0}",
+        "id": notification_id,
         "type": item_type,
         "title": title,
         "message": message,
         "status": status,
+        "is_read": bool(is_read),
         "created_at": created_at.isoformat() if created_at else None,
         "job": {
             "id": job.id,
@@ -165,6 +173,10 @@ def _get_or_create_seeker_settings(user_id):
 
 def _ensure_employer_notification_table():
     EmployerNotification.__table__.create(db.engine, checkfirst=True)
+
+
+def _ensure_seeker_notification_read_table():
+    SeekerNotificationRead.__table__.create(db.engine, checkfirst=True)
 
 
 def _create_new_application_notification(job, seeker):
@@ -269,7 +281,12 @@ def get_notifications():
     user_id = request.current_user_id
 
     settings = _get_or_create_seeker_settings(user_id)
+    _ensure_seeker_notification_read_table()
     db.session.commit()
+    read_ids = {
+        item.notification_id
+        for item in SeekerNotificationRead.query.filter_by(user_id=user_id).all()
+    }
 
     status_messages = {
         'reviewed': (
@@ -315,6 +332,7 @@ def get_notifications():
             job=application.job,
             status=status,
             source_id=application.id,
+            is_read=f"application_status-{application.id}-{status}" in read_ids,
         ))
 
     invitations = [] if not settings.recruiter_contact else (
@@ -338,6 +356,7 @@ def get_notifications():
             job=job,
             status=invitation.status,
             source_id=invitation.id,
+            is_read=f"invitation-{invitation.id}-{invitation.status}" in read_ids,
         ))
 
     notifications.sort(key=lambda item: item.get('created_at') or '', reverse=True)
@@ -345,8 +364,31 @@ def get_notifications():
 
     return jsonify({
         "notifications": notifications,
-        "unread_count": len(notifications),
+        "unread_count": sum(1 for item in notifications if not item.get("is_read")),
     })
+
+
+@seeker_bp.route('/notifications/<path:notification_id>/read', methods=['PUT'])
+@seeker_required
+def mark_notification_read(notification_id):
+    user_id = request.current_user_id
+    notification_id = (notification_id or '').strip()
+    if not notification_id:
+        return jsonify({"error": "notification_id khÃ´ng há»£p lá»‡"}), 400
+
+    _ensure_seeker_notification_read_table()
+    existing = SeekerNotificationRead.query.filter_by(
+        user_id=user_id,
+        notification_id=notification_id,
+    ).first()
+    if not existing:
+        db.session.add(SeekerNotificationRead(
+            user_id=user_id,
+            notification_id=notification_id,
+        ))
+        db.session.commit()
+
+    return jsonify({"message": "ÄÃ£ Ä‘Ã¡nh dáº¥u Ä‘Ã£ xem"})
 
 
 @seeker_bp.route('/jobs/<int:job_id>/apply', methods=['POST'])

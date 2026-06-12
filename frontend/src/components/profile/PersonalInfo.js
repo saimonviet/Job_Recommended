@@ -274,7 +274,8 @@ const PersonalInfo = () => {
             <div>
               <FieldLabel>Giới tính</FieldLabel>
               {isEditing ? (
-                <SelectField name="gender" value={formData.gender} onChange={handleChange}>
+                <SelectField name="gender" value={formData.gender || ''} onChange={handleChange}>
+                  <option value="">Chọn giới tính</option>
                   <option value="Nam">Nam</option>
                   <option value="Nữ">Nữ</option>
                   <option value="Khác">Khác</option>
@@ -286,7 +287,8 @@ const PersonalInfo = () => {
             <div>
               <FieldLabel>Tình trạng hôn nhân</FieldLabel>
               {isEditing ? (
-                <SelectField name="marriage" value={formData.marriage} onChange={handleChange}>
+                <SelectField name="marriage" value={formData.marriage || ''} onChange={handleChange}>
+                  <option value="">Chọn tình trạng hôn nhân</option>
                   <option value="Độc thân">Độc thân</option>
                   <option value="Đã kết hôn">Đã kết hôn</option>
                   <option value="Khác">Khác</option>

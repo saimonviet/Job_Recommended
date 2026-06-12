@@ -56,7 +56,11 @@ const profileStepLabels = {
 };
 
 // Cache constants
-const CACHE_KEY_LATEST_JOBS = 'cache_latest_jobs';
+const CACHE_KEY_LATEST_JOBS = 'cache_latest_jobs_all_v1';
+const JOBS_PER_PAGE = 6;
+const ALL_JOBS_PAGE_SIZE = 10000;
+
+const getClientTotalPages = (jobs) => Math.max(1, Math.ceil((jobs?.length || 0) / JOBS_PER_PAGE));
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 phút
 
 // Helper: kiểm tra cache có còn hiệu lực
@@ -134,22 +138,21 @@ const SeekerHomeLoggedIn = () => {
       const cached = getCachedData(CACHE_KEY_LATEST_JOBS);
       if (cached) {
         setLatestJobs(cached.jobs);
-        setTotalPages(cached.pages);
+        setTotalPages(getClientTotalPages(cached.jobs));
         setLatestJobsLoaded(true);
         setJobsLoading(false);
         return;
       }
 
       // Gọi API nếu cache hết hạn
-      const latestJobsResponse = await API.get('/jobs', { params: { page: 1, per_page: 6 } });
+      const latestJobsResponse = await API.get('/jobs', { params: { page: 1, per_page: ALL_JOBS_PAGE_SIZE } });
       const freshJobs = (latestJobsResponse.data?.jobs || []).map(toLatestJob);
       setLatestJobs(freshJobs);
-      setTotalPages(latestJobsResponse.data?.pages || 1);
+      setTotalPages(getClientTotalPages(freshJobs));
 
       // Lưu vào cache
       setCachedData(CACHE_KEY_LATEST_JOBS, {
         jobs: freshJobs,
-        pages: latestJobsResponse.data?.pages || 1,
       });
     } catch (error) {
       console.error('Failed to load latest jobs:', error);
@@ -179,14 +182,13 @@ const SeekerHomeLoggedIn = () => {
       setProfileMissingFields(missingFields);
       setProfileCompletionPercent(Number.isFinite(completionPercent) ? completionPercent : 0);
 
-      if (completionPercent < 50) {
-        setRecommendations([]);
-        setNewRecommendations(0);
-        setLoadingRecommendations(false);
-        return;
-      }
-
       const recommendationResponse = await API.get('/seeker/recommendations');
+      if (typeof recommendationResponse.data?.profile_complete === 'boolean') {
+        setProfileComplete(recommendationResponse.data.profile_complete);
+      }
+      if (Array.isArray(recommendationResponse.data?.profile_missing_fields)) {
+        setProfileMissingFields(recommendationResponse.data.profile_missing_fields);
+      }
       const recommendationCompletion = Number(
         recommendationResponse.data?.profile_completion_percentage ??
         recommendationResponse.data?.profile_completion?.percentage
@@ -249,7 +251,7 @@ const SeekerHomeLoggedIn = () => {
 
       const params = buildJobSearchParams({
         page: 1,
-        perPage: 6,
+        perPage: ALL_JOBS_PAGE_SIZE,
         searchQuery,
         filterLocation,
         filterSalary,
@@ -262,7 +264,7 @@ const SeekerHomeLoggedIn = () => {
       const results = (response.data?.jobs || []).map(toLatestJob);
       
       setFilteredJobs(results);
-      setTotalPages(response.data?.pages || 1);
+      setTotalPages(getClientTotalPages(results));
       setSearchActive(true);
     } catch (error) {
       console.error('Failed to search jobs:', error);
@@ -274,38 +276,9 @@ const SeekerHomeLoggedIn = () => {
     }
   };
 
-  const handlePageChange = async (newPage) => {
-    try {
-      setCurrentPage(newPage);
-      setJobsLoading(true);
-      
-      const params = buildJobSearchParams({
-        page: newPage,
-        perPage: 6,
-        searchQuery,
-        filterLocation,
-        filterSalary,
-        filterExperience,
-        filterIndustry,
-      });
-
-      const response = await API.get('/jobs', { params });
-      const results = (response.data?.jobs || []).map(toLatestJob);
-      
-      if (searchActive) {
-        setFilteredJobs(results);
-      } else {
-        setLatestJobs(results);
-      }
-      setTotalPages(response.data?.pages || 1);
-      
-      // Scroll to top of jobs section
-      window.scrollTo({ top: document.querySelector('section')?.offsetTop - 100, behavior: 'smooth' });
-    } catch (error) {
-      console.error('Failed to change page:', error);
-    } finally {
-      setJobsLoading(false);
-    }
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: document.querySelector('section')?.offsetTop - 100, behavior: 'smooth' });
   };
 
   const handleClearFilters = () => {
@@ -380,7 +353,11 @@ const SeekerHomeLoggedIn = () => {
     return sorted;
   };
 
-  const displayJobs = applySorting(searchActive ? filteredJobs : latestJobs);
+  const allDisplayJobs = applySorting(searchActive ? filteredJobs : latestJobs);
+  const displayJobs = allDisplayJobs.slice(
+    (currentPage - 1) * JOBS_PER_PAGE,
+    currentPage * JOBS_PER_PAGE
+  );
 
   return (
     <div className="min-h-screen">
@@ -699,27 +676,38 @@ const SeekerHomeLoggedIn = () => {
 
             {/* Pagination Controls (after grid) */}
             {!jobsLoading && displayJobs.length > 0 && totalPages > 1 && (
-              <div className="flex items-center justify-center gap-4 mt-8">
+             <div className="flex items-center justify-center gap-4 mt-8">
                 <button
                   onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
-                  className="px-4 py-2 rounded-lg border border-[#00488d] text-[#00488d] font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#00488d]/5 transition-colors"
+                  className="w-36 h-11 flex items-center justify-center gap-2 rounded-xl border border-[#00488d] text-[#00488d] font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#00488d]/5 transition-all"
                 >
-                  <span className="material-symbols-outlined inline mr-2" style={{ fontSize: '20px' }}>chevron_left</span>
-                  Trang trước
+                  <span className="material-symbols-outlined text-[20px]">
+                    chevron_left
+                  </span>
+                  <span>Trang trước</span>
                 </button>
 
-                <div className="text-sm text-on-surface-variant">
-                  Trang <span className="font-bold text-on-surface">{currentPage}</span> / <span className="font-bold text-on-surface">{totalPages}</span>
+                <div className="min-w-[120px] h-11 px-4 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-sm">
+                  <span className="text-slate-500">Trang</span>
+                  <span className="mx-2 font-bold text-[#00488d]">
+                    {currentPage}
+                  </span>
+                  <span className="text-slate-400">/</span>
+                  <span className="ml-2 font-semibold text-slate-700">
+                    {totalPages}
+                  </span>
                 </div>
 
                 <button
                   onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}
-                  className="px-4 py-2 rounded-lg bg-[#00488d] text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-colors"
+                  className="w-36 h-11 flex items-center justify-center gap-2 rounded-xl bg-[#00488d] text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#003b76] hover:shadow-md transition-all"
                 >
-                  Trang sau
-                  <span className="material-symbols-outlined inline ml-2" style={{ fontSize: '20px' }}>chevron_right</span>
+                  <span>Trang sau</span>
+                  <span className="material-symbols-outlined text-[20px]">
+                    chevron_right
+                  </span>
                 </button>
               </div>
             )}
@@ -756,7 +744,7 @@ const SeekerHomeLoggedIn = () => {
                 ) : profileCompletionPercent < 50 ? (
                   <div className="bg-white p-4 rounded-lg">
                     <div className="text-sm font-bold uppercase tracking-widest text-[#00488d] mb-2">Bước 1 / 2</div>
-                    <div className="text-sm text-on-surface-variant mb-3">Hoàn thiện hồ sơ trên 50% để nhận đề xuất việc làm được cá nhân hoá.</div>
+                    <div className="text-sm text-on-surface-variant mb-3">Hoàn thiện các thông tin bắt buộc để nhận đề xuất việc làm được cá nhân hoá.</div>
                     <div className="mb-3">
                       <div className="mb-1 flex items-center justify-between text-xs font-semibold text-on-surface-variant">
                         <span>Hồ sơ hoàn thiện</span>
