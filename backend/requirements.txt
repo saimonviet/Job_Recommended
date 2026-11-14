@@ -1,10 +1,22 @@
-Flask==2.3.3
-Flask-SQLAlchemy==3.0.5
-Flask-CORS==4.0.0
-Flask-Cors
-PyMySQL==1.1.0
-pandas==2.0.3
-numpy==1.26.4
-openpyxl==3.1.2
-torch
-torch_geometric
+# Core backend
+Flask>=3.0
+Flask-SQLAlchemy>=3.0
+Flask-CORS>=4.0
+PyMySQL>=1.1
+python-dotenv>=1.0
+bcrypt>=4.0
+itsdangerous>=2.1
+
+# Data & numeric
+pandas>=2.2
+numpy>=2.0
+openpyxl>=3.1
+scikit-learn>=1.4
+scipy>=1.11
+
+# GNN
+torch>=2.4
+torch_geometric>=2.5
+
+# Data acquisition
+huggingface_hub>=0.24

@@ -14,6 +14,7 @@ from app.routes_auth import auth_bp
 from app.routes_seeker import seeker_bp
 from app.routes_employer import employer_bp
 from app.routes_admin import admin_bp
+from app.routes_recommend import recommend_bp
 
 
 MAINTENANCE_KEY = 'maintenance_mode'
@@ -59,6 +60,7 @@ def create_app(config_object=Config):
     app.register_blueprint(seeker_bp)      # /seeker/jobs/<id>/apply, /seeker/applications, ...
     app.register_blueprint(employer_bp)    # /employer/jobs, /employer/applications/<id>/status, ...
     app.register_blueprint(admin_bp)       # /admin/dashboard, /admin/users, ...
+    app.register_blueprint(recommend_bp)   # /api/recommend/... (heterogeneous GNN + dynamic weights + rerank)
 
     def _ensure_user_recent_applied_jobs_column():
         inspector = inspect(db.engine)
