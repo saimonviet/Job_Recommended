@@ -536,11 +536,33 @@ def main():
     print("HARMONIZING MEDAJOB AND VIETJOB DATASETS")
     print("=" * 60)
 
+    # Auto-fallback for MedaJob
+    meda_path = MEDA_RAW
+    if not os.path.exists(meda_path):
+        repo_meda = os.path.join(BASE_DIR, "data", "medajob_raw", "job.csv")
+        if os.path.exists(repo_meda):
+            meda_path = repo_meda
+        else:
+            ext_meda = r"F:\OneDrive\HK9\DSS\Phan6_MEDAJob\medajob_data\job.csv"
+            if os.path.exists(ext_meda):
+                meda_path = ext_meda
+
+    # Auto-download VietJob from Hugging Face if missing
+    viet_path = VIET_RAW
+    if not os.path.exists(viet_path):
+        os.makedirs(RAW_DIR, exist_ok=True)
+        print(f"File {viet_path} not found.")
+        print("Downloading VietJobs (48k postings) from Hugging Face...")
+        url = "https://huggingface.co/datasets/dinhieufam/VietJobs/resolve/main/VietJobs.csv"
+        import urllib.request
+        urllib.request.urlretrieve(url, viet_path)
+        print(f"Downloaded VietJobs successfully ({os.path.getsize(viet_path)} bytes).")
+
     # 1. Load raw data
-    print(f"Loading MedaJob from {MEDA_RAW}...")
-    df_meda_raw = pd.read_csv(MEDA_RAW)
-    print(f"Loading VietJob from {VIET_RAW}...")
-    df_viet_raw = pd.read_csv(VIET_RAW)
+    print(f"Loading MedaJob from {meda_path}...")
+    df_meda_raw = pd.read_csv(meda_path)
+    print(f"Loading VietJob from {viet_path}...")
+    df_viet_raw = pd.read_csv(viet_path)
 
     # 2. Standardize
     df_meda_std = standardize_medajob(df_meda_raw)

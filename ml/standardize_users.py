@@ -71,10 +71,14 @@ def parse_user_salary(s_min, s_max) -> Tuple[float, float, str, str]:
 
 
 def standardize_meda_users() -> Tuple[pd.DataFrame, pd.DataFrame]:
-    print("Loading MedaJob raw user files...")
-    users_df = pd.read_csv(USERS_RAW)
-    profiles_df = pd.read_csv(PROFILES_RAW)
-    ratings_df = pd.read_csv(RATINGS_RAW)
+    u_path = USERS_RAW if os.path.exists(USERS_RAW) else os.path.join(BASE_DIR, "data", "medajob_raw", "users.csv")
+    p_path = PROFILES_RAW if os.path.exists(PROFILES_RAW) else os.path.join(BASE_DIR, "data", "medajob_raw", "user_profiles.csv")
+    r_path = RATINGS_RAW if os.path.exists(RATINGS_RAW) else os.path.join(BASE_DIR, "data", "medajob_raw", "ratings.csv")
+
+    print(f"Loading MedaJob user files from {u_path}...")
+    users_df = pd.read_csv(u_path)
+    profiles_df = pd.read_csv(p_path)
+    ratings_df = pd.read_csv(r_path)
 
     # Merge profiles with account info
     merged = pd.merge(profiles_df, users_df, left_on="user_id", right_on="id", how="left")

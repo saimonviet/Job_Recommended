@@ -1,0 +1,467 @@
+﻿id,username,email,full_name,phone,birth_date,gender,hometown,address,role,is_active,is_verified,created_at
+2,employer01,employer01@recsys.vn,employer01,,,,,,employer,True,True,2026-09-27T21:21:45.936231
+3,user01,user01@recsys.vn,user01,,,,,,candidate,True,True,2026-09-27T21:21:45.936231
+4,employer02,employer02@recsys.vn,employer02,,,,,,employer,True,True,2026-09-29T09:58:52.358571
+5,employer03,employer03@recsys.vn,employer03,,,,,,employer,True,True,2026-09-29T09:58:52.358571
+6,employer04,employer04@recsys.vn,employer04,,,,,,employer,True,True,2026-09-29T09:58:52.358571
+7,employer05,employer05@recsys.vn,employer05,,,,,,employer,True,True,2026-09-29T09:58:52.358571
+8,user02,user02@recsys.vn,user02,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+9,user03,user03@recsys.vn,user03,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+10,user04,user04@recsys.vn,user04,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+33,user27,user27@recsys.vn,user27,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+34,user28,user28@recsys.vn,user28,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+35,user29,user29@recsys.vn,user29,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+36,user30,user30@recsys.vn,user30,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+37,user31,user31@recsys.vn,user31,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+38,user32,user32@recsys.vn,user32,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+39,user33,user33@recsys.vn,user33,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+40,user34,user34@recsys.vn,user34,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+54,empbkcad,empbkcad@careerviet.local,Chương trình Học viện Công nghệ BKACAD,,,,,,employer,True,False,2026-10-05T15:30:01.175978
+55,empconcung,empconcung@careerviet.local,Concung.com - Con Cung Joint Stock Company,,,,,,employer,True,False,2026-10-05T15:30:01.428011
+56,empa25hotel,empa25hotel@careerviet.local,Công Ty Cổ Phần A25 Hotel,,,,,,employer,True,False,2026-10-05T15:30:01.758983
+57,empalphatrue,empalphatrue@careerviet.local,CÔNG TY CỔ PHẦN ALPHATRUE,,,,,,employer,True,False,2026-10-05T15:30:02.061697
+58,empanvy,empanvy@careerviet.local,Công ty cổ phần Anvy,,,,,,employer,True,False,2026-10-05T15:30:02.351408
+59,empbatdongsanvina,empbatdongsanvina@careerviet.local,CÔNG TY CỔ PHẦN BẤT ĐỘNG SẢN SÀI GÒN VI NA,,,,,,employer,True,False,2026-10-05T15:30:02.603983
+60,empbenhvienphanchautring,empbenhvienphanchautring@careerviet.local,CÔNG TY CỔ PHẦN BỆNH VIỆN ĐA KHOA ĐẠI HỌC Y KHOA PHAN CHÂU TRINH,,,,,,employer,True,False,2026-10-05T15:30:02.913392
+61,empbkscitech,empbkscitech@careerviet.local,Công ty Cổ phần Bkscitech,,,,,,employer,True,False,2026-10-05T15:30:03.157900
+62,empbmpgroup,empbmpgroup@careerviet.local,CÔNG TY CỔ PHẦN BMP GROUP,,,,,,employer,True,False,2026-10-05T15:30:03.429629
+63,empcanifa,empcanifa@careerviet.local,Công ty Cổ phần CANIFA,,,,,,employer,True,False,2026-10-05T15:30:03.688008
+11,user05,user05@recsys.vn,user05,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+12,user06,user06@recsys.vn,user06,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+13,user07,user07@recsys.vn,user07,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+14,user08,user08@recsys.vn,user08,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+15,user09,user09@recsys.vn,user09,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+16,user10,user10@recsys.vn,user10,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+17,user11,user11@recsys.vn,user11,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+18,user12,user12@recsys.vn,user12,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+19,user13,user13@recsys.vn,user13,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+20,user14,user14@recsys.vn,user14,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+21,user15,user15@recsys.vn,user15,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+22,user16,user16@recsys.vn,user16,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+23,user17,user17@recsys.vn,user17,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+24,user18,user18@recsys.vn,user18,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+25,user19,user19@recsys.vn,user19,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+26,user20,user20@recsys.vn,user20,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+27,user21,user21@recsys.vn,user21,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+28,user22,user22@recsys.vn,user22,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+29,user23,user23@recsys.vn,user23,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+30,user24,user24@recsys.vn,user24,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+31,user25,user25@recsys.vn,user25,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+32,user26,user26@recsys.vn,user26,,,,,,candidate,True,True,2026-09-29T09:59:03.788717
+64,empcasper,empcasper@careerviet.local,CÔNG TY CỔ PHẦN CASPER VIỆT NAM,,,,,,employer,True,False,2026-10-05T15:30:03.928241
+65,empchungkhoanasean,empchungkhoanasean@careerviet.local,CÔNG TY CỔ PHẦN CHỨNG KHOÁN ASEAN,,,,,,employer,True,False,2026-10-05T15:30:04.180648
+66,empchungkhoasaigonhanoi,empchungkhoasaigonhanoi@careerviet.local,Công ty Cổ phần Chứng khoán Sài Gòn - Hà Nội,,,,,,employer,True,False,2026-10-05T15:30:04.421886
+67,empchungkhoansaigonhanoi,empchungkhoansaigonhanoi@careerviet.local,Công ty Cổ phần Chứng khoán Sài Gòn - Hà Nội,,,,,,employer,True,False,2026-10-05T15:30:04.665526
+68,empchungkhoanvps,empchungkhoanvps@careerviet.local,CÔNG TY CỔ PHẦN CHỨNG KHOÁN VPS,,,,,,employer,True,False,2026-10-05T15:30:04.900910
+69,empchungchanisocert,empchungchanisocert@careerviet.local,Công ty Cổ Phần Chứng Nhận và Giám Định Quốc Tế ISOCERT,,,,,,employer,True,False,2026-10-05T15:30:05.138428
+70,empchuoithucphamth,empchuoithucphamth@careerviet.local,Công Ty Cổ Phần Chuỗi Thực Phẩm TH,,,,,,employer,True,False,2026-10-05T15:30:05.371729
+71,empphoenix,empphoenix@careerviet.local,CÔNG TY CỔ PHẦN CƠ ĐIỆN PHOENIX,,,,,,employer,True,False,2026-10-05T15:30:05.611728
+72,empfoxai,empfoxai@careerviet.local,CÔNG TY CỔ PHẦN CÔNG NGHỆ FOXAI,,,,,,employer,True,False,2026-10-05T15:30:05.849970
+73,empihn,empihn@careerviet.local,CÔNG TY CỔ PHẦN CÔNG NGHỆ IHN,,,,,,employer,True,False,2026-10-05T15:30:06.089089
+74,empjprotech,empjprotech@careerviet.local,CÔNG TY CỔ PHẦN CÔNG NGHỆ JPROTECH,,,,,,employer,True,False,2026-10-05T15:30:06.325927
+75,emptnt,emptnt@careerviet.local,Công ty Cổ phần Công nghệ TNT,,,,,,employer,True,False,2026-10-05T15:30:06.562313
+76,empupbase,empupbase@careerviet.local,Công ty Cổ phần Công nghệ UpBase,,,,,,employer,True,False,2026-10-05T15:30:06.799662
+77,empsyntech,empsyntech@careerviet.local,CÔNG TY CỔ PHẦN CÔNG NGHỆ VÀ THƯƠNG MẠI SYSTECH,,,,,,employer,True,False,2026-10-05T15:30:07.038581
+78,empweldcom,empweldcom@careerviet.local,CÔNG TY CỔ PHẦN CÔNG NGHIỆP WELDCOM,,,,,,employer,True,False,2026-10-05T15:30:07.283621
+79,empcsgroup,empcsgroup@careerviet.local,CÔNG TY CỔ PHẦN CS GROUP,,,,,,employer,True,False,2026-10-05T15:30:07.539566
+80,emphangkhong,emphangkhong@careerviet.local,CÔNG TY CỔ PHẦN CUNG ỨNG LAO ĐỘNG HÀNG KHÔNG,,,,,,employer,True,False,2026-10-05T15:30:07.787592
+81,empdaithuan,empdaithuan@careerviet.local,CÔNG TY CỔ PHẦN ĐẠI THUẬN,,,,,,employer,True,False,2026-10-05T15:30:08.034017
+82,empvdi,empvdi@careerviet.local,Công ty Cổ phần Đầu tư Kỹ thuật Số Việt (VDI),,,,,,employer,True,False,2026-10-05T15:30:08.273065
+83,empnamtrung,empnamtrung@careerviet.local,Công ty Cổ Phần Đầu Tư Kỹ Thuật Thương Mại Nam Trung,,,,,,employer,True,False,2026-10-05T15:30:08.526174
+84,empdaumayvietnam,empdaumayvietnam@careerviet.local,Công ty Cổ phần đầu tư phát triển máy Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:08.778835
+85,empthienan,empthienan@careerviet.local,CÔNG TY CỔ PHẦN ĐẦU TƯ THIÊN ÂN,,,,,,employer,True,False,2026-10-05T15:30:09.056564
+86,emptiniholdings,emptiniholdings@careerviet.local,CÔNG TY CỔ PHẦN ĐẦU TƯ TINI HOLDINGS,,,,,,employer,True,False,2026-10-05T15:30:09.314417
+87,empcongnghethongminh,empcongnghethongminh@careerviet.local,CÔNG TY CỔ PHẦN ĐẦU TƯ VÀ PHÁT TRIỂN CÔNG NGHỆ THÔNG MINH,,,,,,employer,True,False,2026-10-05T15:30:09.633541
+88,empsatori,empsatori@careerviet.local,CÔNG TY CỔ PHẦN ĐẦU TƯ VÀ THƯƠNG MẠI SATORI,,,,,,employer,True,False,2026-10-05T15:30:09.926228
+89,empbcons,empbcons@careerviet.local,Công Ty Cổ Phần Đầu Tư Xây Dựng Bcons,,,,,,employer,True,False,2026-10-05T15:30:10.199451
+90,empdecox,empdecox@careerviet.local,Công Ty Cổ Phần Decox,,,,,,employer,True,False,2026-10-05T15:30:10.473161
+91,empcirco,empcirco@careerviet.local,CÔNG TY CỔ PHẦN DỊCH VỤ CIRCO,,,,,,employer,True,False,2026-10-05T15:30:10.741348
+92,empwincommerce,empwincommerce@careerviet.local,CÔNG TY CỔ PHẦN DỊCH VỤ THƯƠNG MẠI TỔNG HỢP WINCOMMERCE,,,,,,employer,True,False,2026-10-05T15:30:11.028102
+93,empnhathuoclongchau,empnhathuoclongchau@careerviet.local,CÔNG TY CỔ PHẦN DƯỢC PHẨM FPT LONG CHÂU,,,,,,employer,True,False,2026-10-05T15:30:11.275606
+94,empresearch,empresearch@careerviet.local,CÔNG TY CỔ PHẦN EPLUS RESEARCH,,,,,,employer,True,False,2026-10-05T15:30:11.530431
+95,empbean,empbean@careerviet.local,Công Ty Cố Phẩn Every Half Bean,,,,,,employer,True,False,2026-10-05T15:30:11.762669
+96,empkhivntech,empkhivntech@careerviet.local,CÔNG TY CỔ PHẦN GIẢI PHÁP CƠ KHÍ VNTECH,,,,,,employer,True,False,2026-10-05T15:30:12.006116
+97,emphqg,emphqg@careerviet.local,CÔNG TY CỔ PHẦN GIẢI PHÁP CÔNG NGHỆ HQG,,,,,,employer,True,False,2026-10-05T15:30:12.238609
+98,empite,empite@careerviet.local,Công ty Cố phần giải pháp công nghệ ITE,,,,,,employer,True,False,2026-10-05T15:30:12.486086
+99,empnetline,empnetline@careerviet.local,CÔNG TY CỔ PHẦN GIẢI PHÁP CÔNG NGHỆ NETLINE,,,,,,employer,True,False,2026-10-05T15:30:12.742146
+100,empitd,empitd@careerviet.local,CÔNG TY CỔ PHẦN GIẢI PHÁP ITD,,,,,,employer,True,False,2026-10-05T15:30:13.000527
+101,empgoody,empgoody@careerviet.local,Công Ty Cổ Phần Goody Group,,,,,,employer,True,False,2026-10-05T15:30:13.225302
+102,empspeed,empspeed@careerviet.local,CÔNG TY CỔ PHẦN GREEN SPEED,,,,,,employer,True,False,2026-10-05T15:30:13.444527
+103,empgreenspeed,empgreenspeed@careerviet.local,Công Ty Cổ Phần GreenFeed Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:13.658872
+104,empgremsy,empgremsy@careerviet.local,CÔNG TY CỔ PHẦN GREMSY,,,,,,employer,True,False,2026-10-05T15:30:13.883767
+105,emphasaki,emphasaki@careerviet.local,CÔNG TY CỔ PHẦN HASAKI VIETNAM,,,,,,employer,True,False,2026-10-05T15:30:14.125332
+106,empvienminhtrithanh,empvienminhtrithanh@careerviet.local,CÔNG TY CỔ PHẦN HỌC VIỆN MINH TRÍ THÀNH,,,,,,employer,True,False,2026-10-05T15:30:14.354051
+107,empipos,empipos@careerviet.local,Công ty Cổ phần IPOS.vn,,,,,,employer,True,False,2026-10-05T15:30:14.568204
+108,empdoanhf88,empdoanhf88@careerviet.local,CÔNG TY CỔ PHẦN KINH DOANH F88,,,,,,employer,True,False,2026-10-05T15:30:14.801735
+109,empnam,empnam@careerviet.local,Công ty cổ phần Liên Doanh ô tô Hyundai Thành Công Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:15.025665
+110,empaan,empaan@careerviet.local,Công Ty Cổ Phần Lương Thực A AN,,,,,,employer,True,False,2026-10-05T15:30:15.266597
+111,empmasscom,empmasscom@careerviet.local,Công ty Cổ phần Masscom Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:15.501535
+112,empnafood,empnafood@careerviet.local,Công ty cổ phần Nafoods Group,,,,,,employer,True,False,2026-10-05T15:30:15.756503
+113,empnetcab,empnetcab@careerviet.local,Công Ty Cổ Phần Netcab,,,,,,employer,True,False,2026-10-05T15:30:15.996393
+114,empdienankhanh,empdienankhanh@careerviet.local,CÔNG TY CỔ PHẦN NHIỆT ĐIỆN AN KHÁNH - BẮC GIANG,,,,,,employer,True,False,2026-10-05T15:30:16.227460
+115,empnuvietnam,empnuvietnam@careerviet.local,Công ty cổ phần Nu Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:16.463464
+116,emptechpro,emptechpro@careerviet.local,CÔNG TY CỔ PHẦN PHÁT TRIỂN CÔNG NGHỆ TECHPRO,,,,,,employer,True,False,2026-10-05T15:30:16.693438
+117,empvienthongtruyenhinh,empvienthongtruyenhinh@careerviet.local,CÔNG TY CỔ PHẦN PHÁT TRIỂN VIỄN THÔNG VÀ TRUYỀN HÌNH VIỆT NAM,,,,,,employer,True,False,2026-10-05T15:30:16.921729
+118,empphucsinh,empphucsinh@careerviet.local,Công Ty Cổ Phần Phúc Sinh,,,,,,employer,True,False,2026-10-05T15:30:17.159666
+119,empnhakhoavietphap,empnhakhoavietphap@careerviet.local,Công ty Cổ phần Quốc tế Nha Khoa Việt Pháp,,,,,,employer,True,False,2026-10-05T15:30:17.406367
+120,empnhuaduytan,empnhuaduytan@careerviet.local,Công Ty Cổ Phần Sản Xuất Nhựa Duy Tân,,,,,,employer,True,False,2026-10-05T15:30:17.635509
+121,empnemviethan,empnemviethan@careerviet.local,CÔNG TY CỔ PHẦN SẢN XUẤT THƯƠNG MẠI NỆM VIỆT HÀN,,,,,,employer,True,False,2026-10-05T15:30:17.871662
+122,empthietbihangkhong,empthietbihangkhong@careerviet.local,CÔNG TY CỔ PHẦN SẢN XUẤT VÀ BẢO DƯỠNG THIẾT BỊ HÀNG KHÔNG,,,,,,employer,True,False,2026-10-05T15:30:18.108530
+123,empholding,empholding@careerviet.local,CÔNG TY CỔ PHẦN SATORI HOLDING,,,,,,employer,True,False,2026-10-05T15:30:18.335325
+124,empseedcom,empseedcom@careerviet.local,CÔNG TY CỔ PHẦN SEEDCOM,,,,,,employer,True,False,2026-10-05T15:30:18.571710
+125,empsimpace,empsimpace@careerviet.local,Công ty cổ phần SIMPACE Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:18.800718
+126,empvitadairy,empvitadairy@careerviet.local,Công ty Cổ phần Sữa VitaDairy Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:19.028345
+127,empaladdin,empaladdin@careerviet.local,Công Ty Cổ Phần Tầm Nhìn Quốc Tế Aladdin,,,,,,employer,True,False,2026-10-05T15:30:19.256507
+128,empthangloi,empthangloi@careerviet.local,Công Ty Cổ Phần Tập Đoàn Bất Động Sản Thắng Lợi,,,,,,employer,True,False,2026-10-05T15:30:19.486694
+129,empsiba,empsiba@careerviet.local,CÔNG TY CỔ PHẦN TẬP ĐOÀN CƠ KHÍ CÔNG NGHỆ CAO SIBA,,,,,,employer,True,False,2026-10-05T15:30:19.718027
+130,emptlt,emptlt@careerviet.local,CÔNG TY CỔ PHẦN TẬP ĐOÀN CÔNG NGHỆ TLT,,,,,,employer,True,False,2026-10-05T15:30:19.948963
+131,empipa,empipa@careerviet.local,CÔNG TY CỔ PHẦN TẬP ĐOÀN ĐẦU TƯ I.P.A,,,,,,employer,True,False,2026-10-05T15:30:20.182344
+132,empkimoanh,empkimoanh@careerviet.local,Công Ty Cổ Phần Tập Đoàn Địa Ốc Kim Oanh,,,,,,employer,True,False,2026-10-05T15:30:20.411437
+133,emphoasen,emphoasen@careerviet.local,Công ty Cổ phần Tập đoàn Hoa Sen,,,,,,employer,True,False,2026-10-05T15:30:20.642285
+134,empkido,empkido@careerviet.local,Công Ty Cổ phần Tập Đoàn KIDO,,,,,,employer,True,False,2026-10-05T15:30:20.878031
+135,empmeeyland,empmeeyland@careerviet.local,Công ty Cổ phần Tập đoàn Meey Land,,,,,,employer,True,False,2026-10-05T15:30:21.113580
+136,empmk,empmk@careerviet.local,CÔNG TY CỔ PHẨN TẬP ĐOÀN MK,,,,,,employer,True,False,2026-10-05T15:30:21.345343
+137,empfuji,empfuji@careerviet.local,CÔNG TY CỔ PHẦN TẬP ĐOÀN ONSEN FUJI,,,,,,employer,True,False,2026-10-05T15:30:21.595321
+138,empicenza,empicenza@careerviet.local,Công ty Cổ phần Tập Đoàn Picenza Viet Nam,,,,,,employer,True,False,2026-10-05T15:30:21.833188
+139,empth,empth@careerviet.local,Công Ty Cổ Phần Tập Đoàn TH,,,,,,employer,True,False,2026-10-05T15:30:22.060612
+140,empvietlife,empvietlife@careerviet.local,Công ty Cổ phần Tập đoàn Y Dược Vietlife,,,,,,employer,True,False,2026-10-05T15:30:22.289405
+141,empteecom,empteecom@careerviet.local,Công Ty Cổ Phần TEECOM,,,,,,employer,True,False,2026-10-05T15:30:22.521606
+142,emppharma,emppharma@careerviet.local,CÔNG TY CỔ PHẦN THẾ THẢO PHARMA,,,,,,employer,True,False,2026-10-05T15:30:22.749811
+143,empgiza,empgiza@careerviet.local,Công Ty Cổ Phần Thiết Kế Và Xây Dựng Giza Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:22.979331
+144,empsixdo,empsixdo@careerviet.local,Công ty Cổ phần Thời trang SIXDO,,,,,,employer,True,False,2026-10-05T15:30:23.211597
+145,empthuanhai,empthuanhai@careerviet.local,Công Ty Cổ Phần Thuận Hải,,,,,,employer,True,False,2026-10-05T15:30:23.437253
+146,empbarett,empbarett@careerviet.local,Công ty Cổ phần thực phẩm và đồ uống Barett,,,,,,employer,True,False,2026-10-05T15:30:23.665488
+147,empvinhtan,empvinhtan@careerviet.local,Công ty Cổ Phần Thực Phẩm Vĩnh Tân,,,,,,employer,True,False,2026-10-05T15:30:23.893320
+148,emphoanglam,emphoanglam@careerviet.local,CÔNG TY CỔ PHẦN THƯƠNG MẠI VÀ CÔNG NGHỆ THỰC PHẨM HOÀNG LÂM,,,,,,employer,True,False,2026-10-05T15:30:24.125270
+149,empghr,empghr@careerviet.local,Công ty Cổ phần Thương mại và Dịch vụ GHR,,,,,,employer,True,False,2026-10-05T15:30:24.353903
+150,empaits,empaits@careerviet.local,CÔNG TY CỔ PHẦN TIN HỌC - VIỄN THÔNG HÀNG KHÔNG AITS,,,,,,employer,True,False,2026-10-05T15:30:24.597042
+151,emptos,emptos@careerviet.local,Công ty Cổ phần TOS,,,,,,employer,True,False,2026-10-05T15:30:24.832387
+152,emptrucquan,emptrucquan@careerviet.local,Công Ty Cổ Phần Trực Quan,,,,,,employer,True,False,2026-10-05T15:30:25.068214
+153,empvacxin,empvacxin@careerviet.local,Công Ty Cổ Phần Vacxin Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:25.297770
+154,empact,empact@careerviet.local,Công Ty Cổ Phần Viễn Thông ACT,,,,,,employer,True,False,2026-10-05T15:30:25.528136
+155,empvtc,empvtc@careerviet.local,Công Ty Cổ Phần Viễn Thông VTC,,,,,,employer,True,False,2026-10-05T15:30:25.756440
+156,empvietsol,empvietsol@careerviet.local,Công ty Cổ phần Vietsol,,,,,,employer,True,False,2026-10-05T15:30:25.985537
+157,empplatform,empplatform@careerviet.local,CÔNG TY CỔ PHẦN VIOT ENERGY EFFICIENCY PLATFORM,,,,,,employer,True,False,2026-10-05T15:30:26.213290
+158,empviscom,empviscom@careerviet.local,Công ty Cổ phần VISCOM,,,,,,employer,True,False,2026-10-05T15:30:26.483179
+159,empvnetwork,empvnetwork@careerviet.local,CÔNG TY CỔ PHẦN VNETWORK,,,,,,employer,True,False,2026-10-05T15:30:26.718171
+160,empwash24h,empwash24h@careerviet.local,CÔNG TY CỔ PHẦN WASH 24H,,,,,,employer,True,False,2026-10-05T15:30:26.950393
+161,empphuocthanh,empphuocthanh@careerviet.local,Công Ty Cổ Phần Xây Dựng Phước Thành,,,,,,employer,True,False,2026-10-05T15:30:27.184126
+162,empvilaiviet,empvilaiviet@careerviet.local,CÔNG TY CỔ PHẦN XÂY DỰNG VILAI VIỆT,,,,,,employer,True,False,2026-10-05T15:30:27.412394
+163,empzme,empzme@careerviet.local,Công Ty Cổ Phần ZME,,,,,,employer,True,False,2026-10-05T15:30:27.645934
+164,empchungkhoanvndirect,empchungkhoanvndirect@careerviet.local,Công Ty CP Chứng Khoán VNDIRECT,,,,,,employer,True,False,2026-10-05T15:30:27.872506
+165,empcongngheqi,empcongngheqi@careerviet.local,CÔNG TY CP CÔNG NGHỆ QI,,,,,,employer,True,False,2026-10-05T15:30:28.105241
+166,empismart,empismart@careerviet.local,CÔNG TY CP GIÁO DỤC ISMART - CHI NHÁNH CẦN THƠ,,,,,,employer,True,False,2026-10-05T15:30:28.339114
+167,empgiaoducvietuc,empgiaoducvietuc@careerviet.local,Công ty CP Giáo dục Quốc tế Việt Úc,,,,,,employer,True,False,2026-10-05T15:30:28.567820
+168,empiig,empiig@careerviet.local,Công ty CP IIG Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:28.796674
+169,emphunghau,emphunghau@careerviet.local,Công ty CP Phát Triển Hùng Hậu,,,,,,employer,True,False,2026-10-05T15:30:29.032371
+170,empviethong,empviethong@careerviet.local,CÔNG TY CP TẬP ĐOÀN VIỆT HỒNG,,,,,,employer,True,False,2026-10-05T15:30:29.261185
+171,empthanhcongbienhoa,empthanhcongbienhoa@careerviet.local,Công ty CP Thành Thành Công - Biên Hòa,,,,,,employer,True,False,2026-10-05T15:30:29.495674
+172,empsaonaman,empsaonaman@careerviet.local,CÔNG TY CP THƯƠNG MẠI - DỊCH VỤ SAO NAM AN,,,,,,employer,True,False,2026-10-05T15:30:29.725246
+173,empeasia,empeasia@careerviet.local,Công ty Easia Travel,,,,,,employer,True,False,2026-10-05T15:30:29.957409
+174,empnabati,empnabati@careerviet.local,Công Ty NABATI Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:30.193134
+175,empmiraeasset,empmiraeasset@careerviet.local,Công Ty Tài Chính Mirae Asset (Việt Nam),,,,,,employer,True,False,2026-10-05T15:30:30.421558
+176,empsfinance,empsfinance@careerviet.local,CÔNG TY TÀI CHÍNH TÍN DỤNG TIÊU DÙNG TNHH MTV SFINANCE,,,,,,employer,True,False,2026-10-05T15:30:30.643234
+177,empjacss,empjacss@careerviet.local,Công Ty Tài Chính TNHH Một Thành Viên Quốc Tế Việt Nam JACCS,,,,,,employer,True,False,2026-10-05T15:30:30.853674
+178,empacer,empacer@careerviet.local,Công ty TNHH Acer Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:31.066057
+179,empavantech,empavantech@careerviet.local,Công Ty TNHH Advantech Việt Nam Technology,,,,,,employer,True,False,2026-10-05T15:30:31.282953
+180,empalchera,empalchera@careerviet.local,CÔNG TY TNHH ALCHERA VIỆT NAM,,,,,,employer,True,False,2026-10-05T15:30:31.499627
+181,empamphenol,empamphenol@careerviet.local,CÔNG TY TNHH AMPHENOL TECHNOLOGY VIỆT NAM (AFOV),,,,,,employer,True,False,2026-10-05T15:30:31.712030
+182,empanam,empanam@careerviet.local,Công ty TNHH Anam Electronics Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:31.919547
+183,empsaphia,empsaphia@careerviet.local,Công Ty TNHH Bao Bì Saphia,,,,,,employer,True,False,2026-10-05T15:30:32.140448
+184,empmbageas,empmbageas@careerviet.local,CÔNG TY TNHH BẢO HIỂM NHÂN THỌ MB AGEAS,,,,,,employer,True,False,2026-10-05T15:30:32.360364
+185,empbenhvienaau,empbenhvienaau@careerviet.local,Công ty TNHH Bệnh viện Thẩm mỹ Á Âu,,,,,,employer,True,False,2026-10-05T15:30:32.570469
+186,empbesi,empbesi@careerviet.local,CÔNG TY TNHH BESI VIỆT NAM,,,,,,employer,True,False,2026-10-05T15:30:32.781318
+187,empbillion,empbillion@careerviet.local,CÔNG TY TNHH BILLION VIETNAM HOLDING,,,,,,employer,True,False,2026-10-05T15:30:33.000003
+188,empbiztech,empbiztech@careerviet.local,CÔNG TY TNHH BIZTECH VIỆT NAM,,,,,,employer,True,False,2026-10-05T15:30:33.208798
+189,empbodynits,empbodynits@careerviet.local,Công Ty TNHH Bodynits Tiền Giang,,,,,,employer,True,False,2026-10-05T15:30:33.422289
+190,empsweco,empsweco@careerviet.local,Công Ty TNHH Boydens Vietnam part of Sweco,,,,,,employer,True,False,2026-10-05T15:30:33.640609
+191,empcandylio,empcandylio@careerviet.local,CÔNG TY TNHH CANDYLIO SOLUTIONS,,,,,,employer,True,False,2026-10-05T15:30:33.861250
+192,empchawk,empchawk@careerviet.local,CÔNG TY TNHH C-HAWK TECHNOLOGY VIỆT NAM,,,,,,employer,True,False,2026-10-05T15:30:34.082960
+193,empvietcombanksecurities,empvietcombanksecurities@careerviet.local,Công ty TNHH Chứng khoán Ngân hàng TMCP Ngoại thương Việt Nam (VCBS - Vietcombank Securities),,,,,,employer,True,False,2026-10-05T15:30:34.293064
+194,empcicor,empcicor@careerviet.local,Công ty TNHH Cicor Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:34.505300
+195,empavs,empavs@careerviet.local,CÔNG TY TNHH CÔNG NGHỆ AVS VIỆT NAM,,,,,,employer,True,False,2026-10-05T15:30:34.721453
+196,emphuawei,emphuawei@careerviet.local,CÔNG TY TNHH CÔNG NGHỆ HUAWEI VIỆT NAM,,,,,,employer,True,False,2026-10-05T15:30:34.934182
+197,empdudi,empdudi@careerviet.local,CÔNG TY TNHH CÔNG NGHỆ PHẦN MỀM DUDI,,,,,,employer,True,False,2026-10-05T15:30:35.153786
+198,empcongngheviet,empcongngheviet@careerviet.local,CÔNG TY TNHH CÔNG NGHỆ VIỆT,,,,,,employer,True,False,2026-10-05T15:30:35.364380
+199,empminda,empminda@careerviet.local,CÔNG TY TNHH CÔNG NGHIỆP MINDA VIỆT NAM - CHI NHÁNH TẠI THÀNH PHỐ HỒ CHÍ MINH,,,,,,employer,True,False,2026-10-05T15:30:35.574405
+200,empmaitamanh,empmaitamanh@careerviet.local,CÔNG TY TNHH ĐẦU TƯ MAI TÂM ANH,,,,,,employer,True,False,2026-10-05T15:30:35.785624
+201,empdnd,empdnd@careerviet.local,CÔNG TY TNHH ĐẦU TƯ Y TẾ QUỐC TẾ DND – SÀI GÒN,,,,,,employer,True,False,2026-10-05T15:30:35.995141
+202,empchkmn,empchkmn@careerviet.local,CÔNG TY TNHH DỊCH VỤ BẢO DƯỠNG MÁY BAY CHKMN,,,,,,employer,True,False,2026-10-05T15:30:36.209334
+203,empintersnack,empintersnack@careerviet.local,Công Ty TNHH Điều Intersnack Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:36.425885
+204,empdongmart,empdongmart@careerviet.local,CÔNG TY TNHH DONG MART,,,,,,employer,True,False,2026-10-05T15:30:36.638066
+205,empthd,empthd@careerviet.local,CÔNG TY TNHH DU LỊCH VÀ SỰ KIỆN THD,,,,,,employer,True,False,2026-10-05T15:30:36.848754
+206,emptripod,emptripod@careerviet.local,CÔNG TY TNHH ELECTRONIC TRIPOD VIỆT NAM (CHÂU ĐỨC),,,,,,employer,True,False,2026-10-05T15:30:37.057478
+207,empfes,empfes@careerviet.local,Công ty TNHH FES VietNam,,,,,,employer,True,False,2026-10-05T15:30:37.266956
+208,empgft,empgft@careerviet.local,CÔNG TY TNHH GIẢI PHÁP TỐT - GFT,,,,,,employer,True,False,2026-10-05T15:30:37.477036
+209,empgreystonedata,empgreystonedata@careerviet.local,Công ty TNHH Greystone Data Systems Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:37.695356
+210,emphaddad,emphaddad@careerviet.local,CÔNG TY TNHH HADDAD BRANDS VIETNAM REGIONAL,,,,,,employer,True,False,2026-10-05T15:30:37.915165
+211,emptnhhindovietnam,emptnhhindovietnam@careerviet.local,CÔNG TY TNHH INDOVIETNAM,,,,,,employer,True,False,2026-10-05T15:30:38.131280
+212,empkhonggianaa,empkhonggianaa@careerviet.local,CÔNG TY TNHH KHÔNG GIAN A&A,,,,,,employer,True,False,2026-10-05T15:30:38.342094
+213,empkoicafe,empkoicafe@careerviet.local,CÔNG TY TNHH KOI CAFÉ VIỆT NAM,,,,,,employer,True,False,2026-10-05T15:30:38.553731
+214,empbenta,empbenta@careerviet.local,Công ty TNHH Kỹ thuật BENTA,,,,,,employer,True,False,2026-10-05T15:30:38.778135
+215,empstartfish,empstartfish@careerviet.local,CÔNG TY TNHH KỸ THUẬT STARFISH VN,,,,,,employer,True,False,2026-10-05T15:30:38.987734
+216,emplantro,emplantro@careerviet.local,Công Ty TNHH LanTro Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:39.279924
+217,empminhlong1,empminhlong1@careerviet.local,Công ty TNHH Minh Long I,,,,,,employer,True,False,2026-10-05T15:30:39.561484
+218,empvienthongfpt,empvienthongfpt@careerviet.local,CÔNG TY TNHH MỘT THÀNH VIÊN VIỄN THÔNG QUỐC TẾ FPT,,,,,,employer,True,False,2026-10-05T15:30:39.800305
+219,emppnj,emppnj@careerviet.local,CÔNG TY TNHH MTV CHẾ TÁC VÀ KINH DOANH TRANG SỨC PNJ,,,,,,employer,True,False,2026-10-05T15:30:40.092155
+220,empsenvang,empsenvang@careerviet.local,Công ty TNHH MTV Sen Vàng Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:40.393071
+221,empndc,empndc@careerviet.local,Công Ty TNHH NDC,,,,,,employer,True,False,2026-10-05T15:30:40.678717
+222,empnovabuidings,empnovabuidings@careerviet.local,CÔNG TY TNHH NOVA BUILDINGS VIỆT NAM,,,,,,employer,True,False,2026-10-05T15:30:40.939250
+223,empokia,empokia@careerviet.local,Công Ty TNHH Okia Optical Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:41.187138
+224,emponevalue,emponevalue@careerviet.local,Công Ty TNHH ONE-VALUE Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:41.422387
+225,empperfect,empperfect@careerviet.local,Công Ty TNHH Perfect Companion Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:41.633559
+226,empdientubinhanh,empdientubinhanh@careerviet.local,Công Ty TNHH Phát Triển Công Nghệ Điện Tử Bình Anh,,,,,,employer,True,False,2026-10-05T15:30:41.845081
+227,empcongnghemiennam,empcongnghemiennam@careerviet.local,CÔNG TY TNHH PHÁT TRIỂN CÔNG NGHỆ MIỀN NAM,,,,,,employer,True,False,2026-10-05T15:30:42.057268
+228,emppouyuen,emppouyuen@careerviet.local,CÔNG TY TNHH POUYUEN VIỆT NAM,,,,,,employer,True,False,2026-10-05T15:30:42.266046
+229,empqisda,empqisda@careerviet.local,CÔNG TY TNHH QISDA VIỆT NAM,,,,,,employer,True,False,2026-10-05T15:30:42.475880
+230,empquest,empquest@careerviet.local,CÔNG TY TNHH QUEST COMPOSITE TECHNOLOGY VIỆT NAM,,,,,,employer,True,False,2026-10-05T15:30:42.685188
+231,empredbull,empredbull@careerviet.local,Công Ty TNHH Red Bull (Việt Nam),,,,,,employer,True,False,2026-10-05T15:30:42.893025
+232,empreeracoen,empreeracoen@careerviet.local,Công Ty TNHH Reeracoen Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:43.101749
+233,empriddlersvn,empriddlersvn@careerviet.local,CÔNG TY TNHH RIDDLERS VN,,,,,,employer,True,False,2026-10-05T15:30:43.320421
+234,empsaigonstec,empsaigonstec@careerviet.local,Công ty TNHH Sài Gòn Stec,,,,,,employer,True,False,2026-10-05T15:30:43.535662
+235,emphuynhduc,emphuynhduc@careerviet.local,CÔNG TY TNHH SẢN XUẤT THƯƠNG MẠI VÀ DỊCH VỤ HUỲNH ĐỨC,,,,,,employer,True,False,2026-10-05T15:30:43.745184
+236,emphiepphuocthanh,emphiepphuocthanh@careerviet.local,CÔNG TY TNHH SX HIỆP PHƯỚC THÀNH,,,,,,employer,True,False,2026-10-05T15:30:43.949770
+237,empsynergix,empsynergix@careerviet.local,Công ty TNHH Synergix Technologies Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:44.161382
+238,empsunvalue,empsunvalue@careerviet.local,CÔNG TY TNHH TẬP ĐOÀN THẨM ĐỊNH GIÁ SUNVALUE,,,,,,employer,True,False,2026-10-05T15:30:44.368139
+239,emptechvanguard,emptechvanguard@careerviet.local,Công ty TNHH TechVanguard,,,,,,employer,True,False,2026-10-05T15:30:44.575989
+240,emplinhanh,emplinhanh@careerviet.local,CÔNG TY TNHH THẨM MỸ QUỐC TẾ LINH ANH,,,,,,employer,True,False,2026-10-05T15:30:44.785649
+241,empgbgiabao,empgbgiabao@careerviet.local,CÔNG TY TNHH THỜI TRANG GB GIA BẢO - NHÃN HÀNG THỜI TRANG NAM ATINO,,,,,,employer,True,False,2026-10-05T15:30:45.010352
+242,empnht,empnht@careerviet.local,CÔNG TY TNHH TÍCH HỢP HỆ THỐNG NHT,,,,,,employer,True,False,2026-10-05T15:30:45.225528
+243,emptinbaolan,emptinbaolan@careerviet.local,Công Ty TNHH Tín Bảo Lan,,,,,,employer,True,False,2026-10-05T15:30:45.453690
+244,empwebideas,empwebideas@careerviet.local,Công ty TNHH TM DV Web Ideas,,,,,,employer,True,False,2026-10-05T15:30:45.670281
+245,emptomgroup,emptomgroup@careerviet.local,Công ty TNHH TOM Group Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:45.876012
+246,emptradetec,emptradetec@careerviet.local,Công Ty TNHH Trace - Tec Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:46.082131
+247,emptrongdong,emptrongdong@careerviet.local,CÔNG TY TNHH TRỐNG ĐỒNG VIỆT NAM,,,,,,employer,True,False,2026-10-05T15:30:46.287982
+248,emptony,emptony@careerviet.local,CÔNG TY TNHH TÚ PHƯỢNG TONY,,,,,,employer,True,False,2026-10-05T15:30:46.498699
+249,empvietcad,empvietcad@careerviet.local,Công Ty TNHH Tư Vấn Kỹ Thuật Và Tin Học Thương Mại Viet C.A.D,,,,,,employer,True,False,2026-10-05T15:30:46.708233
+250,empuplive,empuplive@careerviet.local,Công ty TNHH UPLIVE VN,,,,,,employer,True,False,2026-10-05T15:30:46.914421
+251,empvantaitoancau,empvantaitoancau@careerviet.local,Công ty TNHH Vận Tải và Tiếp Vận Toàn Cầu,,,,,,employer,True,False,2026-10-05T15:30:47.123785
+252,empvienthongadong,empvienthongadong@careerviet.local,Công ty TNHH Viễn Thông Công Nghệ Á Đông,,,,,,employer,True,False,2026-10-05T15:30:47.347744
+253,empvienthongipn,empvienthongipn@careerviet.local,Công ty TNHH Viễn thông IPN,,,,,,employer,True,False,2026-10-05T15:30:47.582721
+254,empmeiwa,empmeiwa@careerviet.local,Công ty TNHH Việt Nam Meiwa,,,,,,employer,True,False,2026-10-05T15:30:47.791066
+255,empviettelcht,empviettelcht@careerviet.local,Công ty TNHH Viettel - CHT,,,,,,employer,True,False,2026-10-05T15:30:47.997757
+256,empxevietnam,empxevietnam@careerviet.local,Công ty TNHH X.E Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:48.205186
+257,empalliance,empalliance@careerviet.local,Công Ty TNHH Xây Dựng và Nội Thất Cao Cấp Alliance,,,,,,employer,True,False,2026-10-05T15:30:48.422226
+258,empych,empych@careerviet.local,Công ty TNHH YCH - Protrade,,,,,,employer,True,False,2026-10-05T15:30:48.643751
+259,empykk,empykk@careerviet.local,Công Ty TNHH YKK Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:48.853330
+260,empyokohama,empyokohama@careerviet.local,Công Ty TNHH Yokohama Tyre Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:49.058117
+261,empyura,empyura@careerviet.local,Công ty TNHH Yura Corporation Vina,,,,,,employer,True,False,2026-10-05T15:30:49.266742
+262,empzto,empzto@careerviet.local,CÔNG TY TNHH ZTO FREIGHT VIỆT NAM,,,,,,employer,True,False,2026-10-05T15:30:49.486844
+263,empfmsypplychain,empfmsypplychain@careerviet.local,CÔNG TY TRÁCH NHIỆM HỮU HẠN FM SUPPLY CHAIN VIỆT NAM,,,,,,employer,True,False,2026-10-05T15:30:49.711193
+264,emppima,emppima@careerviet.local,CÔNG TY TRÁCH NHIỆM HỮU HẠN PIMA,,,,,,employer,True,False,2026-10-05T15:30:49.938885
+265,empcongnghevienthongmoi,empcongnghevienthongmoi@careerviet.local,CP Thương Mại và Đầu Tư Công Nghệ Viễn Thông Mới,,,,,,employer,True,False,2026-10-05T15:30:50.151732
+266,empcxvn,empcxvn@careerviet.local,CX Technology VN,,,,,,employer,True,False,2026-10-05T15:30:50.372175
+267,empdaihocqlcongnghehcm,empdaihocqlcongnghehcm@careerviet.local,Đại học Quản lý và Công nghệ Thành phố Hồ Chí Minh,,,,,,employer,True,False,2026-10-05T15:30:50.595263
+268,emptexxvietnam,emptexxvietnam@careerviet.local,DIGI-TEXX Vietnam,,,,,,employer,True,False,2026-10-05T15:30:50.803474
+269,empduytangroup,empduytangroup@careerviet.local,DUYTAN GROUP,,,,,,employer,True,False,2026-10-05T15:30:51.014052
+270,empeatsea,empeatsea@careerviet.local,EAST SEA ENERGY ENVIRONMENT COMPANY LIMITED,,,,,,employer,True,False,2026-10-05T15:30:51.253642
+271,empeupgroup,empeupgroup@careerviet.local,EuP Group,,,,,,employer,True,False,2026-10-05T15:30:51.531302
+272,empfecredit,empfecredit@careerviet.local,FE CREDIT,,,,,,employer,True,False,2026-10-05T15:30:51.763970
+273,empfutureworld,empfutureworld@careerviet.local,FUTUREWORLD,,,,,,employer,True,False,2026-10-05T15:30:51.976737
+274,empgiantyinc,empgiantyinc@careerviet.local,Gianty Inc.,,,,,,employer,True,False,2026-10-05T15:30:52.189827
+275,empgoodfood,empgoodfood@careerviet.local,GoodFood,,,,,,employer,True,False,2026-10-05T15:30:52.401235
+276,emphci,emphci@careerviet.local,HCI Group,,,,,,employer,True,False,2026-10-05T15:30:52.615197
+277,emphdsaigon,emphdsaigon@careerviet.local,"HD SAISON Finance Co., Ltd",,,,,,employer,True,False,2026-10-05T15:30:52.835023
+278,empmatanna,empmatanna@careerviet.local,HỆ THỐNG KÍNH MẮT ANNA,,,,,,employer,True,False,2026-10-05T15:30:53.050668
+279,empphongkham315,empphongkham315@careerviet.local,Hệ thống Phòng khám 315,,,,,,employer,True,False,2026-10-05T15:30:53.266925
+280,emppathway,emppathway@careerviet.local,HỆ THỐNG TRƯỜNG PATHWAY,,,,,,employer,True,False,2026-10-05T15:30:53.479114
+281,emphrchannelsgroup,emphrchannelsgroup@careerviet.local,Headhunter HRchannels Group,,,,,,employer,True,False,2026-10-05T15:30:53.689909
+282,emphiephoicnttvn,emphiephoicnttvn@careerviet.local,HIỆP HỘI PHẦN MỀM VÀ DỊCH VỤ CNTT VIỆT NAM,,,,,,employer,True,False,2026-10-05T15:30:53.910178
+283,emphoanghuygroup,emphoanghuygroup@careerviet.local,Hoàng Huy Group,,,,,,employer,True,False,2026-10-05T15:30:54.120064
+284,emphress,emphress@careerviet.local,HR Vietnam’s ESS Client,,,,,,employer,True,False,2026-10-05T15:30:54.329008
+285,empchungkhoanhsc,empchungkhoanhsc@careerviet.local,HSC - Chứng Khoán Thành Phố Hồ Chí Minh,,,,,,employer,True,False,2026-10-05T15:30:54.551644
+286,empidocean,empidocean@careerviet.local,"IDOCEAN Co.,ltd",,,,,,employer,True,False,2026-10-05T15:30:54.764033
+287,empindobank,empindobank@careerviet.local,Indovina Bank Ltd.,,,,,,employer,True,False,2026-10-05T15:30:54.976388
+288,empjabil,empjabil@careerviet.local,Jabil Vietnam,,,,,,employer,True,False,2026-10-05T15:30:55.183937
+289,empkdi,empkdi@careerviet.local,KDI EDUCATION,,,,,,employer,True,False,2026-10-05T15:30:55.393886
+290,empkoeitecmo,empkoeitecmo@careerviet.local,Koei Tecmo Software Vietnam,,,,,,employer,True,False,2026-10-05T15:30:55.607114
+291,emplacvietcom,emplacvietcom@careerviet.local,LacViet Computing Corporation,,,,,,employer,True,False,2026-10-05T15:30:55.818038
+292,emplonghaisecuritas,emplonghaisecuritas@careerviet.local,Long Hải Securitas,,,,,,employer,True,False,2026-10-05T15:30:56.026661
+293,emplottefin,emplottefin@careerviet.local,LOTTE FINANCE VIETNAM,,,,,,employer,True,False,2026-10-05T15:30:56.240811
+294,empmakinarocks,empmakinarocks@careerviet.local,MAKINAROCKS,,,,,,employer,True,False,2026-10-05T15:30:56.458072
+295,empmassan,empmassan@careerviet.local,Masan Consumer,,,,,,employer,True,False,2026-10-05T15:30:56.677028
+296,empmotives,empmotives@careerviet.local,MOTIVES VIETNAM CORPORATION,,,,,,employer,True,False,2026-10-05T15:30:56.889844
+297,empvrbank,empvrbank@careerviet.local,Ngân hàng Liên doanh Việt - Nga (VRB),,,,,,employer,True,False,2026-10-05T15:30:57.101316
+298,empbacabank,empbacabank@careerviet.local,Ngân Hàng Thương mại cổ phần Bắc Á- BAC A BANK,,,,,,employer,True,False,2026-10-05T15:30:57.310195
+299,empmsbbank,empmsbbank@careerviet.local,Ngân hàng Thương mại Cổ phần Hàng Hải Việt Nam (MSB),,,,,,employer,True,False,2026-10-05T15:30:57.531150
+41,empaa,empaa@careerviet.local,AA Corporation,,,,,,employer,True,False,2026-10-05T15:29:58.087722
+42,empaction,empaction@careerviet.local,Action Composites Hightech Industries,,,,,,employer,True,False,2026-10-05T15:29:58.328124
+43,empacumen,empacumen@careerviet.local,Acumen Advisory LLC,,,,,,employer,True,False,2026-10-05T15:29:58.551915
+44,empamkor,empamkor@careerviet.local,Amkor Technology Việt Nam,,,,,,employer,True,False,2026-10-05T15:29:58.769738
+45,empatad,empatad@careerviet.local,ATAD Steel Structure Corporation,,,,,,employer,True,False,2026-10-05T15:29:58.991309
+46,empbaomat,empbaomat@careerviet.local,Bảo mật,,,,,,employer,True,False,2026-10-05T15:29:59.218685
+47,empbellsys,empbellsys@careerviet.local,BellSystem24 Việt Nam,,,,,,employer,True,False,2026-10-05T15:29:59.471017
+48,empbenhvienphuongdong,empbenhvienphuongdong@careerviet.local,BỆNH VIỆN ĐA KHOA PHƯƠNG ĐÔNG,,,,,,employer,True,False,2026-10-05T15:29:59.713103
+49,empbetrimex,empbetrimex@careerviet.local,BETRIMEX - Công Ty Cổ Phần Xuất Nhập Khẩu Bến Tre,,,,,,employer,True,False,2026-10-05T15:29:59.942138
+50,empbim,empbim@careerviet.local,BIM Group,,,,,,employer,True,False,2026-10-05T15:30:00.195544
+51,empbkbank,empbkbank@careerviet.local,BVBank - Ngân hàng Bản Việt,,,,,,employer,True,False,2026-10-05T15:30:00.440018
+52,empcareerviet,empcareerviet@careerviet.local,CareerViet,,,,,,employer,True,False,2026-10-05T15:30:00.681194
+53,empsnet,empsnet@careerviet.local,Chi Nhánh Thành Phố Hồ Chí Minh Công Ty TNHH SNET Việt Nam,,,,,,employer,True,False,2026-10-05T15:30:00.934143
+300,empsacombank,empsacombank@careerviet.local,NGÂN HÀNG THƯƠNG MẠI CỔ PHẦN SÀI GÒN TÀI LỘC (SACOMBANK),,,,,,employer,True,False,2026-10-05T15:30:57.742757
+301,emppvbank,emppvbank@careerviet.local,Ngân hàng TMCP Đại Chúng Việt Nam - PVcomBank,,,,,,employer,True,False,2026-10-05T15:30:57.959065
+302,empkienlongbank,empkienlongbank@careerviet.local,Ngân hàng TMCP Kiên Long,,,,,,employer,True,False,2026-10-05T15:30:58.172467
+303,emptechcombank,emptechcombank@careerviet.local,NGÂN HÀNG TMCP KỸ THƯƠNG VIỆT NAM (TECHCOMBANK),,,,,,employer,True,False,2026-10-05T15:30:58.381935
+304,emplpbank,emplpbank@careerviet.local,Ngân hàng TMCP Lộc Phát Việt Nam (LPBank),,,,,,employer,True,False,2026-10-05T15:30:58.598199
+305,empvietcombank,empvietcombank@careerviet.local,NGÂN HÀNG TMCP NGOẠI THƯƠNG VIỆT NAM (VIETCOMBANK),,,,,,employer,True,False,2026-10-05T15:30:58.812979
+306,emphdbank,emphdbank@careerviet.local,Ngân hàng TMCP Phát triển TP.HCM (HDBank),,,,,,employer,True,False,2026-10-05T15:30:59.042796
+307,empocb,empocb@careerviet.local,Ngân Hàng TMCP Phương Đông - OCB,,,,,,employer,True,False,2026-10-05T15:30:59.266498
+308,empquandoibank,empquandoibank@careerviet.local,Ngân Hàng TMCP Quân Đội,,,,,,employer,True,False,2026-10-05T15:30:59.489761
+309,empncbbank,empncbbank@careerviet.local,Ngân Hàng TMCP Quốc Dân (NCB),,,,,,employer,True,False,2026-10-05T15:30:59.704340
+310,empshb,empshb@careerviet.local,Ngân Hàng TMCP Sài Gòn - Hà Nội ( SHB ),,,,,,employer,True,False,2026-10-05T15:30:59.932608
+311,emptpbank,emptpbank@careerviet.local,Ngân Hàng TMCP Tiên Phong (TPBank),,,,,,employer,True,False,2026-10-05T15:31:00.147282
+312,empvpbank,empvpbank@careerviet.local,Ngân Hàng TMCP Việt Nam Thịnh Vượng - VPBANK,,,,,,employer,True,False,2026-10-05T15:31:00.363195
+313,emphiendaibank,emphiendaibank@careerviet.local,NGÂN HÀNG TRÁCH NHIỆM HỮU HẠN MỘT THÀNH VIÊN VIỆT NAM HIỆN ĐẠI,,,,,,employer,True,False,2026-10-05T15:31:00.583772
+349,emptma,intern@tma.com.vn,TMA Solutions (Công ty TNHH Giải pháp Phần mềm Tường Minh),+84 28 3997 8000,,,"TP Hồ Chí Minh, Việt Nam","Lô 17, Đường số 10, Công viên Phần mềm Quang Trung, Phường Trung Mỹ Tây, Thành phố Hồ Chí Minh",employer,True,True,2026-10-22T06:46:43.043300
+314,empsachtientho,empsachtientho@careerviet.local,NHÀ SÁCH TIẾN THỌ,,,,,,employer,True,False,2026-10-05T15:31:00.800480
+315,empomn,empomn@careerviet.local,OMN1 Solution,,,,,,employer,True,False,2026-10-05T15:31:01.017502
+316,emppcb,emppcb@careerviet.local,PCB GraphTech Việt Nam,,,,,,employer,True,False,2026-10-05T15:31:01.227893
+317,empphuhungsecurity,empphuhungsecurity@careerviet.local,Phu Hung Securities Corporation,,,,,,employer,True,False,2026-10-05T15:31:01.439521
+318,empptsc,empptsc@careerviet.local,PTSC Offshore Services (POS),,,,,,employer,True,False,2026-10-05T15:31:01.653456
+319,emprgf,emprgf@careerviet.local,"RGF HR Agent Vietnam Co., LTD",,,,,,employer,True,False,2026-10-05T15:31:01.868170
+320,empltd,empltd@careerviet.local,"Rochdale Spears Co., Ltd.",,,,,,employer,True,False,2026-10-05T15:31:02.081528
+321,empcompanylimited,empcompanylimited@careerviet.local,SAMTEC VIETNAM COMPANY LIMITED,,,,,,employer,True,False,2026-10-05T15:31:02.296435
+322,empctgroup,empctgroup@careerviet.local,Tập Đoàn CT Group Việt Nam,,,,,,employer,True,False,2026-10-05T15:31:02.520060
+323,empdaitruongphat,empdaitruongphat@careerviet.local,Tập đoàn Giáo dục Đại Trường Phát,,,,,,employer,True,False,2026-10-05T15:31:02.733755
+324,empholdings,empholdings@careerviet.local,TẬP ĐOÀN HC HOLDINGS,,,,,,employer,True,False,2026-10-05T15:31:02.945312
+325,emphoancau,emphoancau@careerviet.local,TẬP ĐOÀN HOÀN CẦU,,,,,,employer,True,False,2026-10-05T15:31:03.161272
+326,empkarofi,empkarofi@careerviet.local,Tập Đoàn Karofi Holding,,,,,,employer,True,False,2026-10-05T15:31:03.382580
+327,emploctroi,emploctroi@careerviet.local,Tập Đoàn Lộc Trời,,,,,,employer,True,False,2026-10-05T15:31:03.605830
+328,emprox,emprox@careerviet.local,Tập đoàn ROX (ROX Group),,,,,,employer,True,False,2026-10-05T15:31:03.816419
+329,empdaithanh,empdaithanh@careerviet.local,Tập Đoàn Tân Á Đại Thành,,,,,,employer,True,False,2026-10-05T15:31:04.025557
+330,emptavico,emptavico@careerviet.local,TAVICO GROUP,,,,,,employer,True,False,2026-10-05T15:31:04.239590
+331,empchuyenphatbuudien,empchuyenphatbuudien@careerviet.local,Tổng Công Ty Chuyển Phát Nhanh Bưu Điện,,,,,,employer,True,False,2026-10-05T15:31:04.448186
+332,empbaohiembuudien,empbaohiembuudien@careerviet.local,Tổng công ty Cổ phần Bảo hiểm Bưu điện,,,,,,employer,True,False,2026-10-05T15:31:04.660132
+333,empbic,empbic@careerviet.local,Tổng Công ty Cổ phần Bảo hiểm Ngân hàng Đầu tư và Phát triển Việt Nam (BIC),,,,,,employer,True,False,2026-10-05T15:31:04.872187
+334,empmicbank,empmicbank@careerviet.local,Tổng Công ty Cổ phần Bảo hiểm Quân đội (MIC),,,,,,employer,True,False,2026-10-05T15:31:05.083739
+335,emphabeco,emphabeco@careerviet.local,Tổng công ty Cổ phần Bia - Rượu - Nước giải khát Hà Nội (HABECO - Bia Hà Nội),,,,,,employer,True,False,2026-10-05T15:31:05.305415
+336,empcongtrinhviettel,empcongtrinhviettel@careerviet.local,Tổng Công ty Cổ phần Công trình Viettel,,,,,,employer,True,False,2026-10-05T15:31:05.519789
+337,empctcp,empctcp@careerviet.local,Tổng công ty Xây dựng số 1 – CTCP,,,,,,employer,True,False,2026-10-05T15:31:05.736552
+338,emptrend,emptrend@careerviet.local,"Trends & Technologies, Inc. Vietnam Co., Ltd",,,,,,employer,True,False,2026-10-05T15:31:05.958188
+339,emptruonghas,emptruonghas@careerviet.local,TRƯỜNG PHỔ THÔNG LIÊN CẤP H.A.S,,,,,,employer,True,False,2026-10-05T15:31:06.172096
+340,empurbox,empurbox@careerviet.local,UrBox - Công ty Cổ phần Tiếp Thị Số Tô Quà,,,,,,employer,True,False,2026-10-05T15:31:06.387754
+341,empvietthaiplastchem,empvietthaiplastchem@careerviet.local,"VIET – THAI PLASTCHEM CO., LTD.",,,,,,employer,True,False,2026-10-05T15:31:06.604353
+342,empthaiinternational,empthaiinternational@careerviet.local,Viet Thai International,,,,,,employer,True,False,2026-10-05T15:31:06.822909
+343,empvfr,empvfr@careerviet.local,Vietnam Furniture Resources (VFR),,,,,,employer,True,False,2026-10-05T15:31:07.033694
+344,empwanek,empwanek@careerviet.local,Wanek Furniture,,,,,,employer,True,False,2026-10-05T15:31:07.258869
+345,empyomedia,empyomedia@careerviet.local,YOMEDIA - CÔNG TY CỔ PHẦN NEW PINE MULTIMEDIA TECHNOLOGIES,,,,,,employer,True,False,2026-10-05T15:31:07.483705
+346,empzuellig,empzuellig@careerviet.local,Zuellig Pharma Viet Nam,,,,,,employer,True,False,2026-10-05T15:31:07.701047
+351,sv102220057,sv102220057@dut.vn,Phạm Quốc Đức,102102102,,,,,employer,True,False,2026-10-25T13:55:23.578948
+352,sv102220066,sv102220066@dut.vn,Nguyễn Tuấn Huy,102102102,,,,,employer,True,False,2026-10-25T13:55:23.836486
+353,sv102220076,sv102220076@dut.vn,Đỗ Nguyễn Hữu Nhân,102102102,,,,,employer,True,False,2026-10-25T13:55:24.092263
+355,sv102220080,sv102220080@dut.vn,Đặng Toàn Quốc,102102102,,,,,employer,True,False,2026-10-25T13:55:24.609641
+356,sv102220082,sv102220082@dut.vn,Nguyễn Đắc Nguyên Tâm,102102102,,,,,employer,True,False,2026-10-25T13:55:24.867770
+357,sv102220093,sv102220093@dut.vn,Nguyễn Phan Thành An,102102102,,,Hòa Xuân,,employer,True,False,2026-10-25T13:55:25.127535
+354,sv102220078,sv102220078@dut.vn,Hồ Thanh Phú,0906438843,2004-11-01,,Đà Nẵng,Đà Nẵng,employer,True,False,2026-10-25T13:55:24.350864
+360,sv102220105,sv102220105@dut.vn,Nguyễn Nhật Hoàng,102102104,,,,,employer,True,False,2026-10-25T13:55:25.913383
+362,sv102220112,sv102220112@dut.vn,Nguyễn Hữu Tấn Kiệt,102102106,,,,,employer,True,False,2026-10-25T13:55:26.438710
+363,sv102220114,sv102220114@dut.vn,Nguyễn Văn Lý,102102107,,,,,employer,True,False,2026-10-25T13:55:26.700625
+366,sv102220126,sv102220126@dut.vn,Nguyễn Phan Thanh,102102110,,,,,employer,True,False,2026-10-25T13:55:27.522702
+367,sv102220127,sv102220127@dut.vn,Phạm Bá Thành,102102111,,,,,employer,True,False,2026-10-25T13:55:27.784286
+368,sv102220130,sv102220130@dut.vn,Trương Đình Vĩnh Trọng,102102112,,,,,employer,True,False,2026-10-25T13:55:28.045618
+369,sv102220133,sv102220133@dut.vn,Trần Văn Tùng,102102113,,,,,employer,True,False,2026-10-25T13:55:28.413109
+370,sv102220134,sv102220134@dut.vn,Lê Anh Vũ,102102114,,,,,employer,True,False,2026-10-25T13:55:28.673684
+372,sv102220137,sv102220137@dut.vn,Phan Minh Chính,102102116,,,,,employer,True,False,2026-10-25T13:55:29.325451
+373,sv102220142,sv102220142@dut.vn,Bùi Huy Dũng,102102117,,,,,employer,True,False,2026-10-25T13:55:29.588670
+376,sv102220148,sv102220148@dut.vn,Nguyễn Việt Hưng,102102120,,,,,employer,True,False,2026-10-25T13:55:30.377931
+377,sv102220157,sv102220157@dut.vn,Nguyễn Thành Nam,102102121,,,,,employer,True,False,2026-10-25T13:55:30.640672
+378,sv102220159,sv102220159@dut.vn,Huỳnh Thúy Minh Nguyệt,102102122,,,,,employer,True,False,2026-10-25T13:55:30.902620
+379,sv102220161,sv102220161@dut.vn,Phạm Văn Phôn,102102123,,,,,employer,True,False,2026-10-25T13:55:31.165183
+380,sv102220162,sv102220162@dut.vn,Nguyễn Duy Phúc,102102124,,,,,employer,True,False,2026-10-25T13:55:31.428959
+381,sv102220164,sv102220164@dut.vn,Trần Hữu Quốc,102102125,,,,,employer,True,False,2026-10-25T13:55:31.691751
+382,sv102220165,sv102220165@dut.vn,Trương Thế Sơn,102102126,,,,,employer,True,False,2026-10-25T13:55:31.953586
+384,sv102220175,sv102220175@dut.vn,Tôn Thất Bảo Văn,102102128,,,,,employer,True,False,2026-10-25T13:55:32.475731
+385,sv102220176,sv102220176@dut.vn,Trần Minh Vũ,102102129,,,,,employer,True,False,2026-10-25T13:55:32.736971
+386,sv102220179,sv102220179@dut.vn,Nguyễn Chung,102102130,,,,,employer,True,False,2026-10-25T13:55:33.000394
+388,sv102220202,sv102220202@dut.vn,Trần Văn Nhật,102102132,,,,,employer,True,False,2026-10-25T13:55:33.524555
+390,sv102220208,sv102220208@dut.vn,Nguyễn Minh Tấn,102102134,,,,,employer,True,False,2026-10-25T13:55:34.048291
+391,sv102220210,sv102220210@dut.vn,Cao Đình Thành,102102135,,,,,employer,True,False,2026-10-25T13:55:34.309957
+392,sv102220213,sv102220213@dut.vn,Trần Bi Tôn,102102136,,,,,employer,True,False,2026-10-25T13:55:34.572952
+395,sv102220233,sv102220233@dut.vn,Nguyễn Triệu Huy,102102139,,,,,employer,True,False,2026-10-25T13:55:35.363851
+396,sv102220235,sv102220235@dut.vn,Phan Thanh Khải,102102140,,,,,employer,True,False,2026-10-25T13:55:35.626135
+398,sv102220241,sv102220241@dut.vn,Võ Thị Quỳnh Nga,102102142,,,,,employer,True,False,2026-10-25T13:55:36.155177
+400,sv102220246,sv102220246@dut.vn,Nguyễn Minh Phúc,102102144,,,,,employer,True,False,2026-10-25T13:55:36.679834
+359,sv102220099,sv102220099@dut.vn,Trần Anh Đức,0905099099,2004-08-20,,Đà Nẵng,"K120 Tôn Đức Thắng, Liên Chiểu, Đà Nẵng",employer,True,False,2026-10-25T13:55:25.654200
+374,sv102220145,sv102220145@dut.vn,Trương Minh Hiển,102102118,,,,Đà Nẵng,employer,True,False,2026-10-25T13:55:29.852681
+387,sv102220198,sv102220198@dut.vn,Lê Võ Nhật Minh,102102131,,,,Đà Nẵng,employer,True,False,2026-10-25T13:55:33.261578
+389,sv102220207,sv102220207@dut.vn,Nguyễn Thành Tài,102102133,2004-10-29,,Quảng Nam,Đà Nẵng,employer,True,False,2026-10-25T13:55:33.786394
+397,sv102220240,sv102220240@dut.vn,Nguyễn Sĩ Mirinda,102102141,2004-07-17,,,,employer,True,False,2026-10-25T13:55:35.892367
+383,sv102220171,sv102220171@dut.vn,Trần Minh Toàn,102102127,2004-01-01,,Đà Nẵng,245 Âu Cơ,employer,True,False,2026-10-25T13:55:32.214943
+365,sv102220123,sv102220123@dut.vn,Lê Nguyễn Phúc Sinh,0935340568,2004-10-18,,Quảng Trị,01 Mẹ Suốt,employer,True,False,2026-10-25T13:55:27.259891
+371,sv102220135,sv102220135@dut.vn,Nguyễn Văn An,0915700558,2004-01-01,,Đà Nẵng,Đà Nẵng,employer,True,False,2026-10-25T13:55:28.941412
+402,sv102220250,sv102220250@dut.vn,Văn Bá Phạm Tấn,102102146,,,,,employer,True,False,2026-10-25T13:55:37.205305
+406,sv102230176,sv102230176@dut.vn,Châu Thanh Bình,102102150,,,,,employer,True,False,2026-10-25T13:55:38.260457
+409,sv102230237,sv102230237@dut.vn,Huỳnh Thị Xuân Hà,102102153,,,,,employer,True,False,2026-10-25T13:55:39.047824
+403,sv102220253,nguyenthat.20072004@gmail.com,Lê Nguyễn Thành Thật,0392728223,2004-07-12,male,Tỉnh Quảng Nam,Đà Nẵng,employer,True,False,2026-10-25T13:55:37.468256
+405,sv102220303,sv102220303@dut.vn,Hoàng Thanh Việt,102102149,2004-12-30,male,Quảng Trị,Quảng Trị,employer,True,False,2026-10-25T13:55:37.994068
+393,sv102220217,sv102220217@dut.vn,Nguyễn Quốc Việt,102102137,2004-08-28,male,Đà Nẵng,,employer,True,False,2026-10-25T13:55:34.835142
+404,sv102220255,sv102220255@dut.vn,Lê Nguyễn Ái Trân,0358123123,2004-06-24,female,Huế,Đà Nẵng,employer,True,False,2026-10-25T13:55:37.732623
+410,sv102230252,sv102230252@dut.vn,Trương Ngọc Long,102102154,,,,,employer,True,False,2026-10-25T13:55:39.312539
+411,sv102230270,sv102230270@dut.vn,Nguyễn Phước Nguyên Thục,102102155,,,,,employer,True,False,2026-10-25T13:55:39.574842
+412,sv102230292,sv102230292@dut.vn,Nguyễn Trọng Hiếu,102102156,,,,,employer,True,False,2026-10-25T13:55:39.838120
+414,sv102230356,sv102230356@dut.vn,Huỳnh Phước Lộc,102102158,,,,,employer,True,False,2026-10-25T13:55:40.367776
+416,sv102230123,sv102230123@dut.vn,Đặng Nguyễn Hữu Huy,102102160,,,,,employer,True,False,2026-10-25T13:55:40.891131
+417,sv102230152,sv102230152@dut.vn,Phạm Ngọc Hưng,102102161,,,,,employer,True,False,2026-10-25T13:55:41.153188
+418,sv102220201,sv102220201@dut.vn,Nguyễn Thị Quỳnh Nha,102102162,,,,,employer,True,False,2026-10-25T13:55:41.416137
+419,sv102220228,sv102220228@dut.vn,Nguyễn Thị Thúy Hằng,102102163,,,,,employer,True,False,2026-10-25T13:55:41.681003
+420,sv102220238,sv102220238@dut.vn,Nguyễn Thị Mỹ Lệ,102102164,,,,,employer,True,False,2026-10-25T13:55:41.946752
+421,sv102220243,sv102220243@dut.vn,Huỳnh Thị Thanh Nhàn,102102165,,,,,employer,True,False,2026-10-25T13:55:42.212135
+425,sv102220017,sv102220017@dut.vn,Võ Quốc Hiếu,102102169,,,,,employer,True,False,2026-10-25T13:55:43.263343
+426,sv102220022,sv102220022@dut.vn,Nguyễn Thế Huy,102102170,,,,,employer,True,False,2026-10-25T13:55:43.525675
+427,sv102220026,sv102220026@dut.vn,Lê Hải Khoa,102102171,,,,,employer,True,False,2026-10-25T13:55:43.787484
+430,sv102220039,sv102220039@dut.vn,Phan Thanh Sum,102102174,,,,,employer,True,False,2026-10-25T13:55:44.575218
+433,sv102220045,sv102220045@dut.vn,Nguyễn Minh Tuệ,102102177,,,,,employer,True,False,2026-10-25T13:55:45.362795
+434,sv102220046,sv102220046@dut.vn,Hồ Nguyễn Thế Vinh,102102178,,,,,employer,True,False,2026-10-25T13:55:45.625741
+438,sv102220267,sv102220267@dut.vn,Nguyễn Văn Chương,102102182,,,,,employer,True,False,2026-10-25T13:55:46.672190
+440,sv102220283,sv102220283@dut.vn,Lê Đức Phúc Long,102102184,,,,,employer,True,False,2026-10-25T13:55:47.201927
+442,sv102220286,sv102220286@dut.vn,Nguyễn Bá Nam,102102186,,,,,employer,True,False,2026-10-25T13:55:47.727202
+444,sv102220304,sv102220304@dut.vn,Đoàn Công Tuấn Vũ,102102188,,,,,employer,True,False,2026-10-25T13:55:48.249979
+428,sv102220034,sv102220034@dut.vn,Nguyễn Nhật Quân,0905181022,2004-09-11,,Đà Nẵng,Đà Nẵng,employer,True,False,2026-10-25T13:55:44.050209
+422,sv102220254,sv102220254@dut.vn,Trần Công Toại,102102166,2004-06-30,,Hà Tĩnh,Đà Nẵng,employer,True,False,2026-10-25T13:55:42.476880
+429,sv102220035,sv102220035@dut.vn,Lê Văn Quang,102102173,,,,,employer,True,False,2026-10-25T13:55:44.312844
+423,sv102220259,102220259@sv1.dut.udn.vn,Phan Thanh Việt,0813802056,2004-09-26,,Đà Nẵng,Hoà Khánh Đà Nẵng,employer,True,False,2026-10-25T13:55:42.738688
+439,sv102220278,sv102220278@dut.vn,Nguyễn Đình Huy,102102183,,,Đà Nẵng,alo,employer,True,False,2026-10-25T13:55:46.938514
+441,sv102220285,sv102220285@dut.vn,Lê Minh,102102185,2004-05-21,,Đà Nẵng,Đà Nẵng,employer,True,False,2026-10-25T13:55:47.463821
+435,sv102220049,sv102220049@dut.vn,Nguyễn Hữu Minh Vũ,102102179,,,,,employer,True,False,2026-10-25T13:55:45.888196
+408,sv102230231,sv102230231@dut.vn,Phan Long Chức,0396024957,2005-10-31,,Đà Nẵng,82 Nguyễn Lương Bằng,employer,True,False,2026-10-25T13:55:38.786268
+437,sv102220266,hoanghuongbinh32@gmail.com,Hoàng Hương Bình,0858756765,2004-03-07,,Ha Tinh,30 Ngô Văn Sở,employer,True,False,2026-10-25T13:55:46.410589
+415,sv102230120,phanhieu17051990@gmail.com,Hiếu Phan Văn,0356146463,2005-05-17,,Thừa Thiên Huế,,employer,True,False,2026-10-25T13:55:40.629312
+432,sv102220044,sv102220044@dut.vn,Nguyễn Thành Trung,102102176,,,quảng ngãi,đà nẵng,employer,True,False,2026-10-25T13:55:45.100274
+413,sv102230342,sv102230342@dut.vn,Võ Văn Phương Duy,102102157,,,Quảng Nam,144 Nguyễn Lương Bằng,employer,True,False,2026-10-25T13:55:40.105934
+446,sv102220329,sv102220329@dut.vn,Nguyễn Quang Minh,102102190,,,,,employer,True,False,2026-10-25T13:55:48.773129
+448,sv102220334,sv102220334@dut.vn,Nguyễn Thị Thanh Phượng,102102192,,,,,employer,True,False,2026-10-25T13:55:49.298655
+450,sv102220342,sv102220342@dut.vn,Đặng Nguyễn Ngọc Toàn,102102194,,,,,employer,True,False,2026-10-25T13:55:49.820214
+452,sv102230257,sv102230257@dut.vn,Nguyễn Hữu Nhân,102102196,,,,,employer,True,False,2026-10-25T13:55:50.438103
+453,sv102230263,sv102230263@dut.vn,Đào Hữu Quý,102102197,,,,,employer,True,False,2026-10-25T13:55:50.703080
+455,sv102230285,sv102230285@dut.vn,Hoàng Nguyễn Tài Danh,102102199,,,,,employer,True,False,2026-10-25T13:55:51.231159
+456,sv102230305,sv102230305@dut.vn,Châu Văn Luận,102102200,,,,,employer,True,False,2026-10-25T13:55:51.493158
+445,sv102220310,sv102220310@dut.vn,Võ Nguyên Chánh,102102189,2004-07-02,male,Nghệ An,108 Đinh Thị Vân,employer,True,False,2026-10-25T13:55:48.511075
+458,sv102230343,sv102230343@dut.vn,Nguyễn Hoàng Hà,102102202,,,,,employer,True,False,2026-10-25T13:55:52.023373
+460,sv102230349,sv102230349@dut.vn,Đặng Hoàng Huy,102102204,,,,,employer,True,False,2026-10-25T13:55:52.564087
+462,sv102230363,sv102230363@dut.vn,Huỳnh Ngọc Tiến Nhật,102102206,,,,,employer,True,False,2026-10-25T13:55:53.096464
+463,sv102230366,sv102230366@dut.vn,Lưu Hoàng Phúc,102102207,,,,,employer,True,False,2026-10-25T13:55:53.357564
+464,sv102230371,sv102230371@dut.vn,Nguyễn Văn Tài,102102208,,,,,employer,True,False,2026-10-25T13:55:53.618755
+465,sv102230156,sv102230156@dut.vn,Phạm Nhật Khoa,102102209,,,,,employer,True,False,2026-10-25T13:55:53.879774
+467,sv102230002,sv102230002@dut.vn,Dương Tùng Bách,102102211,,,,,employer,True,False,2026-10-25T13:55:54.510029
+468,sv102230017,sv102230017@dut.vn,Hồ Đăng Hùng,102102212,,,,,employer,True,False,2026-10-25T13:55:54.774898
+1,admin,admin@recsys.vn,RECSYS Admin,,,,,,admin,True,True,2026-09-27T21:21:45.936231
+424,sv102220016,sv102220016@dut.vn,Đỗ Chánh Hiếu,0336674204,2004-04-23,,Thành phố Huế,K82/83A Nguyễn Lương Bằng,employer,True,False,2026-10-25T13:55:43.000651
+457,sv102230336,chauthcsml@gmail.com,Lê Văn Ngọc Châu,0967005032,2005-12-16,,Nghi Sơn Thanh Hóa,Hòa Khánh Liên Chiểu Đà Nẵng,employer,True,False,2026-10-25T13:55:51.758809
+461,sv102230357,longkt0412@gmail.com,Lê Bá Nguyên Long,102102205,2004-12-04,,Thanh Hoa city,Thành  Phố Đà Nẵng,employer,True,False,2026-10-25T13:55:52.834950
+436,sv102220265,sv102220265@dut.vn,Phan Gia Bảo,0902565457,2004-10-17,,Đà Nẵng,"K368/76 Hoàng Diệu,Hải Châu ,Đà Nẵng",employer,True,False,2026-10-25T13:55:46.149380
+451,sv102230253,sv102230253@dut.vn,Huỳnh Phước Mạnh,0102230253,2005-02-09,,Thành phố Đà Nẵng,Đà Nẵng,employer,True,False,2026-10-25T13:55:50.085649
+447,sv102220332,sv102220332@dut.vn,Phan Phước Nhật,102102191,2004-05-12,,Quảng Nam,"Liên Chiểu, Đà Nẵng",employer,True,False,2026-10-25T13:55:49.036747
+364,sv102220119,sv102220119@dut.vn,Nguyễn Hùng Phi,0905119119,2004-02-19,,Đà Nẵng,"K54/12 Nguyễn Lương Bằng, Liên Chiểu, Đà Nẵng",employer,True,False,2026-10-25T13:55:26.962051
+449,sv102220337,sv102220337@dut.vn,Dương Công Rin,0813204144,2004-09-25,,,,employer,True,False,2026-10-25T13:55:49.559447
+454,sv102230266,sv102230266@dut.vn,Nguyễn Xuân Tâm,102102198,2005-01-01,,Đà Nẵng,Đà Nẵng,employer,True,False,2026-10-25T13:55:50.967166
+394,sv102220223,sv102220223@dut.vn,Nguyễn Chế Định,102102138,2004-11-29,,"Xã Tam Xuân, Thành phố Đà Nẵng","Xã Tam Xuân, Thành phố Đà Nẵng",employer,True,False,2026-10-25T13:55:35.100038
+407,sv102230228,sv102230228@dut.vn,Phạm Xuân Bắc,0878653147,2005-11-02,,Nghệ An,Đà Nẵng,employer,True,False,2026-10-25T13:55:38.524483
+375,sv102220146,sv102220146@dut.vn,Lê Xuân Hòa,102102119,,,,Đà Nẵng,employer,True,False,2026-10-25T13:55:30.116033
+358,sv102220095,sv102220095@dut.vn,Nguyễn Quang Bình,102102102,,,Đà Nẵng,"54 Nguyễn Lương Bằng, Liên Chiểu, Đà Nẵng",employer,True,False,2026-10-25T13:55:25.392369
+459,sv102230347,sv102230347@dut.vn,Nguyễn Duy Hoàng,102102203,2005-01-05,,,,employer,True,False,2026-10-25T13:55:52.299428
+466,sv102230162,sv102230162@dut.vn,Huỳnh Đình Thái,0983439264,2005-02-23,,Đà Nẵng,"An Khê, Đà Nẵng",employer,True,False,2026-10-25T13:55:54.140459
+431,sv102220040,sv102220040@dut.vn,Nguyễn Hữu Tâm,0899899864,2004-12-16,,Quảng Trị,54 Nguyễn Lương Bằng,employer,True,False,2026-10-25T13:55:44.838925
+350,sv102220051,sv102220051@dut.udn.vn,Lê Tôn Thanh An,0987654321,2004-09-04,male,,,employer,True,False,2026-10-25T13:55:23.311925
+443,sv102220298,sv102220298@dut.vn,Lê Quý Hoàng Thức,102102187,2004-10-08,male,Đà Nẵng,Đại học Bách Khoa,employer,True,False,2026-10-25T13:55:47.988891
+361,sv102220111,sv102220111@dut.vn,Lê Thanh Khiêm,102102105,,male,Đà Nẵng,Đà Nẵng,employer,True,False,2026-10-25T13:55:26.178737
+401,sv102220247,sv102220247@dut.vn,Trần Xuân Quang,102102145,,male,Hà Tĩnh,Đà Nẵng,employer,True,False,2026-10-25T13:55:36.943254
+399,sv102220245,sv102220245@dut.vn,Lê Trung Phong,0835155069,2004-12-22,male,Huế,70 Nguyễn Lương Bằng,employer,True,False,2026-10-25T13:55:36.417480
