@@ -73,8 +73,12 @@ const Row = ({ children, cols = 2 }) => (
 const PersonalInfo = () => {
   const [user] = useState(JSON.parse(localStorage.getItem('user')) || { name: 'Nguyễn Văn A' });
   const fileInputRef = useRef(null);
+  const cvInputRef = useRef(null);
+  const toastTimerRef = useRef(null);
   const [avatarFile, setAvatarFile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isParsingCv, setIsParsingCv] = useState(false);
+  const [toast, setToast] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState('https://api.dicebear.com/10.x/glyphs/svg?seed=Luna');
   const [profileCompletionPercent, setProfileCompletionPercent] = useState(0);
   const [formData, setFormData] = useState({
@@ -127,6 +131,16 @@ const PersonalInfo = () => {
     fetchProfile();
   }, []);
 
+  useEffect(() => () => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+  }, []);
+
+  const showToast = (type, message) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setToast({ type, message });
+    toastTimerRef.current = setTimeout(() => setToast(null), 4500);
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -137,6 +151,49 @@ const PersonalInfo = () => {
     if (!file) return;
     setAvatarFile(file);
     setAvatarPreview(URL.createObjectURL(file));
+  };
+
+  const handleCvChange = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    const formDataPayload = new FormData();
+    formDataPayload.append('cv', file);
+    setIsParsingCv(true);
+    try {
+      const result = await api.request('/seeker/profile/import-cv', {
+        method: 'POST',
+        body: formDataPayload,
+        headers: { 'Content-Type': null },
+      });
+      const draft = result.parsed_profile || {};
+      setFormData((prev) => ({
+        ...prev,
+        phone: draft.phone || prev.phone,
+        workplace_desired: draft.workplace_desired || prev.workplace_desired,
+        desired_job: draft.desired_job || prev.desired_job,
+        desired_salary: draft.desired_salary || prev.desired_salary,
+        target: draft.target || prev.target,
+        age: draft.age || prev.age,
+        gender: draft.gender || prev.gender,
+        degree: draft.degree || prev.degree,
+        industry: draft.industry || prev.industry,
+        skills: draft.skills || prev.skills,
+        experience: draft.experience?.length
+          ? JSON.stringify(draft.experience)
+          : prev.experience,
+        exp_min: draft.exp_min || prev.exp_min,
+        exp_max: draft.exp_max || prev.exp_max,
+      }));
+      setIsEditing(true);
+      showToast('success', 'Đã nhận diện CV. Hãy kiểm tra thông tin trước khi lưu.');
+    } catch (error) {
+      console.error('Failed to parse CV:', error);
+      showToast('error', error.message || 'Không thể phân tích CV.');
+    } finally {
+      setIsParsingCv(false);
+    }
   };
 
   const handleSave = async () => {
@@ -157,6 +214,7 @@ const PersonalInfo = () => {
     //alert('Lưu thông tin thành công!');
 
       setIsEditing(false);
+      showToast('success', 'Đã lưu hồ sơ thành công.');
       try {
         await api.request('/seeker/recommendations');
       } catch (err) {
@@ -164,12 +222,36 @@ const PersonalInfo = () => {
       }
     } catch (error) {
       console.error('Failed to save profile:', error);
-      alert('Lưu thông tin thất bại.');
+      showToast('error', error.message || 'Lưu thông tin thất bại.');
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50/50 py-10 px-2 md:px-5">
+      {toast && (
+        <div
+          role="status"
+          aria-live="polite"
+          className={`fixed right-5 top-5 z-50 flex max-w-sm items-start gap-3 rounded-xl border px-4 py-3 shadow-lg ${
+            toast.type === 'success'
+              ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+              : 'border-red-200 bg-red-50 text-red-800'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[20px]">
+            {toast.type === 'success' ? 'check_circle' : 'error'}
+          </span>
+          <p className="pt-0.5 text-sm font-medium leading-5">{toast.message}</p>
+          <button
+            type="button"
+            onClick={() => setToast(null)}
+            className="ml-1 rounded p-0.5 opacity-70 hover:opacity-100"
+            aria-label="Đóng thông báo"
+          >
+            <span className="material-symbols-outlined text-[18px]">close</span>
+          </button>
+        </div>
+      )}
       <div className="max-w-5xl mx-auto space-y-6">
 
         {/* ── Page Header ── */}
@@ -179,13 +261,31 @@ const PersonalInfo = () => {
             <p className="text-lg text-gray-500 mt-1">Cập nhật hồ sơ để tăng cơ hội nhận được lời mời từ nhà tuyển dụng.</p>
           </div>
           {!isEditing && (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-[#00488d] text-white hover:bg-[#003b76] shadow-md shadow-[#00488d]/20 transition-all"
-            >
-              <span className="material-symbols-outlined text-[18px]">edit</span>
-              Chỉnh sửa
-            </button>
+            <div className="flex items-center gap-2">
+              <input
+                ref={cvInputRef}
+                type="file"
+                accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                onChange={handleCvChange}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => cvInputRef.current?.click()}
+                disabled={isParsingCv}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-[#00488d] hover:bg-[#003b76] shadow-md shadow-[#00488d]/20 disabled:opacity-60 transition-all"
+              >
+                <span className="material-symbols-outlined text-[18px]">upload_file</span>
+                {isParsingCv ? 'Đang đọc CV...' : 'Upload CV'}
+              </button>
+              <button
+                onClick={() => setIsEditing(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-[#00488d] text-white hover:bg-[#003b76] shadow-md shadow-[#00488d]/20 transition-all"
+              >
+                <span className="material-symbols-outlined text-[18px]">edit</span>
+                Chỉnh sửa
+              </button>
+            </div>
           )}
         </div>
 
@@ -364,7 +464,7 @@ const PersonalInfo = () => {
               className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#00488d] focus:ring-2 focus:ring-[#00488d]/10 outline-none transition-all resize-none"
             />
           ) : (
-            <p className="text-sm text-gray-700 leading-relaxed">
+            <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
               {formData.target || <span className="text-gray-300">Chưa có giới thiệu bản thân.</span>}
             </p>
           )}

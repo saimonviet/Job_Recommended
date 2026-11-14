@@ -34,6 +34,7 @@ from .routes import (
     _save_recommendations_cache, _serialize_job, LOCKED_JOB_MESSAGE,
 )
 from .embedding_utils import generate_and_save_user_embedding
+from .cv_parser import CVParserError, parse_cv
 
 
 seeker_bp = Blueprint('seeker', __name__, url_prefix='/seeker')
@@ -635,6 +636,36 @@ def get_profile():
         "desired_salary": infor.desired_salary,
         "profile_completion_percentage": profile_completion["percentage"],
         "profile_completion": profile_completion,
+    })
+
+
+@seeker_bp.route('/profile/import-cv', methods=['POST'])
+@seeker_required
+def import_profile_from_cv():
+    """Parse a PDF/DOCX CV and return a profile draft without saving it."""
+    cv_file = request.files.get('cv')
+    if not cv_file or not cv_file.filename:
+        return jsonify({"error": "Vui lòng chọn file CV"}), 400
+
+    extension = os.path.splitext(secure_filename(cv_file.filename))[1].lower()
+    if extension not in {'.pdf', '.docx'}:
+        return jsonify({"error": "Chỉ hỗ trợ file PDF hoặc DOCX"}), 400
+
+    data = cv_file.read(10 * 1024 * 1024 + 1)
+    if len(data) > 10 * 1024 * 1024:
+        return jsonify({"error": "File CV không được vượt quá 10 MB"}), 400
+
+    try:
+        parsed_profile = parse_cv(data, extension)
+    except CVParserError as exc:
+        return jsonify({"error": str(exc)}), 400
+    except Exception:
+        logger.exception("Unexpected CV parsing failure")
+        return jsonify({"error": "Không thể phân tích CV"}), 500
+
+    return jsonify({
+        "message": "Đã phân tích CV. Vui lòng kiểm tra trước khi lưu.",
+        "parsed_profile": parsed_profile,
     })
 
 
