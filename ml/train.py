@@ -85,7 +85,7 @@ def train_model(model_id, graph, splits, feats, epochs=40, lr=0.005, k_values=(5
     x_dict = {k: v.to(device) for k, v in x_dict.items()}
 
     model = M.build_model(model_id, node_feat_dims, edge_types).to(device)
-    if model_id == "B3":
+    if spec.get("dynamic", False):
         model.encoder.set_p_u(graph["user"].p_u.to(device))
 
     train_edge_index = edge_dict(splits["train"], edge_types)
@@ -235,7 +235,7 @@ def main():
     feats = FE.build_features(jobs, users)
 
     results = {}
-    for model_id in ["B0", "B1", "B2", "B3"]:
+    for model_id in ["B0", "B1", "B2", "B3", "HGT"]:
         print(f"\n{'='*60}\nTraining {model_id}\n{'='*60}")
         model, edge_types, x_dict = train_model(model_id, graph, splits, feats, epochs=40)
         m = evaluate(model, x_dict, edge_types, graph, splits, jobs, users)

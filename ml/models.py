@@ -1,11 +1,12 @@
 """
-Model zoo for the heterogeneous job-recommendation GNN.
+Model zoo for the heterogeneous job-recommendation GNN & Graph Transformer.
 
 B0  : 2-node GraphSAGE baseline (user <-> job, applies edges only)
 B1  : 6-node heterogeneous GraphSAGE (adds experience/location/salary/degree nodes)
 B2  : 6-node heterogeneous GATv2 (attention per relation)
 B3  : B2 + dynamic relation weights  w = sigmoid(g_r(p_u, phi(u,j)))
-B4  : B3 + constraint filter + multi-criteria re-ranking (see rerank.py)
+HGT : 6-node Heterogeneous Graph Transformer (HGTConv with multi-head attention)
+B4  : B3 / HGT + constraint filter + multi-criteria re-ranking (see rerank.py)
 """
 
 from __future__ import annotations
@@ -15,7 +16,7 @@ from typing import Dict, List, Optional, Tuple
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch_geometric.nn import SAGEConv, GATv2Conv, HeteroConv
+from torch_geometric.nn import GATv2Conv, HeteroConv, HGTConv, SAGEConv
 
 APPLIES = ("user", "applies", "job")
 
@@ -43,6 +44,10 @@ class HeteroEncoder(nn.Module):
         super().__init__()
         self.dropout = dropout
         self.dynamic = dynamic
+        self.conv_name = conv.lower()
+        self.node_feat_dims = node_feat_dims
+        self.edge_types = edge_types
+
         self.proj = nn.ModuleDict({k: nn.Linear(d, hidden) for k, d in node_feat_dims.items()})
         self.out_proj = nn.ModuleDict({k: nn.Linear(hidden, out) for k in node_feat_dims.keys()})
 
@@ -50,15 +55,18 @@ class HeteroEncoder(nn.Module):
         for i in range(num_layers):
             in_ch = hidden if i == 0 else hidden
             out_ch = hidden if i < num_layers - 1 else out
-            self.convs.append(self._build_conv(edge_types, conv, dynamic, in_ch, out_ch))
+            self.convs.append(self._build_conv(edge_types, self.conv_name, dynamic, in_ch, out_ch))
 
         if dynamic:
             self.dynamic_weight = DynamicWeight()
             # registered in the parent model before training
             self.register_buffer("p_u", torch.zeros(1, 3), persistent=False)
 
-    @staticmethod
-    def _build_conv(edge_types, conv, dynamic, in_ch, out_ch):
+    def _build_conv(self, edge_types, conv, dynamic, in_ch, out_ch):
+        if conv == "hgt":
+            metadata = (list(self.node_feat_dims.keys()), edge_types)
+            return HGTConv(in_channels=in_ch, out_channels=out_ch, metadata=metadata, heads=2)
+
         convs = {}
         for et in edge_types:
             if conv == "gatv2":
@@ -88,16 +96,19 @@ class HeteroEncoder(nn.Module):
 
         n = len(self.convs)
         for i, conv in enumerate(self.convs):
-            if dyn_attr is not None:
+            if self.conv_name == "hgt":
+                out = conv(x, edge_index_dict)
+            elif dyn_attr is not None:
                 out = conv(x, edge_index_dict, edge_attr_dict=dyn_attr)
             else:
                 out = conv(x, edge_index_dict)
+
             x_new = {}
             for k in x:
                 if k in out and out[k] is not None:
                     x_new[k] = F.relu(out[k])
                 else:
-                    # fallback for isolated nodes: last layer -> out_proj (hidden->out)
+                    # fallback for isolated nodes
                     x_new[k] = x[k] if i < n - 1 else self.out_proj[k](x[k])
             x = {k: F.dropout(v, p=self.dropout, training=self.training) for k, v in x_new.items()}
 
@@ -140,7 +151,8 @@ MODEL_SPECS = {
     "B1": dict(conv="sage", dynamic=False, six_node=True),
     "B2": dict(conv="gatv2", dynamic=False, six_node=True),
     "B3": dict(conv="gatv2", dynamic=True, six_node=True),
-    # B4 == B3 model + rerank (handled in rerank.py)
+    "HGT": dict(conv="hgt", dynamic=True, six_node=True),
+    # B4 == B3 / HGT model + rerank (handled in rerank.py)
 }
 
 
