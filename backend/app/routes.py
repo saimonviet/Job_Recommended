@@ -72,13 +72,12 @@ def _get_profile_missing_fields(infor):
     return missing
 
 PROFILE_COMPLETION_FIELDS = [
-    ("avatar_path", "avatar"),
     ("phone", "phone"),
     ("workplace_desired", "location"),
     ("desired_job", "desired_job"),
     ("target", "bio"),
     ("experience", "experience"),
-    # ("skills", "skills"),
+    ("skills", "skills"),
     ("age", "age"),
     ("gender", "gender"),
     ("degree", "degree"),
@@ -204,11 +203,36 @@ def _normalize_text(value):
     return re.sub(r'[^a-z0-9]+', ' ', text).strip()
 
 def _format_salary(job):
-    salary_min = (getattr(job, 'salary_min', '') or '').strip() if isinstance(getattr(job, 'salary_min', ''), str) else getattr(job, 'salary_min', '')
-    salary_max = (getattr(job, 'salary_max', '') or '').strip() if isinstance(getattr(job, 'salary_max', ''), str) else getattr(job, 'salary_max', '')
-    if salary_min and salary_max:
-        return f'{salary_min} - {salary_max}'
-    return salary_min or salary_max or 'Thoả thuận'
+    sal_min_raw = getattr(job, 'salary_min', None)
+    sal_max_raw = getattr(job, 'salary_max', None)
+    try:
+        min_v = float(sal_min_raw) if sal_min_raw not in (None, '') else None
+    except (ValueError, TypeError):
+        min_v = None
+    try:
+        max_v = float(sal_max_raw) if sal_max_raw not in (None, '') else None
+    except (ValueError, TypeError):
+        max_v = None
+
+    if min_v is None and max_v is None:
+        return 'Thoả thuận'
+
+    def to_m_str(v):
+        if v >= 1_000_000:
+            m = v / 1_000_000.0
+            return f"{m:.1f}".rstrip('0').rstrip('.')
+        elif v > 0 and v < 1000:
+            return f"{v:.1f}".rstrip('0').rstrip('.')
+        return f"{v:,.0f}"
+
+    if min_v is not None and max_v is not None:
+        if min_v == max_v:
+            return f"{to_m_str(min_v)} triệu"
+        return f"{to_m_str(min_v)} - {to_m_str(max_v)} triệu"
+    elif min_v is not None:
+        return f"Từ {to_m_str(min_v)} triệu"
+    else:
+        return f"Tới {to_m_str(max_v)} triệu"
 
 def _job_logo_seed(job):
     return getattr(job, 'company_name', None) or getattr(job, 'job_title', None) or str(getattr(job, 'id', ''))

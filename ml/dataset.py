@@ -186,7 +186,9 @@ def _feasibility_score(u_prov: str, u_exp_max: float, u_sal_min: float, u_degree
 
     # Salary match
     if pd.notna(j_sal_max) and j_sal_max > 0:
-        if j_sal_max >= u_sal_min * 0.7:
+        j_max_val = j_sal_max * 1_000_000.0 if j_sal_max < 1000 else j_sal_max
+        u_min_val = u_sal_min * 1_000_000.0 if u_sal_min < 1000 else u_sal_min
+        if j_max_val >= u_min_val * 0.7:
             s += 0.15
         else:
             s -= 0.15

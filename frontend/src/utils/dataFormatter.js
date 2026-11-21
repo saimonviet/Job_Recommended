@@ -89,8 +89,13 @@ export const formatTextSimple = (text) => {
 
 const parseNumericValue = (value) => {
   if (value === null || value === undefined || value === '') return null;
-  const normalized = Number(String(value).replace(/[^0-9-]/g, ''));
-  return Number.isNaN(normalized) ? null : normalized;
+  const str = String(value).trim();
+  let normalized = Number(str.replace(/[^0-9.-]/g, ''));
+  if (Number.isNaN(normalized)) return null;
+  if (normalized > 0 && normalized < 1000) {
+    normalized = normalized * 1000000;
+  }
+  return normalized;
 };
 
 const formatSalaryAmount = (value) => {

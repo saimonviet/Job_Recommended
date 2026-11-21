@@ -118,8 +118,21 @@ def import_all(app):
             c_name = str(r.get("company_name") or r.get("company") or "Doanh nghiệp tuyển dụng")
             prov = str(r.get("province") or r.get("state") or "Toàn quốc")
             loc_detail = str(r.get("job_location") or prov)
-            sal_min = "" if pd.isna(r.get("salary_min")) else str(r.get("salary_min"))
-            sal_max = "" if pd.isna(r.get("salary_max")) else str(r.get("salary_max"))
+            def _to_sal_str(val):
+                if pd.isna(val) or val is None or val == "":
+                    return ""
+                try:
+                    f = float(val)
+                    if f <= 0:
+                        return ""
+                    if f < 1000:
+                        f = f * 1_000_000
+                    return str(int(round(f)))
+                except Exception:
+                    return ""
+
+            sal_min = _to_sal_str(r.get("salary_min"))
+            sal_max = _to_sal_str(r.get("salary_max"))
             exp_min = "" if pd.isna(r.get("exp_min")) else str(r.get("exp_min"))
             exp_max = "" if pd.isna(r.get("exp_max")) else str(r.get("exp_max"))
             emp_type = str(r.get("employment_type") or "Toàn thời gian")

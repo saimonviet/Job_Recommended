@@ -22,7 +22,7 @@ from flask import Blueprint, request, jsonify
 from datetime import datetime
 from werkzeug.utils import secure_filename
 
-from .embedding_pipeline import score_jobs_for_user, _parse_salary_nums, _build_job_feat, _cosine_fallback_tfidf
+from .embedding_pipeline import score_jobs_for_user, _parse_salary_nums, _build_job_feat, _cosine_fallback_tfidf, map_industry_group
 from .models import db, User, InforUser, Job, Application, RecruitmentInvitation, SeekerSetting, EmployerNotification, SeekerNotificationRead
 
 import numpy as np
@@ -53,24 +53,43 @@ UPLOAD_FOLDER = os.path.join(
 def _filter_jobs_by_industry(infor, jobs):
     """
     Lọc danh sách jobs theo ngành nghề của user.
-    Nếu user không có industry hoặc industries trống, trả về tất cả jobs.
-    Ngược lại, chỉ giữ jobs có industries khớp (case-insensitive).
+    Sử dụng map_industry_group để chuẩn hóa tên ngành nghề từ cả user và job,
+    kết hợp đối soát từ khóa và fallback an toàn.
     
     Returns: (filtered_jobs, jobs_filtered_count)
     """
     if not infor or not infor.industry:
         return jobs, 0
     
-    user_industry = (infor.industry or '').strip().lower()
-    if not user_industry:
+    user_industry_raw = (infor.industry or '').strip()
+    if not user_industry_raw:
         return jobs, 0
-    
+
+    user_grp = map_industry_group(user_industry_raw).lower()
+    user_ind_lower = user_industry_raw.lower()
+
     filtered = []
     for job in jobs:
-        job_industry = (job.industries or '').strip().lower()
-        if job_industry == user_industry:
+        job_ind_raw = (getattr(job, 'industries', '') or '').strip()
+        if not job_ind_raw:
+            continue
+        job_grp = map_industry_group(job_ind_raw).lower()
+        job_ind_lower = job_ind_raw.lower()
+
+        # 1. Khớp nhóm ngành chuẩn hóa (nếu khác 'khác')
+        if user_grp != 'khác' and job_grp == user_grp:
             filtered.append(job)
-    
+        # 2. Khớp chuỗi con tương hỗ (VD: "Công nghệ thông tin" trong "Công nghệ thông tin / Phần mềm")
+        elif user_ind_lower in job_ind_lower or job_ind_lower in user_ind_lower:
+            filtered.append(job)
+
+    # Nếu sau khi lọc không có job nào khớp ngành, fallback dùng toàn bộ jobs để seeker luôn nhận được gợi ý
+    if not filtered:
+        logger.warning(
+            f"[_filter_jobs_by_industry] Không tìm thấy job khớp ngành '{user_industry_raw}', fallback dùng toàn bộ {len(jobs)} jobs"
+        )
+        return jobs, 0
+
     filtered_count = len(jobs) - len(filtered)
     return filtered, filtered_count
 

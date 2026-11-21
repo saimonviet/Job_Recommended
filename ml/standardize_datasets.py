@@ -210,7 +210,9 @@ def parse_salary_range(s_min, s_max, s_text="") -> Tuple[float, float, str, str]
         v1_fin = min(v1_m, v2_m)
         v2_fin = max(v1_m, v2_m)
         bucket = get_salary_bucket(v1_fin, v2_fin)
-        return v1_fin, v2_fin, bucket, text
+        v1_vnd = int(round(v1_fin * 1_000_000))
+        v2_vnd = int(round(v2_fin * 1_000_000))
+        return v1_vnd, v2_vnd, bucket, text
 
     # Parse separate min and max
     p_min = parse_salary_value(s_min)
@@ -231,7 +233,9 @@ def parse_salary_range(s_min, s_max, s_text="") -> Tuple[float, float, str, str]
     p_min_fin = min(p_min, p_max)
     p_max_fin = max(p_min, p_max)
     bucket = get_salary_bucket(p_min_fin, p_max_fin)
-    return p_min_fin, p_max_fin, bucket, text
+    v1_vnd = int(round(p_min_fin * 1_000_000))
+    v2_vnd = int(round(p_max_fin * 1_000_000))
+    return v1_vnd, v2_vnd, bucket, text
 
 
 def get_salary_bucket(sal_min: float, sal_max: float) -> str:

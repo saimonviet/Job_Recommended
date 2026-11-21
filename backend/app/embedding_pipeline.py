@@ -271,8 +271,9 @@ def _get_recommendation_model():
 def _build_user_feat(user, infor) -> torch.Tensor:
     _load_artifacts()
 
-    # skills     = (infor.skills  or '') if infor else ''
-    target     = (infor.target  or '') if infor else ''
+    target      = (infor.target  or '') if infor else ''
+    desired_job = (infor.desired_job or '') if infor else ''
+    skills      = (infor.skills or '') if infor else ''
     
     exp_text = ""
     if infor and infor.experience:
@@ -287,7 +288,7 @@ def _build_user_feat(user, infor) -> torch.Tensor:
             logger.warning(f"[_build_user_feat] Lỗi parse experience JSON: {e}")
             exp_text = str(infor.experience) # Fallback nếu không phải JSON
             
-    clean_text = advanced_clean_text(f"{target} {exp_text}")
+    clean_text = advanced_clean_text(f"{desired_job} {skills} {target} {exp_text}")
 
     if _tfidf is not None:
         text_emb = _tfidf.transform([clean_text]).toarray().astype(np.float32)
@@ -341,9 +342,10 @@ def _build_job_feat(job) -> torch.Tensor:
     """Tạo X_job (265,): [4 num | 5 cat | 256 TF-IDF]"""
     _load_artifacts()
 
+    title    = (job.job_title or '') if hasattr(job, 'job_title') else ''
     desc     = (job.job_description or '') if hasattr(job, 'job_description') else ''
     req      = (job.job_requirement  or '') if hasattr(job, 'job_requirement')  else ''
-    job_text = f"{desc} {req}".strip()
+    job_text = advanced_clean_text(f"{title} {desc} {req}")
 
     if _tfidf is not None:
         text_emb = _tfidf.transform([job_text]).toarray().astype(np.float32)
@@ -470,12 +472,32 @@ def score_jobs_for_user(user, infor, jobs) -> np.ndarray:
     if not jobs:
         return np.array([], dtype=np.float32)
 
+    _load_artifacts()
     # Build raw features để lấy TF-IDF 256D cuối
     try:
         x_user = _build_user_feat(user, infor).unsqueeze(0).numpy()  # (1, 267)
     except Exception as e:
         logger.error(f"[score_jobs_for_user] _build_user_feat lỗi: {e}")
         return np.zeros(len(jobs), dtype=np.float32)
+
+    # Tối ưu vector hóa TF-IDF hàng loạt thay vì lặp từng job đơn lẻ
+    if _tfidf is not None:
+        try:
+            job_texts = [
+                advanced_clean_text(
+                    f"{getattr(j, 'job_title', '') or ''} {getattr(j, 'job_description', '') or ''} {getattr(j, 'job_requirement', '') or ''}"
+                )
+                for j in jobs
+            ]
+            j_tfidf = _tfidf.transform(job_texts).toarray().astype(np.float32)
+            u_tfidf = x_user[:, -256:]
+            u_norm = u_tfidf / (np.linalg.norm(u_tfidf, axis=1, keepdims=True) + 1e-12)
+            j_norm = j_tfidf / (np.linalg.norm(j_tfidf, axis=1, keepdims=True) + 1e-12)
+            sims = (j_norm @ u_norm.T).flatten()
+            scores = ((np.clip(sims, -1, 1) + 1.0) / 2.0).astype(np.float32)
+            return scores
+        except Exception as e:
+            logger.warning(f"[score_jobs_for_user] Lỗi vector hóa TF-IDF: {e}, fallback vòng lặp đơn")
 
     job_feats = []
     for job in jobs:
